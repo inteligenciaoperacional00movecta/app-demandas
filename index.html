@@ -342,7 +342,7 @@
           <option value="">Todos os Status</option><option>Ativa</option><option>Inativa</option>
         </select>
         <select class="filter-select" id="sel-sistema-q" onchange="renderQueries()">
-          <option value="">Todos os Sistemas</option><option>Query skisf</option>
+          <option value="">Todos os Sistemas</option><option>NOVVS</option><option>KMM</option><option>SITA</option><option>MOVESYNC</option><option>DATABUS</option>
         </select>
       </div>
       <div id="q-tabela"><div class="table-wrap"><table><thead><tr><th>Sistema</th><th>Observação</th><th>Anexos</th><th>Status</th></tr></thead><tbody id="tbody-queries"></tbody></table></div></div>
@@ -425,7 +425,7 @@
     <div class="modal-body">
       <input type="hidden" id="query-edit-id">
       <div class="field-group"><label class="field-label">Sistema *</label>
-        <select class="field-select" id="q-sistema"><option value="">Selecione...</option><option>Query skisf</option></select></div>
+        <select class="field-select" id="q-sistema"><option value="">Selecione...</option><option>NOVVS</option><option>KMM</option><option>SITA</option><option>MOVESYNC</option><option>DATABUS</option></select></div>
       <div class="field-group"><label class="field-label">Status *</label>
         <select class="field-select" id="q-status"><option value="">Selecione...</option><option>Ativa</option><option>Inativa</option></select></div>
       <div class="field-group full"><label class="field-label">Observação</label>
@@ -814,7 +814,7 @@ function buildDeditForm(d){
 
 function buildQeditForm(q){
   return`<div class="detail-grid">
-    <div class="field-group"><label class="field-label">Sistema</label><select class="field-select" id="ve-sistema">${opts(['','Query skisf'],q.sistema)}</select></div>
+    <div class="field-group"><label class="field-label">Sistema</label><select class="field-select" id="ve-sistema">${opts(['','NOVVS','KMM','SITA','MOVESYNC','DATABUS'],q.sistema)}</select></div>
     <div class="field-group"><label class="field-label">Status</label><select class="field-select" id="ve-qstatus">${opts(['','Ativa','Inativa'],q.status)}</select></div>
     <div class="field-group full"><label class="field-label">Observação</label><textarea class="field-textarea" id="ve-obs" style="min-height:140px">${esc(q.observacao)}</textarea></div>
   </div>`;
