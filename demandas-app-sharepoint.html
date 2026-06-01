@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movecta · Excelência Operacional</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0d0f14;--surface:#13161e;--surface2:#1a1e29;--border:#252a38;--accent:#3b82f6;--accent2:#6366f1;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--text:#e8eaf0;--text2:#8b91a8;--text3:#555d78;--sidebar-w:220px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+  /* HOME */
+  #screen-home{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);position:relative;overflow:hidden;}
+  #screen-home::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,0.12) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+  #screen-home::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(59,130,246,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+  .home-inner{position:relative;z-index:1;text-align:center;animation:fadeUp 0.8s ease forwards;}
+  .home-badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(59,130,246,0.3);padding:6px 16px;border-radius:20px;margin-bottom:32px;background:rgba(59,130,246,0.06);}
+  .home-title{font-family:'Syne',sans-serif;font-size:clamp(36px,5vw,64px);font-weight:800;line-height:1.05;letter-spacing:-0.02em;color:var(--text);margin-bottom:12px;}
+  .home-title span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .home-sub{font-size:15px;color:var(--text2);margin-bottom:48px;font-weight:300;letter-spacing:0.05em;}
+  .btn-enter{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:16px 48px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:0.02em;transition:all 0.2s;box-shadow:0 8px 32px rgba(59,130,246,0.3);}
+  .btn-enter:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(59,130,246,0.45);}
+
+  /* LAYOUT */
+  #app-layout{display:none;min-height:100vh;}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+  .sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
+  .sidebar-logo-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);letter-spacing:0.05em;line-height:1.4;}
+  .sidebar-logo-sub{font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
+  .sidebar-nav{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:2px;}
+  .nav-label{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);padding:12px 8px 6px;margin-top:8px;}
+  .nav-label:first-child{margin-top:0;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text2);transition:all 0.15s;user-select:none;border:1px solid transparent;}
+  .nav-item:hover{background:var(--surface2);color:var(--text);}
+  .nav-item.active{background:rgba(59,130,246,0.12);color:var(--accent);border-color:rgba(59,130,246,0.2);}
+  .nav-icon{width:18px;height:18px;flex-shrink:0;opacity:0.7;}
+  .nav-item.active .nav-icon{opacity:1;}
+  .badge-wip{margin-left:auto;font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--warning);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);padding:2px 6px;border-radius:4px;}
+  .sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);}
+
+  /* MAIN */
+  .main{margin-left:var(--sidebar-w);min-height:100vh;background:var(--bg);}
+  .page{display:none;padding:36px 40px;animation:fadeIn 0.25s ease;}
+  .page.active{display:block;}
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;}
+  .page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--text);}
+  .page-subtitle{font-size:13px;color:var(--text2);margin-top:4px;}
+  .page-header-right{display:flex;align-items:center;gap:10px;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;align-items:center;gap:10px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.4);animation:slideUp 0.3s ease;pointer-events:none;}
+  .toast.success{background:#16a34a;}
+  .toast.error{background:#dc2626;}
+  .toast.loading{background:#2563eb;}
+
+  /* LOADING OVERLAY */
+  .loading-overlay{position:fixed;inset:0;background:rgba(13,15,20,0.7);backdrop-filter:blur(3px);z-index:400;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+  .loading-overlay.show{display:flex;}
+  .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+  .loading-text{font-size:13px;color:var(--text2);}
+
+  /* TOOLBAR */
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .search-box{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;min-width:220px;max-width:280px;}
+  .search-box input{background:none;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);width:100%;}
+  .search-box input::placeholder{color:var(--text3);}
+  .filter-select{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 32px 8px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text2);cursor:pointer;outline:none;transition:all 0.15s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b91a8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;min-width:160px;}
+  .filter-select:focus{border-color:var(--accent);color:var(--text);}
+  .filter-select option{background:var(--surface);color:var(--text);}
+  .view-toggle{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:3px;}
+  .view-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;border:none;background:none;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+  .view-btn:hover{color:var(--text);}
+  .view-btn.active{background:var(--accent);color:#fff;}
+  .btn-primary{display:flex;align-items:center;gap:8px;padding:9px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+  .btn-primary:hover{background:#2563eb;transform:translateY(-1px);}
+  .btn-secondary{padding:9px 16px;background:var(--surface);color:var(--text2);border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+  .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* TABLE */
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap;}
+  tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:var(--surface2);}
+  tbody td{padding:13px 16px;color:var(--text);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .empty-state{padding:60px 20px;text-align:center;color:var(--text3);}
+  .empty-state-icon{font-size:36px;margin-bottom:12px;}
+  .empty-state p{font-size:13px;}
+
+  /* BADGES */
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+  .badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
+  .badge-detalhamento{background:rgba(99,102,241,0.12);color:#818cf8;}
+  .badge-iniciar{background:rgba(245,158,11,0.12);color:#fbbf24;}
+  .badge-andamento{background:rgba(59,130,246,0.12);color:#60a5fa;}
+  .badge-homologacao{background:rgba(168,85,247,0.12);color:#c084fc;}
+  .badge-finalizada{background:rgba(34,197,94,0.12);color:#4ade80;}
+  .badge-cancelada{background:rgba(239,68,68,0.12);color:#f87171;}
+  .badge-ativa{background:rgba(34,197,94,0.12);color:#4ade80;}
+  .badge-inativa{background:rgba(239,68,68,0.12);color:#f87171;}
+  .badge-critica{background:rgba(239,68,68,0.2);color:#fca5a5;}
+  .badge-alta{background:rgba(239,68,68,0.12);color:#f87171;}
+  .badge-media{background:rgba(245,158,11,0.12);color:#fbbf24;}
+  .badge-baixa{background:rgba(34,197,94,0.12);color:#4ade80;}
+
+  /* KANBAN */
+  .kanban-board{display:flex;gap:14px;overflow-x:auto;padding-bottom:16px;min-height:60vh;}
+  .kanban-col{flex:0 0 255px;display:flex;flex-direction:column;gap:10px;}
+  .kanban-col-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;}
+  .kanban-col-count{font-size:11px;font-weight:700;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1px 8px;color:var(--text2);}
+  .kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;gap:7px;}
+  .kanban-card:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3);}
+  .kanban-card-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.4;}
+  .kanban-card-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);}
+  .kanban-card-value{font-size:12px;color:var(--text2);}
+  .kanban-card-divider{border:none;border-top:1px solid var(--border);}
+  .kanban-empty{text-align:center;padding:24px 12px;color:var(--text3);font-size:12px;background:var(--surface);border:1px dashed var(--border);border-radius:10px;}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:500;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:780px;animation:slideUp 0.25s ease;flex-shrink:0;}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;padding:24px 28px 20px;border-bottom:1px solid var(--border);}
+  .modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+  .modal-close{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--text2);font-size:16px;transition:all 0.15s;}
+  .modal-close:hover{border-color:var(--danger);color:var(--danger);}
+  .modal-body{padding:24px 28px;display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .modal-body .full{grid-column:1/-1;}
+  .field-group{display:flex;flex-direction:column;gap:6px;}
+  .field-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);}
+  .field-input,.field-select,.field-textarea{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color 0.15s;width:100%;}
+  .field-input:focus,.field-select:focus,.field-textarea:focus{border-color:var(--accent);}
+  .field-select option{background:var(--surface);}
+  .field-textarea{resize:vertical;min-height:100px;line-height:1.5;}
+  .file-drop{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.15s;background:var(--bg);}
+  .file-drop:hover{border-color:var(--accent);background:rgba(59,130,246,0.03);}
+  .file-drop p{font-size:12px;color:var(--text3);margin-top:6px;}
+  .file-drop input{display:none;}
+  .file-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+  .file-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:12px;color:var(--text2);}
+  .file-item-name{display:flex;align-items:center;gap:8px;}
+  .file-remove{cursor:pointer;color:var(--text3);font-size:14px;transition:color 0.15s;background:none;border:none;line-height:1;}
+  .file-remove:hover{color:var(--danger);}
+  .modal-footer{padding:16px 28px 24px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);}
+
+  /* DASHBOARD */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+  .stat-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+  .stat-value{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--text);line-height:1;}
+  .stat-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+  .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+  .chart-title{font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);margin-bottom:16px;}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .bar-label{width:120px;color:var(--text2);flex-shrink:0;font-size:11px;}
+  .bar-track{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.6s ease;}
+  .bar-count{width:24px;text-align:right;color:var(--text2);font-size:11px;}
+
+  /* WIP */
+  .wip-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px;color:var(--text3);}
+  .wip-icon{font-size:52px;}
+  .wip-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text2);}
+  .wip-sub{font-size:13px;}
+
+  /* DETAIL */
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .detail-grid .full{grid-column:1/-1;}
+  .detail-field{display:flex;flex-direction:column;gap:5px;}
+  .detail-field-label{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);}
+  .detail-field-value{font-size:13.5px;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;min-height:40px;word-break:break-word;white-space:pre-wrap;}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div id="screen-home">
+  <div class="home-inner">
+    <div class="home-badge">Movecta · Excelência Operacional</div>
+    <h1 class="home-title">Gerenciamento de<br><span>Demandas</span></h1>
+    <p class="home-sub">Eficiência Operacional</p>
+    <button class="btn-enter" onclick="enterApp()">Entrar</button>
+  </div>
+</div>
+
+<div id="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-name">Excelência<br>Operacional</div>
+      <div class="sidebar-logo-sub">Movecta</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <div class="nav-item" onclick="navigate('demandas')">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Demandas
+      </div>
+      <div class="nav-item" onclick="navigate('projetos')">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+        Projetos <span class="badge-wip">Em breve</span>
+      </div>
+      <div class="nav-item" onclick="navigate('dashboard')">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="navigate('query')">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 12c0 2.21 3.582 4 8 4s8-1.79 8-4"/></svg>
+        Query de Dados
+      </div>
+    </nav>
+    <div class="sidebar-footer">v2.0 · SharePoint</div>
+  </aside>
+
+  <main class="main">
+
+    <!-- DEMANDAS -->
+    <div id="page-demandas" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Demandas</div>
+          <div class="page-subtitle">Gerencie as demandas das duas áreas</div>
+        </div>
+        <div class="page-header-right">
+          <div class="view-toggle">
+            <button class="view-btn active" id="btn-vt-d" onclick="setView('d','tabela')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M10 4v16M3 4h18v16H3z"/></svg>Tabela
+            </button>
+            <button class="view-btn" id="btn-vk-d" onclick="setView('d','kanban')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>Kanban
+            </button>
+          </div>
+          <button class="btn-primary" onclick="openModal('add-demanda')">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>Nova Demanda
+          </button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="search-box">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+          <input type="text" id="search-demanda" placeholder="Buscar demanda..." oninput="renderDemandas()">
+        </div>
+        <select class="filter-select" id="sel-status-d" onchange="renderDemandas()">
+          <option value="">Todos os Status</option>
+          <option>em detalhamento</option><option>a iniciar</option><option>em andamento</option>
+          <option>homologação</option><option>finalizada</option><option>cancelada</option>
+        </select>
+        <select class="filter-select" id="sel-tipo-d" onchange="renderDemandas()">
+          <option value="">Todos os Tipos</option>
+          <option>Criação de Dashboard</option><option>Melhoria</option><option>Análise</option><option>Outros</option>
+        </select>
+      </div>
+      <div id="d-tabela">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th>Prazo</th><th>Status</th></tr></thead>
+            <tbody id="tbody-demandas"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="d-kanban" style="display:none"><div class="kanban-board" id="kb-demandas"></div></div>
+    </div>
+
+    <!-- PROJETOS -->
+    <div id="page-projetos" class="page">
+      <div class="page-header"><div><div class="page-title">Projetos</div><div class="page-subtitle">Gerenciamento de projetos</div></div></div>
+      <div class="wip-screen"><div class="wip-icon">🚧</div><div class="wip-title">Em Construção</div><div class="wip-sub">Este módulo estará disponível em breve.</div></div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Dashboard</div><div class="page-subtitle">Visão geral das demandas</div></div>
+        <button class="btn-secondary" onclick="carregarTudo()">↺ Atualizar</button>
+      </div>
+      <div class="stats-grid" id="dash-stats"></div>
+      <div class="charts-grid">
+        <div class="chart-card"><div class="chart-title">Demandas por Status</div><div id="chart-status"></div></div>
+        <div class="chart-card"><div class="chart-title">Demandas por Área</div><div id="chart-area"></div></div>
+        <div class="chart-card"><div class="chart-title">Demandas por Terminal</div><div id="chart-terminal"></div></div>
+        <div class="chart-card"><div class="chart-title">Demandas por Tipo</div><div id="chart-tipo"></div></div>
+      </div>
+    </div>
+
+    <!-- QUERY DE DADOS -->
+    <div id="page-query" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Query de Dados</div><div class="page-subtitle">Gerencie as queries cadastradas</div></div>
+        <div class="page-header-right">
+          <div class="view-toggle">
+            <button class="view-btn active" id="btn-vt-q" onclick="setView('q','tabela')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M10 4v16M3 4h18v16H3z"/></svg>Tabela
+            </button>
+            <button class="view-btn" id="btn-vk-q" onclick="setView('q','kanban')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>Kanban
+            </button>
+          </div>
+          <button class="btn-primary" onclick="openModal('add-query')">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>Nova Query
+          </button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="search-box">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+          <input type="text" id="search-query" placeholder="Buscar query..." oninput="renderQueries()">
+        </div>
+        <select class="filter-select" id="sel-status-q" onchange="renderQueries()">
+          <option value="">Todos os Status</option><option>Ativa</option><option>Inativa</option>
+        </select>
+        <select class="filter-select" id="sel-sistema-q" onchange="renderQueries()">
+          <option value="">Todos os Sistemas</option><option>Query skisf</option>
+        </select>
+      </div>
+      <div id="q-tabela">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Sistema</th><th>Observação</th><th>Anexos</th><th>Status</th></tr></thead>
+            <tbody id="tbody-queries"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="q-kanban" style="display:none"><div class="kanban-board" id="kb-queries"></div></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Carregando...</div>
+</div>
+
+<!-- MODAL ADD DEMANDA -->
+<div class="modal-overlay" id="modal-add-demanda">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-demanda-title">Nova Demanda</div>
+      <div class="modal-close" onclick="closeModal('add-demanda')">✕</div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="demanda-edit-id">
+      <div class="field-group"><label class="field-label">Área *</label>
+        <select class="field-select" id="d-area"><option value="">Selecione...</option><option>Eficiência de Processos</option><option>Eficiência de Dados</option></select></div>
+      <div class="field-group"><label class="field-label">Tipo de Demanda</label>
+        <select class="field-select" id="d-tipo"><option value="">Selecione...</option><option>Criação de Dashboard</option><option>Melhoria</option><option>Análise</option><option>Outros</option></select></div>
+      <div class="field-group full"><label class="field-label">Demanda *</label>
+        <input class="field-input" id="d-demanda" placeholder="Descreva a demanda..."></div>
+      <div class="field-group"><label class="field-label">Terminal</label>
+        <select class="field-select" id="d-terminal"><option value="">Selecione...</option><option>Corporativo</option><option>ADM Central</option><option>Guarujá</option><option>Anhanguera</option><option>Itajaí</option><option>Suape</option></select></div>
+      <div class="field-group"><label class="field-label">Status *</label>
+        <select class="field-select" id="d-status"><option value="">Selecione...</option><option>em detalhamento</option><option>a iniciar</option><option>em andamento</option><option>homologação</option><option>finalizada</option><option>cancelada</option></select></div>
+      <div class="field-group"><label class="field-label">Solicitante</label>
+        <input class="field-input" id="d-solicitante" placeholder="Nome do solicitante"></div>
+      <div class="field-group"><label class="field-label">Responsável</label>
+        <input class="field-input" id="d-responsavel" placeholder="Nome do responsável"></div>
+      <div class="field-group"><label class="field-label">Prioridade</label>
+        <select class="field-select" id="d-prioridade"><option value="">Selecione...</option><option>Crítica</option><option>Alta</option><option>Média</option><option>Baixa</option></select></div>
+      <div class="field-group"><label class="field-label">Prazo de Entrega</label>
+        <input class="field-input" type="date" id="d-prazo"></div>
+      <div class="field-group"><label class="field-label">Data de Início</label>
+        <input class="field-input" type="date" id="d-inicio"></div>
+      <div class="field-group"><label class="field-label">Data de Conclusão</label>
+        <input class="field-input" type="date" id="d-conclusao" onchange="if(this.value)document.getElementById('d-status').value='finalizada'"></div>
+      <div class="field-group full"><label class="field-label">Observação / Etapas Realizadas</label>
+        <textarea class="field-textarea" id="d-obs" placeholder="Descreva as etapas, andamentos, anotações..." style="min-height:120px"></textarea></div>
+      <div class="field-group full"><label class="field-label">Anexos</label>
+        <div class="file-drop" onclick="document.getElementById('file-demanda').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event,'demanda')">
+          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--text3);margin:auto"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          <p>Clique ou arraste arquivos aqui — PDF, Word, Excel, Imagens</p>
+          <input type="file" id="file-demanda" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif" onchange="handleFiles(this,'demanda')">
+        </div>
+        <div class="file-list" id="file-list-demanda"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('add-demanda')">Cancelar</button>
+      <button class="btn-primary" onclick="saveDemanda()">Salvar Demanda</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADD QUERY -->
+<div class="modal-overlay" id="modal-add-query">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-query-title">Nova Query</div>
+      <div class="modal-close" onclick="closeModal('add-query')">✕</div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="query-edit-id">
+      <div class="field-group"><label class="field-label">Sistema *</label>
+        <select class="field-select" id="q-sistema"><option value="">Selecione...</option><option>Query skisf</option></select></div>
+      <div class="field-group"><label class="field-label">Status *</label>
+        <select class="field-select" id="q-status"><option value="">Selecione...</option><option>Ativa</option><option>Inativa</option></select></div>
+      <div class="field-group full"><label class="field-label">Observação</label>
+        <textarea class="field-textarea" id="q-obs" placeholder="Descrição, finalidade, etapas..." style="min-height:140px"></textarea></div>
+      <div class="field-group full"><label class="field-label">Anexos</label>
+        <div class="file-drop" onclick="document.getElementById('file-query').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event,'query')">
+          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--text3);margin:auto"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          <p>Clique ou arraste arquivos aqui — PDF, Word, Excel, Imagens</p>
+          <input type="file" id="file-query" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif" onchange="handleFiles(this,'query')">
+        </div>
+        <div class="file-list" id="file-list-query"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('add-query')">Cancelar</button>
+      <button class="btn-primary" onclick="saveQuery()">Salvar Query</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VIEW/EDIT -->
+<div class="modal-overlay" id="modal-view">
+  <div class="modal" style="max-width:860px">
+    <div class="modal-header">
+      <div class="modal-title" id="view-title">Detalhes</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-primary" id="btn-edit-view" onclick="switchToEdit()" style="padding:7px 14px;font-size:12px">✏️ Editar</button>
+        <div class="modal-close" onclick="closeModal('view')">✕</div>
+      </div>
+    </div>
+    <div class="modal-body" id="view-body" style="display:block;padding:24px 28px"></div>
+    <div class="modal-footer" id="view-footer" style="display:none">
+      <button class="btn-secondary" onclick="closeModal('view')">Fechar</button>
+      <button class="btn-primary" id="btn-save-edit">Salvar Alterações</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// CONFIGURAÇÃO SHAREPOINT
+// ══════════════════════════════════════════
+const SP_URL   = 'https://localfriologistica.sharepoint.com/sites/IntelignciaOperacional';
+const LIST_D   = 'App_Lista_Demandas';
+const LIST_Q   = 'App_Lista_Query';
+const SP_API   = `${SP_URL}/_api/web/lists/getbytitle`;
+const HEADERS  = { 'Accept': 'application/json;odata=verbose', 'Content-Type': 'application/json;odata=verbose' };
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+const state = {
+  demandas: [], queries: [], currentPage: '',
+  viewD: 'tabela', viewQ: 'tabela',
+  tempFiles: { demanda: [], query: [] },
+  viewMode: null, viewId: null, viewEditing: false,
+  digestToken: null, digestExpiry: 0
+};
+
+// ══════════════════════════════════════════
+// SHAREPOINT API
+// ══════════════════════════════════════════
+
+// Busca o token de segurança (necessário para criar/editar)
+async function getDigest() {
+  const now = Date.now();
+  if (state.digestToken && now < state.digestExpiry) return state.digestToken;
+  const res = await fetch(`${SP_URL}/_api/contextinfo`, {
+    method: 'POST', headers: { 'Accept': 'application/json;odata=verbose' }
+  });
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); } catch(e) { throw new Error('Não foi possível autenticar com o SharePoint. Abra o app pela URL direta do arquivo.'); }
+  state.digestToken = data.d.GetContextWebInformation.FormDigestValue;
+  state.digestExpiry = now + (data.d.GetContextWebInformation.FormDigestTimeoutSeconds - 60) * 1000;
+  return state.digestToken;
+}
+
+// Busca todos os itens de uma lista
+async function spGetItems(lista) {
+  const res = await fetch(
+    `${SP_API}('${lista}')/items?$top=5000&$orderby=Id desc`,
+    { headers: HEADERS }
+  );
+  if (!res.ok) throw new Error(`Erro ao buscar ${lista}: ${res.status}`);
+  const data = await res.json();
+  return data.d.results;
+}
+
+// Cria um item na lista
+async function spCreateItem(lista, campos) {
+  const token = await getDigest();
+  const tipo  = lista === LIST_D ? 'App_Lista_DemandasListItem' : 'App_Lista_QueryListItem';
+  const res = await fetch(`${SP_API}('${lista}')/items`, {
+    method: 'POST',
+    headers: { ...HEADERS, 'X-RequestDigest': token },
+    body: JSON.stringify({ __metadata: { type: `SP.Data.${tipo}` }, ...campos })
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    let msg = 'Erro ao criar item';
+    try { msg = JSON.parse(text).error?.message?.value || msg; } catch(e) {}
+    throw new Error(msg);
+  }
+  try { return JSON.parse(text).d; } catch(e) { return {}; }
+}
+
+// Atualiza um item existente
+async function spUpdateItem(lista, id, campos) {
+  const token = await getDigest();
+  const tipo  = lista === LIST_D ? 'App_Lista_DemandasListItem' : 'App_Lista_QueryListItem';
+  const res = await fetch(`${SP_API}('${lista}')/items(${id})`, {
+    method: 'POST',
+    headers: { ...HEADERS, 'X-RequestDigest': token, 'X-HTTP-Method': 'MERGE', 'IF-MATCH': '*' },
+    body: JSON.stringify({ __metadata: { type: `SP.Data.${tipo}` }, ...campos })
+  });
+  // 204 = sucesso sem conteúdo (normal no SharePoint)
+  if (res.status === 204) return;
+  if (!res.ok) {
+    let msg = `Erro ao atualizar item ${id}`;
+    try { const t = await res.text(); msg = JSON.parse(t).error?.message?.value || msg; } catch(e) {}
+    throw new Error(msg);
+  }
+}
+
+// Faz upload de anexo em um item
+async function spUploadAnexo(lista, itemId, file) {
+  const token = await getDigest();
+  const buffer = await file.arrayBuffer();
+  const url = `${SP_URL}/_api/web/lists/getbytitle('${lista}')/items(${itemId})/AttachmentFiles/add(FileName='${encodeURIComponent(file.name)}')`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'X-RequestDigest': token, 'Content-Type': 'application/octet-stream' },
+    body: buffer
+  });
+  if (!res.ok) console.warn(`Aviso: não foi possível anexar ${file.name}`);
+}
+
+// Busca anexos de um item
+async function spGetAnexos(lista, itemId) {
+  const res = await fetch(
+    `${SP_URL}/_api/web/lists/getbytitle('${lista}')/items(${itemId})/AttachmentFiles`,
+    { headers: HEADERS }
+  );
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.d.results.map(a => ({ name: a.FileName, url: a.ServerRelativeUrl }));
+}
+
+// Converte item SP → objeto local (Demandas)
+function spToDemanda(item) {
+  return {
+    id: item.Id,
+    spId: item.Id,
+    area: item.Area || '',
+    tipo: item['Tipo_x0020_da_x0020_Demanda'] || item.TipoDaDemanda || item.Tipo_da_Demanda || '',
+    demanda: item.Title || '',
+    terminal: item.Terminal || '',
+    solicitante: item.Solicitante || '',
+    responsavel: item.Responsavel || '',
+    prioridade: item.Prioridade || '',
+    prazo: isoToDate(item.Prazo),
+    inicio: isoToDate(item.DataInicio),
+    conclusao: isoToDate(item.DataConclusao),
+    obs: item.Observacao || '',
+    status: item.Status || '',
+    anexos: []
+  };
+}
+
+// Converte item SP → objeto local (Queries)
+function spToQuery(item) {
+  return {
+    id: item.Id, spId: item.Id,
+    sistema: item.Sistema || '',
+    obs: item.Obervacao || item.Observacao || '',
+    status: item.Status || '',
+    anexos: []
+  };
+}
+
+// Converte objeto local → campos SP (Demandas)
+function demandaToSP(obj) {
+  const campos = {
+    Title: obj.demanda,
+    Area: obj.area,
+    Terminal: obj.terminal,
+    Solicitante: obj.solicitante,
+    Responsavel: obj.responsavel,
+    Prioridade: obj.prioridade,
+    Observacao: obj.obs,
+    Status: obj.status,
+  };
+  // Tenta o nome interno mais comum para "Tipo da Demanda"
+  campos['Tipo_x0020_da_x0020_Demanda'] = obj.tipo;
+  if (obj.prazo)     campos.Prazo         = obj.prazo + 'T00:00:00Z';
+  if (obj.inicio)    campos.DataInicio    = obj.inicio + 'T00:00:00Z';
+  if (obj.conclusao) campos.DataConclusao = obj.conclusao + 'T00:00:00Z';
+  return campos;
+}
+
+// Converte objeto local → campos SP (Queries)
+function queryToSP(obj) {
+  return { Title: obj.sistema, Sistema: obj.sistema, Obervacao: obj.obs, Status: obj.status };
+}
+
+// ── Utilitários de data ──
+function isoToDate(iso) {
+  if (!iso) return '';
+  return iso.substring(0, 10);
+}
+
+// ══════════════════════════════════════════
+// LOADING / TOAST
+// ══════════════════════════════════════════
+function showLoading(msg='Carregando...') {
+  document.getElementById('loading-text').textContent = msg;
+  document.getElementById('loading-overlay').classList.add('show');
+}
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); }
+
+function toast(msg, type='success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ══════════════════════════════════════════
+// INIT / CARREGAR DADOS
+// ══════════════════════════════════════════
+async function enterApp() {
+  document.getElementById('screen-home').style.display = 'none';
+  document.getElementById('app-layout').style.display = 'block';
+  await carregarTudo();
+  navigate('demandas');
+}
+
+async function carregarTudo() {
+  showLoading('Carregando dados do SharePoint...');
+  try {
+    await Promise.all([carregarDemandas(), carregarQueries()]);
+    toast('Dados carregados com sucesso!');
+  } catch(e) {
+    toast('Erro ao carregar dados: ' + e.message, 'error');
+    console.error(e);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function carregarDemandas() {
+  const items = await spGetItems(LIST_D);
+  state.demandas = items.map(spToDemanda);
+}
+
+async function carregarQueries() {
+  const items = await spGetItems(LIST_Q);
+  state.queries = items.map(spToQuery);
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function navigate(page) {
+  state.currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (item.getAttribute('onclick')?.includes(page)) item.classList.add('active');
+  });
+  const p = document.getElementById('page-' + page);
+  if (p) p.classList.add('active');
+  if (page === 'demandas') renderDemandas();
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'query') renderQueries();
+}
+
+function setView(ctx, mode) {
+  if (ctx === 'd') {
+    state.viewD = mode;
+    document.getElementById('d-tabela').style.display = mode==='tabela' ? '' : 'none';
+    document.getElementById('d-kanban').style.display  = mode==='kanban' ? '' : 'none';
+    document.getElementById('btn-vt-d').classList.toggle('active', mode==='tabela');
+    document.getElementById('btn-vk-d').classList.toggle('active', mode==='kanban');
+    renderDemandas();
+  } else {
+    state.viewQ = mode;
+    document.getElementById('q-tabela').style.display = mode==='tabela' ? '' : 'none';
+    document.getElementById('q-kanban').style.display  = mode==='kanban' ? '' : 'none';
+    document.getElementById('btn-vt-q').classList.toggle('active', mode==='tabela');
+    document.getElementById('btn-vk-q').classList.toggle('active', mode==='kanban');
+    renderQueries();
+  }
+}
+
+// ══════════════════════════════════════════
+// BADGES / UTILS
+// ══════════════════════════════════════════
+function statusBadge(s) {
+  const m = {'em detalhamento':'detalhamento','a iniciar':'iniciar','em andamento':'andamento','homologação':'homologacao','finalizada':'finalizada','cancelada':'cancelada','Ativa':'ativa','Inativa':'inativa'};
+  return `<span class="badge badge-${m[s]||'detalhamento'}">${s}</span>`;
+}
+function prioBadge(p) {
+  if (!p) return '—';
+  const m = {'Crítica':'critica','Alta':'alta','Média':'media','Baixa':'baixa'};
+  const k = m[p]; return k ? `<span class="badge badge-${k}">${p}</span>` : p;
+}
+function fmtDate(d) { if (!d) return '—'; const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y}`; }
+
+// ══════════════════════════════════════════
+// FILES
+// ══════════════════════════════════════════
+function handleFiles(input, ctx) {
+  Array.from(input.files).forEach(f => { if (!state.tempFiles[ctx].find(x=>x.name===f.name)) state.tempFiles[ctx].push(f); });
+  renderFileList(ctx); input.value = '';
+}
+function handleDrop(e, ctx) {
+  e.preventDefault();
+  Array.from(e.dataTransfer.files).forEach(f => { if (!state.tempFiles[ctx].find(x=>x.name===f.name)) state.tempFiles[ctx].push(f); });
+  renderFileList(ctx);
+}
+function renderFileList(ctx) {
+  const c = document.getElementById('file-list-' + ctx); if (!c) return;
+  c.innerHTML = state.tempFiles[ctx].map((f,i) => `<div class="file-item"><div class="file-item-name">📎 <span>${f.name}</span></div><button class="file-remove" onclick="removeFile('${ctx}',${i})">✕</button></div>`).join('');
+}
+function removeFile(ctx, i) { state.tempFiles[ctx].splice(i,1); renderFileList(ctx); }
+
+// ══════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════
+function openModal(type) {
+  if (type==='add-demanda') { clearDemandaForm(); document.getElementById('modal-demanda-title').textContent='Nova Demanda'; document.getElementById('modal-add-demanda').classList.add('open'); }
+  if (type==='add-query')   { clearQueryForm();   document.getElementById('modal-query-title').textContent='Nova Query';     document.getElementById('modal-add-query').classList.add('open'); }
+}
+function closeModal(type) {
+  if (type==='add-demanda') { document.getElementById('modal-add-demanda').classList.remove('open'); state.tempFiles.demanda=[]; renderFileList('demanda'); }
+  if (type==='add-query')   { document.getElementById('modal-add-query').classList.remove('open');   state.tempFiles.query=[];   renderFileList('query'); }
+  if (type==='view')        { document.getElementById('modal-view').classList.remove('open'); state.viewMode=null; state.viewId=null; state.viewEditing=false; }
+}
+
+// ══════════════════════════════════════════
+// DEMANDAS — SALVAR
+// ══════════════════════════════════════════
+function clearDemandaForm() {
+  ['d-area','d-tipo','d-demanda','d-terminal','d-status','d-solicitante','d-responsavel','d-prioridade','d-prazo','d-inicio','d-conclusao','d-obs']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('demanda-edit-id').value='';
+  state.tempFiles.demanda=[]; renderFileList('demanda');
+}
+
+async function saveDemanda() {
+  const demanda   = document.getElementById('d-demanda').value.trim();
+  const area      = document.getElementById('d-area').value;
+  const conclusao = document.getElementById('d-conclusao').value;
+  let   status    = document.getElementById('d-status').value;
+  if (conclusao) status = 'finalizada';
+  if (!demanda || !area || !status) { alert('Preencha os campos obrigatórios: Área, Demanda e Status.'); return; }
+
+  const obj = {
+    area, tipo: document.getElementById('d-tipo').value, demanda,
+    terminal: document.getElementById('d-terminal').value,
+    solicitante: document.getElementById('d-solicitante').value,
+    responsavel: document.getElementById('d-responsavel').value,
+    prioridade: document.getElementById('d-prioridade').value,
+    prazo: document.getElementById('d-prazo').value,
+    inicio: document.getElementById('d-inicio').value,
+    conclusao, obs: document.getElementById('d-obs').value, status,
+  };
+
+  const editId = document.getElementById('demanda-edit-id').value;
+  showLoading(editId ? 'Atualizando demanda...' : 'Salvando demanda...');
+
+  try {
+    if (editId) {
+      await spUpdateItem(LIST_D, editId, demandaToSP(obj));
+      for (const f of state.tempFiles.demanda) await spUploadAnexo(LIST_D, editId, f);
+      toast('Demanda atualizada!');
+    } else {
+      const novo = await spCreateItem(LIST_D, demandaToSP(obj));
+      for (const f of state.tempFiles.demanda) await spUploadAnexo(LIST_D, novo.Id, f);
+      toast('Demanda criada!');
+    }
+    await carregarDemandas();
+    closeModal('add-demanda');
+    renderDemandas();
+  } catch(e) {
+    toast('Erro: ' + e.message, 'error');
+    console.error(e);
+  } finally {
+    hideLoading();
+  }
+}
+
+// ══════════════════════════════════════════
+// DEMANDAS — RENDER
+// ══════════════════════════════════════════
+function getFiltDemandas() {
+  const s  = (document.getElementById('search-demanda')?.value||'').toLowerCase();
+  const fs = document.getElementById('sel-status-d')?.value||'';
+  const ft = document.getElementById('sel-tipo-d')?.value||'';
+  return state.demandas.filter(d =>
+    (!fs||d.status===fs) && (!ft||d.tipo===ft) &&
+    (!s||d.demanda.toLowerCase().includes(s)||(d.solicitante||'').toLowerCase().includes(s)||(d.responsavel||'').toLowerCase().includes(s))
+  );
+}
+
+function renderDemandas() {
+  const f = getFiltDemandas();
+  if (state.viewD==='tabela') {
+    const tb = document.getElementById('tbody-demandas');
+    if (!f.length) { tb.innerHTML=`<tr><td colspan="9"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Nenhuma demanda encontrada</p></div></td></tr>`; return; }
+    tb.innerHTML = f.map(d => `<tr ondblclick="openView('demanda',${d.spId})"><td>${d.area||'—'}</td><td>${d.tipo||'—'}</td><td title="${d.demanda}">${d.demanda}</td><td>${d.terminal||'—'}</td><td>${d.solicitante||'—'}</td><td>${d.responsavel||'—'}</td><td>${prioBadge(d.prioridade)}</td><td>${fmtDate(d.prazo)}</td><td>${statusBadge(d.status)}</td></tr>`).join('');
+  } else {
+    const cols = ['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada'];
+    document.getElementById('kb-demandas').innerHTML = cols.map(st => {
+      const items = f.filter(d=>d.status===st);
+      const cards = items.length
+        ? items.map(d=>`<div class="kanban-card" ondblclick="openView('demanda',${d.spId})"><div class="kanban-card-title">${d.demanda}</div><hr class="kanban-card-divider"><div class="kanban-card-label">Área</div><div class="kanban-card-value">${d.area||'—'}</div><div class="kanban-card-label">Terminal</div><div class="kanban-card-value">${d.terminal||'—'}</div><div class="kanban-card-label">Responsável</div><div class="kanban-card-value">${d.responsavel||'—'}</div><div class="kanban-card-label">Solicitante</div><div class="kanban-card-value">${d.solicitante||'—'}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">${prioBadge(d.prioridade)}<span style="font-size:11px;color:var(--text3)">${fmtDate(d.prazo)}</span></div></div>`).join('')
+        : `<div class="kanban-empty">Nenhuma demanda</div>`;
+      return `<div class="kanban-col"><div class="kanban-col-header">${statusBadge(st)}<span class="kanban-col-count">${items.length}</span></div>${cards}</div>`;
+    }).join('');
+  }
+}
+
+// ══════════════════════════════════════════
+// QUERIES — SALVAR
+// ══════════════════════════════════════════
+function clearQueryForm() {
+  ['q-sistema','q-status','q-obs'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('query-edit-id').value='';
+  state.tempFiles.query=[]; renderFileList('query');
+}
+
+async function saveQuery() {
+  const sistema = document.getElementById('q-sistema').value;
+  const status  = document.getElementById('q-status').value;
+  if (!sistema || !status) { alert('Preencha os campos obrigatórios: Sistema e Status.'); return; }
+
+  const obj = { sistema, obs: document.getElementById('q-obs').value, status };
+  const editId = document.getElementById('query-edit-id').value;
+  showLoading(editId ? 'Atualizando query...' : 'Salvando query...');
+
+  try {
+    if (editId) {
+      await spUpdateItem(LIST_Q, editId, queryToSP(obj));
+      for (const f of state.tempFiles.query) await spUploadAnexo(LIST_Q, editId, f);
+      toast('Query atualizada!');
+    } else {
+      const novo = await spCreateItem(LIST_Q, queryToSP(obj));
+      for (const f of state.tempFiles.query) await spUploadAnexo(LIST_Q, novo.Id, f);
+      toast('Query criada!');
+    }
+    await carregarQueries();
+    closeModal('add-query');
+    renderQueries();
+  } catch(e) {
+    toast('Erro: ' + e.message, 'error');
+    console.error(e);
+  } finally {
+    hideLoading();
+  }
+}
+
+// ══════════════════════════════════════════
+// QUERIES — RENDER
+// ══════════════════════════════════════════
+function getFiltQueries() {
+  const s   = (document.getElementById('search-query')?.value||'').toLowerCase();
+  const fs  = document.getElementById('sel-status-q')?.value||'';
+  const fsi = document.getElementById('sel-sistema-q')?.value||'';
+  return state.queries.filter(q =>
+    (!fs||q.status===fs) && (!fsi||q.sistema===fsi) &&
+    (!s||(q.sistema||'').toLowerCase().includes(s)||(q.obs||'').toLowerCase().includes(s))
+  );
+}
+
+function renderQueries() {
+  const f = getFiltQueries();
+  if (state.viewQ==='tabela') {
+    const tb = document.getElementById('tbody-queries');
+    if (!f.length) { tb.innerHTML=`<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">🗄️</div><p>Nenhuma query encontrada</p></div></td></tr>`; return; }
+    tb.innerHTML = f.map(q=>`<tr ondblclick="openView('query',${q.spId})"><td>${q.sistema||'—'}</td><td title="${q.obs||''}">${(q.obs||'').substring(0,80)}${(q.obs||'').length>80?'...':''}</td><td>${q.anexos?.length?q.anexos.length+' arquivo(s)':'—'}</td><td>${statusBadge(q.status)}</td></tr>`).join('');
+  } else {
+    const cols = ['Ativa','Inativa'];
+    document.getElementById('kb-queries').innerHTML = cols.map(st => {
+      const items = f.filter(q=>q.status===st);
+      const cards = items.length
+        ? items.map(q=>`<div class="kanban-card" ondblclick="openView('query',${q.spId})"><div class="kanban-card-title">${q.sistema}</div><hr class="kanban-card-divider"><div class="kanban-card-label">Observação</div><div class="kanban-card-value">${(q.obs||'').substring(0,120)}${(q.obs||'').length>120?'...':''}</div>${q.anexos?.length?`<div style="font-size:11px;color:var(--text3);margin-top:4px">📎 ${q.anexos.length} anexo(s)</div>`:''}</div>`).join('')
+        : `<div class="kanban-empty">Nenhuma query</div>`;
+      return `<div class="kanban-col"><div class="kanban-col-header">${statusBadge(st)}<span class="kanban-col-count">${items.length}</span></div>${cards}</div>`;
+    }).join('');
+  }
+}
+
+// ══════════════════════════════════════════
+// VIEW / EDIT MODAL
+// ══════════════════════════════════════════
+async function openView(type, spId) {
+  state.viewMode = type; state.viewId = spId; state.viewEditing = false;
+  showLoading('Carregando detalhes...');
+  try {
+    // Carrega anexos do item
+    if (type==='demanda') {
+      const d = state.demandas.find(x=>x.spId===spId);
+      if (d) d.anexos = await spGetAnexos(LIST_D, spId);
+    } else {
+      const q = state.queries.find(x=>x.spId===spId);
+      if (q) q.anexos = await spGetAnexos(LIST_Q, spId);
+    }
+  } catch(e) { console.warn('Não carregou anexos', e); }
+  finally { hideLoading(); }
+  renderViewModal();
+  document.getElementById('modal-view').classList.add('open');
+}
+
+function renderViewModal() {
+  const isEdit = state.viewEditing;
+  document.getElementById('view-footer').style.display = isEdit ? 'flex' : 'none';
+  document.getElementById('btn-edit-view').style.display = isEdit ? 'none' : '';
+
+  if (state.viewMode==='demanda') {
+    const d = state.demandas.find(x=>x.spId===state.viewId); if (!d) return;
+    document.getElementById('view-title').textContent = isEdit ? '✏️ Editando Demanda' : d.demanda;
+    document.getElementById('btn-save-edit').onclick = saveViewEdit;
+    const anexosHtml = d.anexos?.length
+      ? d.anexos.map(a=>`<a href="${SP_URL}${a.url}" target="_blank" style="color:var(--accent);text-decoration:none">📎 ${a.name}</a>`).join('<br>')
+      : '—';
+    document.getElementById('view-body').innerHTML = isEdit ? buildDeditForm(d) : `
+      <div class="detail-grid">
+        ${field('Área',d.area)} ${field('Tipo',d.tipo)}
+        ${fieldFull('Demanda',d.demanda)}
+        ${field('Terminal',d.terminal)} ${field('Status',statusBadge(d.status))}
+        ${field('Solicitante',d.solicitante)} ${field('Responsável',d.responsavel)}
+        ${field('Prioridade',prioBadge(d.prioridade))} ${field('Prazo de Entrega',fmtDate(d.prazo))}
+        ${field('Data de Início',fmtDate(d.inicio))} ${field('Data de Conclusão',fmtDate(d.conclusao))}
+        ${fieldFull('Observação / Etapas',d.obs||'—')}
+        ${fieldFull('Anexos',anexosHtml)}
+      </div>`;
+  }
+
+  if (state.viewMode==='query') {
+    const q = state.queries.find(x=>x.spId===state.viewId); if (!q) return;
+    document.getElementById('view-title').textContent = isEdit ? '✏️ Editando Query' : q.sistema;
+    document.getElementById('btn-save-edit').onclick = saveViewEdit;
+    const anexosHtml = q.anexos?.length
+      ? q.anexos.map(a=>`<a href="${SP_URL}${a.url}" target="_blank" style="color:var(--accent);text-decoration:none">📎 ${a.name}</a>`).join('<br>')
+      : '—';
+    document.getElementById('view-body').innerHTML = isEdit ? buildQeditForm(q) : `
+      <div class="detail-grid">
+        ${field('Sistema',q.sistema)} ${field('Status',statusBadge(q.status))}
+        ${fieldFull('Observação',q.obs||'—')}
+        ${fieldFull('Anexos',anexosHtml)}
+      </div>`;
+  }
+}
+
+function field(l,v){return`<div class="detail-field"><div class="detail-field-label">${l}</div><div class="detail-field-value">${v||'—'}</div></div>`;}
+function fieldFull(l,v){return`<div class="detail-field full"><div class="detail-field-label">${l}</div><div class="detail-field-value">${v||'—'}</div></div>`;}
+
+function buildDeditForm(d){
+  return`<div class="detail-grid">
+    <div class="field-group"><label class="field-label">Área</label><select class="field-select" id="ve-area">${opts(['','Eficiência de Processos','Eficiência de Dados'],d.area)}</select></div>
+    <div class="field-group"><label class="field-label">Tipo</label><select class="field-select" id="ve-tipo">${opts(['','Criação de Dashboard','Melhoria','Análise','Outros'],d.tipo)}</select></div>
+    <div class="field-group full"><label class="field-label">Demanda</label><input class="field-input" id="ve-demanda" value="${esc(d.demanda)}"></div>
+    <div class="field-group"><label class="field-label">Terminal</label><select class="field-select" id="ve-terminal">${opts(['','Corporativo','ADM Central','Guarujá','Anhanguera','Itajaí','Suape'],d.terminal)}</select></div>
+    <div class="field-group"><label class="field-label">Status</label><select class="field-select" id="ve-status">${opts(['','em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada'],d.status)}</select></div>
+    <div class="field-group"><label class="field-label">Solicitante</label><input class="field-input" id="ve-solicitante" value="${esc(d.solicitante)}"></div>
+    <div class="field-group"><label class="field-label">Responsável</label><input class="field-input" id="ve-responsavel" value="${esc(d.responsavel)}"></div>
+    <div class="field-group"><label class="field-label">Prioridade</label><select class="field-select" id="ve-prioridade">${opts(['','Crítica','Alta','Média','Baixa'],d.prioridade)}</select></div>
+    <div class="field-group"><label class="field-label">Prazo de Entrega</label><input class="field-input" type="date" id="ve-prazo" value="${d.prazo||''}"></div>
+    <div class="field-group"><label class="field-label">Data de Início</label><input class="field-input" type="date" id="ve-inicio" value="${d.inicio||''}"></div>
+    <div class="field-group"><label class="field-label">Data de Conclusão</label><input class="field-input" type="date" id="ve-conclusao" value="${d.conclusao||''}" onchange="if(this.value)document.getElementById('ve-status').value='finalizada'"></div>
+    <div class="field-group full"><label class="field-label">Observação</label><textarea class="field-textarea" id="ve-obs" style="min-height:120px">${esc(d.obs)}</textarea></div>
+    <div class="field-group full"><label class="field-label">Adicionar Novos Anexos</label>
+      <div class="file-drop" onclick="document.getElementById('file-edit').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event,'demanda')">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--text3);margin:auto"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        <p>Clique ou arraste para adicionar arquivos</p>
+        <input type="file" id="file-edit" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif" onchange="handleFiles(this,'demanda')">
+      </div>
+      <div class="file-list" id="file-list-demanda"></div>
+    </div>
+  </div>`;
+}
+
+function buildQeditForm(q){
+  return`<div class="detail-grid">
+    <div class="field-group"><label class="field-label">Sistema</label><select class="field-select" id="ve-sistema">${opts(['','Query skisf'],q.sistema)}</select></div>
+    <div class="field-group"><label class="field-label">Status</label><select class="field-select" id="ve-qstatus">${opts(['','Ativa','Inativa'],q.status)}</select></div>
+    <div class="field-group full"><label class="field-label">Observação</label><textarea class="field-textarea" id="ve-obs" style="min-height:140px">${esc(q.obs)}</textarea></div>
+    <div class="field-group full"><label class="field-label">Adicionar Novos Anexos</label>
+      <div class="file-drop" onclick="document.getElementById('file-edit-q').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event,'query')">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--text3);margin:auto"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        <p>Clique ou arraste para adicionar arquivos</p>
+        <input type="file" id="file-edit-q" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif" onchange="handleFiles(this,'query')">
+      </div>
+      <div class="file-list" id="file-list-query"></div>
+    </div>
+  </div>`;
+}
+
+function opts(arr,sel){return arr.map(v=>`<option value="${v}"${v===sel?' selected':''}>${v||'Selecione...'}</option>`).join('');}
+function esc(s){return(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function switchToEdit(){state.tempFiles.demanda=[];state.tempFiles.query=[];state.viewEditing=true;renderViewModal();}
+
+async function saveViewEdit() {
+  showLoading('Salvando alterações...');
+  try {
+    if (state.viewMode==='demanda') {
+      const d = state.demandas.find(x=>x.spId===state.viewId); if (!d) return;
+      const conclusao = document.getElementById('ve-conclusao').value;
+      const status    = conclusao ? 'finalizada' : document.getElementById('ve-status').value;
+      const campos = {
+        area: document.getElementById('ve-area').value,
+        tipo: document.getElementById('ve-tipo').value,
+        demanda: document.getElementById('ve-demanda').value,
+        terminal: document.getElementById('ve-terminal').value,
+        status, solicitante: document.getElementById('ve-solicitante').value,
+        responsavel: document.getElementById('ve-responsavel').value,
+        prioridade: document.getElementById('ve-prioridade').value,
+        prazo: document.getElementById('ve-prazo').value,
+        inicio: document.getElementById('ve-inicio').value,
+        conclusao, obs: document.getElementById('ve-obs').value,
+      };
+      await spUpdateItem(LIST_D, state.viewId, demandaToSP(campos));
+      for (const f of state.tempFiles.demanda) await spUploadAnexo(LIST_D, state.viewId, f);
+      await carregarDemandas();
+      toast('Demanda atualizada!');
+    }
+    if (state.viewMode==='query') {
+      const obj = { sistema: document.getElementById('ve-sistema').value, obs: document.getElementById('ve-obs').value, status: document.getElementById('ve-qstatus').value };
+      await spUpdateItem(LIST_Q, state.viewId, queryToSP(obj));
+      for (const f of state.tempFiles.query) await spUploadAnexo(LIST_Q, state.viewId, f);
+      await carregarQueries();
+      toast('Query atualizada!');
+    }
+    state.viewEditing = false;
+    renderViewModal();
+    renderDemandas();
+    renderQueries();
+  } catch(e) {
+    toast('Erro: ' + e.message, 'error');
+    console.error(e);
+  } finally {
+    hideLoading();
+  }
+}
+
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+function renderDashboard() {
+  const tot=state.demandas.length, and=state.demandas.filter(d=>d.status==='em andamento').length,
+        fin=state.demandas.filter(d=>d.status==='finalizada').length, totQ=state.queries.length;
+  document.getElementById('dash-stats').innerHTML =
+    statCard('Total de Demandas',tot,'cadastradas') + statCard('Em Andamento',and,'demandas ativas') +
+    statCard('Finalizadas',fin,'concluídas') + statCard('Queries',totQ,'cadastradas');
+  renderBarChart('chart-status',countBy(state.demandas,'status'),['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada']);
+  renderBarChart('chart-area',countBy(state.demandas,'area'),['Eficiência de Processos','Eficiência de Dados']);
+  renderBarChart('chart-terminal',countBy(state.demandas,'terminal'),['Corporativo','ADM Central','Guarujá','Anhanguera','Itajaí','Suape']);
+  renderBarChart('chart-tipo',countBy(state.demandas,'tipo'),['Criação de Dashboard','Melhoria','Análise','Outros']);
+}
+function statCard(l,v,s){return`<div class="stat-card"><div class="stat-label">${l}</div><div class="stat-value">${v}</div><div class="stat-sub">${s}</div></div>`;}
+function countBy(arr,key){const r={};arr.forEach(i=>{const v=i[key]||'—';r[v]=(r[v]||0)+1;});return r;}
+function renderBarChart(cid,counts,order){
+  const c=document.getElementById(cid);if(!c)return;
+  const max=Math.max(...Object.values(counts),1);
+  const labels=order.filter(l=>counts[l]);
+  if(!labels.length){c.innerHTML='<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Sem dados</div>';return;}
+  c.innerHTML=labels.map(l=>{const n=counts[l]||0;return`<div class="bar-row"><div class="bar-label">${l}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/max*100)}%"></div></div><div class="bar-count">${n}</div></div>`;}).join('');
+}
+</script>
+</body>
+</html>
