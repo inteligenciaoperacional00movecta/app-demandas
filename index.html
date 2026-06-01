@@ -772,20 +772,34 @@ async function saveUsuario() {
     if (editId) {
       const upd = {nome, login, perfil};
       if (senha) upd.senha = senha;
-      await sb.from('usuarios').update(upd).eq('id', editId);
+      const { error } = await sb.from('usuarios').update(upd).eq('id', Number(editId));
+      if (error) throw error;
       toast('Usuário atualizado!');
     } else {
-      await sb.from('usuarios').insert({nome, login, senha, perfil});
+      const { error } = await sb.from('usuarios').insert({nome, login, senha, perfil});
+      if (error) throw error;
       toast('Usuário criado!');
     }
-    closeModal('add-usuario'); carregarUsuarios();
+    closeModal('add-usuario');
+    await carregarUsuarios();
+  } catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
+}
+
+async function excluirUsuario(id) {
+  if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+  showLoading('Excluindo usuário...');
+  try {
+    const { error } = await sb.from('usuarios').delete().eq('id', Number(id));
+    if (error) throw error;
+    toast('Usuário excluído!');
+    await carregarUsuarios();
   } catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
 }
 
 function renderUsuarios() {
   const tb=document.getElementById('tbody-usuarios');
   if (!state.usuarios.length){tb.innerHTML=`<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">👥</div><p>Nenhum usuário encontrado</p></div></td></tr>`;return;}
-  tb.innerHTML=state.usuarios.map(u=>`<tr ondblclick="editarUsuario(${u.id})"><td>${u.nome}</td><td>${u.login}</td><td>${perfilBadge(u.perfil)}</td><td>${fmtDate(u.created_at?.substring(0,10))}</td><td><button class="btn-secondary" style="padding:5px 10px;font-size:11px" onclick="editarUsuario(${u.id})">✏️ Editar</button></td></tr>`).join('');
+  tb.innerHTML=state.usuarios.map(u=>`<tr ondblclick="editarUsuario(${u.id})"><td>${u.nome}</td><td>${u.login}</td><td>${perfilBadge(u.perfil)}</td><td>${fmtDate(u.created_at?.substring(0,10))}</td><td style="display:flex;gap:6px"><button class="btn-secondary" style="padding:5px 10px;font-size:11px" onclick="editarUsuario(${u.id})">✏️ Editar</button><button class="btn-secondary" style="padding:5px 10px;font-size:11px;border-color:var(--danger);color:var(--danger)" onclick="excluirUsuario(${u.id})">🗑️ Excluir</button></td></tr>`).join('');
 }
 
 // ══════════════════════════════════════════
