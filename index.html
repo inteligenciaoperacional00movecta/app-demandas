@@ -764,8 +764,9 @@ async function saveUsuario() {
   const login=document.getElementById('u-login').value.trim();
   const senha=document.getElementById('u-senha').value;
   const perfil=document.getElementById('u-perfil').value;
-  if (!nome||!login||!senha||!perfil){alert('Preencha todos os campos.');return;}
   const editId = document.getElementById('usuario-edit-id').value;
+  if (!nome||!login||!perfil){alert('Preencha todos os campos.');return;}
+  if (!editId && !senha){alert('Preencha a senha.');return;}
   showLoading(editId ? 'Atualizando usuário...' : 'Salvando usuário...');
   try {
     if (editId) {
