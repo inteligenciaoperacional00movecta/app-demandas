@@ -359,7 +359,7 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th>Criado em</th></tr></thead>
+          <thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th>Criado em</th><th>Ações</th></tr></thead>
           <tbody id="tbody-usuarios"></tbody>
         </table>
       </div>
@@ -451,8 +451,8 @@
         <input class="field-input" id="u-nome" placeholder="Nome completo"></div>
       <div class="field-group"><label class="field-label">Login *</label>
         <input class="field-input" id="u-login" placeholder="Login de acesso"></div>
-      <div class="field-group"><label class="field-label">Senha *</label>
-        <input class="field-input" type="password" id="u-senha" placeholder="Senha"></div>
+      <div class="field-group"><label class="field-label">Senha <span id="senha-hint" style="font-weight:400;text-transform:none;letter-spacing:0">(deixe em branco para manter)</span></label>
+        <input class="field-input" type="password" id="u-senha" placeholder="Nova senha..."></div>
       <div class="field-group full"><label class="field-label">Perfil *</label>
         <select class="field-select" id="u-perfil"><option value="">Selecione...</option><option>Gerente</option><option>Usuario</option></select></div>
     </div>
@@ -744,6 +744,19 @@ function renderQueries() {
 function clearUsuarioForm() {
   ['u-nome','u-login','u-senha','u-perfil'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('usuario-edit-id').value='';
+  document.getElementById('modal-usuario-title').textContent='Novo Usuário';
+}
+
+function editarUsuario(id) {
+  const u = state.usuarios.find(x => x.id === id);
+  if (!u) return;
+  document.getElementById('u-nome').value = u.nome;
+  document.getElementById('u-login').value = u.login;
+  document.getElementById('u-senha').value = '';
+  document.getElementById('u-perfil').value = u.perfil;
+  document.getElementById('usuario-edit-id').value = u.id;
+  document.getElementById('modal-usuario-title').textContent = '✏️ Editar Usuário';
+  document.getElementById('modal-add-usuario').classList.add('open');
 }
 
 async function saveUsuario() {
@@ -752,17 +765,26 @@ async function saveUsuario() {
   const senha=document.getElementById('u-senha').value;
   const perfil=document.getElementById('u-perfil').value;
   if (!nome||!login||!senha||!perfil){alert('Preencha todos os campos.');return;}
-  showLoading('Salvando usuário...');
+  const editId = document.getElementById('usuario-edit-id').value;
+  showLoading(editId ? 'Atualizando usuário...' : 'Salvando usuário...');
   try {
-    await sb.from('usuarios').insert({nome,login,senha,perfil});
-    toast('Usuário criado!');closeModal('add-usuario');carregarUsuarios();
+    if (editId) {
+      const upd = {nome, login, perfil};
+      if (senha) upd.senha = senha;
+      await sb.from('usuarios').update(upd).eq('id', editId);
+      toast('Usuário atualizado!');
+    } else {
+      await sb.from('usuarios').insert({nome, login, senha, perfil});
+      toast('Usuário criado!');
+    }
+    closeModal('add-usuario'); carregarUsuarios();
   } catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
 }
 
 function renderUsuarios() {
   const tb=document.getElementById('tbody-usuarios');
   if (!state.usuarios.length){tb.innerHTML=`<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">👥</div><p>Nenhum usuário encontrado</p></div></td></tr>`;return;}
-  tb.innerHTML=state.usuarios.map(u=>`<tr><td>${u.nome}</td><td>${u.login}</td><td>${perfilBadge(u.perfil)}</td><td>${fmtDate(u.created_at?.substring(0,10))}</td></tr>`).join('');
+  tb.innerHTML=state.usuarios.map(u=>`<tr ondblclick="editarUsuario(${u.id})"><td>${u.nome}</td><td>${u.login}</td><td>${perfilBadge(u.perfil)}</td><td>${fmtDate(u.created_at?.substring(0,10))}</td><td><button class="btn-secondary" style="padding:5px 10px;font-size:11px" onclick="editarUsuario(${u.id})">✏️ Editar</button></td></tr>`).join('');
 }
 
 // ══════════════════════════════════════════
