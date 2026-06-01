@@ -5,22 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Movecta · Excelência Operacional</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{--bg:#0d0f14;--surface:#13161e;--surface2:#1a1e29;--border:#252a38;--accent:#3b82f6;--accent2:#6366f1;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--text:#e8eaf0;--text2:#8b91a8;--text3:#555d78;--sidebar-w:220px;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-  /* HOME */
+  /* HOME / LOGIN */
   #screen-home{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);position:relative;overflow:hidden;}
   #screen-home::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,0.12) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
   #screen-home::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(59,130,246,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
-  .home-inner{position:relative;z-index:1;text-align:center;animation:fadeUp 0.8s ease forwards;}
+  .home-inner{position:relative;z-index:1;text-align:center;animation:fadeUp 0.8s ease forwards;width:100%;max-width:400px;padding:0 20px;}
   .home-badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(59,130,246,0.3);padding:6px 16px;border-radius:20px;margin-bottom:32px;background:rgba(59,130,246,0.06);}
-  .home-title{font-family:'Syne',sans-serif;font-size:clamp(36px,5vw,64px);font-weight:800;line-height:1.05;letter-spacing:-0.02em;color:var(--text);margin-bottom:12px;}
+  .home-title{font-family:'Syne',sans-serif;font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.05;letter-spacing:-0.02em;color:var(--text);margin-bottom:12px;}
   .home-title span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-  .home-sub{font-size:15px;color:var(--text2);margin-bottom:48px;font-weight:300;letter-spacing:0.05em;}
-  .btn-enter{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:16px 48px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:0.02em;transition:all 0.2s;box-shadow:0 8px 32px rgba(59,130,246,0.3);}
+  .home-sub{font-size:14px;color:var(--text2);margin-bottom:40px;font-weight:300;letter-spacing:0.05em;}
+
+  .login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:16px;}
+  .login-field{display:flex;flex-direction:column;gap:6px;}
+  .login-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);text-align:left;}
+  .login-input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color 0.15s;width:100%;}
+  .login-input:focus{border-color:var(--accent);}
+  .login-error{font-size:12px;color:var(--danger);text-align:center;min-height:18px;}
+  .btn-enter{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:14px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.02em;transition:all 0.2s;box-shadow:0 8px 32px rgba(59,130,246,0.3);width:100%;}
   .btn-enter:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(59,130,246,0.45);}
+  .btn-enter:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
 
   /* LAYOUT */
   #app-layout{display:none;min-height:100vh;}
@@ -37,7 +46,12 @@
   .nav-icon{width:18px;height:18px;flex-shrink:0;opacity:0.7;}
   .nav-item.active .nav-icon{opacity:1;}
   .badge-wip{margin-left:auto;font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--warning);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);padding:2px 6px;border-radius:4px;}
-  .sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);}
+  .sidebar-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .sidebar-user-info{display:flex;flex-direction:column;}
+  .sidebar-user-name{font-size:12px;font-weight:600;color:var(--text);}
+  .sidebar-user-role{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;}
+  .btn-logout{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text3);cursor:pointer;transition:all 0.15s;}
+  .btn-logout:hover{border-color:var(--danger);color:var(--danger);}
 
   /* MAIN */
   .main{margin-left:var(--sidebar-w);min-height:100vh;background:var(--bg);}
@@ -50,11 +64,9 @@
 
   /* TOAST */
   .toast{position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;align-items:center;gap:10px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.4);animation:slideUp 0.3s ease;pointer-events:none;}
-  .toast.success{background:#16a34a;}
-  .toast.error{background:#dc2626;}
-  .toast.loading{background:#2563eb;}
+  .toast.success{background:#16a34a;}.toast.error{background:#dc2626;}.toast.loading{background:#2563eb;}
 
-  /* LOADING OVERLAY */
+  /* LOADING */
   .loading-overlay{position:fixed;inset:0;background:rgba(13,15,20,0.7);backdrop-filter:blur(3px);z-index:400;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
   .loading-overlay.show{display:flex;}
   .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
@@ -104,6 +116,8 @@
   .badge-alta{background:rgba(239,68,68,0.12);color:#f87171;}
   .badge-media{background:rgba(245,158,11,0.12);color:#fbbf24;}
   .badge-baixa{background:rgba(34,197,94,0.12);color:#4ade80;}
+  .badge-gerente{background:rgba(99,102,241,0.12);color:#818cf8;}
+  .badge-usuario{background:rgba(59,130,246,0.12);color:#60a5fa;}
 
   /* KANBAN */
   .kanban-board{display:flex;gap:14px;overflow-x:auto;padding-bottom:16px;min-height:60vh;}
@@ -181,15 +195,28 @@
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="screen-home">
   <div class="home-inner">
     <div class="home-badge">Movecta · Excelência Operacional</div>
     <h1 class="home-title">Gerenciamento de<br><span>Demandas</span></h1>
     <p class="home-sub">Eficiência Operacional</p>
-    <button class="btn-enter" onclick="enterApp()">Entrar</button>
+    <div class="login-card">
+      <div class="login-field">
+        <label class="login-label">Login</label>
+        <input class="login-input" id="inp-login" type="text" placeholder="Seu login..." autocomplete="username">
+      </div>
+      <div class="login-field">
+        <label class="login-label">Senha</label>
+        <input class="login-input" id="inp-senha" type="password" placeholder="Sua senha..." autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="login-error" id="login-error"></div>
+      <button class="btn-enter" id="btn-login" onclick="doLogin()">Entrar</button>
+    </div>
   </div>
 </div>
 
+<!-- APP LAYOUT -->
 <div id="app-layout">
   <aside class="sidebar">
     <div class="sidebar-logo">
@@ -214,8 +241,18 @@
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 12c0 2.21 3.582 4 8 4s8-1.79 8-4"/></svg>
         Query de Dados
       </div>
+      <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')" style="display:none">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        Usuários
+      </div>
     </nav>
-    <div class="sidebar-footer">v2.0 · SharePoint</div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="user-name-display">—</div>
+        <div class="sidebar-user-role" id="user-role-display">—</div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Sair</button>
+    </div>
   </aside>
 
   <main class="main">
@@ -223,10 +260,7 @@
     <!-- DEMANDAS -->
     <div id="page-demandas" class="page">
       <div class="page-header">
-        <div>
-          <div class="page-title">Demandas</div>
-          <div class="page-subtitle">Gerencie as demandas das duas áreas</div>
-        </div>
+        <div><div class="page-title">Demandas</div><div class="page-subtitle">Gerencie as demandas das duas áreas</div></div>
         <div class="page-header-right">
           <div class="view-toggle">
             <button class="view-btn active" id="btn-vt-d" onclick="setView('d','tabela')">
@@ -256,14 +290,7 @@
           <option>Criação de Dashboard</option><option>Melhoria</option><option>Análise</option><option>Outros</option>
         </select>
       </div>
-      <div id="d-tabela">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th>Prazo</th><th>Status</th></tr></thead>
-            <tbody id="tbody-demandas"></tbody>
-          </table>
-        </div>
-      </div>
+      <div id="d-tabela"><div class="table-wrap"><table><thead><tr><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th>Prazo</th><th>Status</th></tr></thead><tbody id="tbody-demandas"></tbody></table></div></div>
       <div id="d-kanban" style="display:none"><div class="kanban-board" id="kb-demandas"></div></div>
     </div>
 
@@ -318,15 +345,24 @@
           <option value="">Todos os Sistemas</option><option>Query skisf</option>
         </select>
       </div>
-      <div id="q-tabela">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Sistema</th><th>Observação</th><th>Anexos</th><th>Status</th></tr></thead>
-            <tbody id="tbody-queries"></tbody>
-          </table>
-        </div>
-      </div>
+      <div id="q-tabela"><div class="table-wrap"><table><thead><tr><th>Sistema</th><th>Observação</th><th>Anexos</th><th>Status</th></tr></thead><tbody id="tbody-queries"></tbody></table></div></div>
       <div id="q-kanban" style="display:none"><div class="kanban-board" id="kb-queries"></div></div>
+    </div>
+
+    <!-- USUARIOS (só Gerente) -->
+    <div id="page-usuarios" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Usuários</div><div class="page-subtitle">Gerencie os usuários do sistema</div></div>
+        <button class="btn-primary" onclick="openModal('add-usuario')">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>Novo Usuário
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th>Criado em</th></tr></thead>
+          <tbody id="tbody-usuarios"></tbody>
+        </table>
+      </div>
     </div>
 
   </main>
@@ -371,14 +407,6 @@
         <input class="field-input" type="date" id="d-conclusao" onchange="if(this.value)document.getElementById('d-status').value='finalizada'"></div>
       <div class="field-group full"><label class="field-label">Observação / Etapas Realizadas</label>
         <textarea class="field-textarea" id="d-obs" placeholder="Descreva as etapas, andamentos, anotações..." style="min-height:120px"></textarea></div>
-      <div class="field-group full"><label class="field-label">Anexos</label>
-        <div class="file-drop" onclick="document.getElementById('file-demanda').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event,'demanda')">
-          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--text3);margin:auto"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-          <p>Clique ou arraste arquivos aqui — PDF, Word, Excel, Imagens</p>
-          <input type="file" id="file-demanda" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif" onchange="handleFiles(this,'demanda')">
-        </div>
-        <div class="file-list" id="file-list-demanda"></div>
-      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('add-demanda')">Cancelar</button>
@@ -402,18 +430,35 @@
         <select class="field-select" id="q-status"><option value="">Selecione...</option><option>Ativa</option><option>Inativa</option></select></div>
       <div class="field-group full"><label class="field-label">Observação</label>
         <textarea class="field-textarea" id="q-obs" placeholder="Descrição, finalidade, etapas..." style="min-height:140px"></textarea></div>
-      <div class="field-group full"><label class="field-label">Anexos</label>
-        <div class="file-drop" onclick="document.getElementById('file-query').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event,'query')">
-          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--text3);margin:auto"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-          <p>Clique ou arraste arquivos aqui — PDF, Word, Excel, Imagens</p>
-          <input type="file" id="file-query" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif" onchange="handleFiles(this,'query')">
-        </div>
-        <div class="file-list" id="file-list-query"></div>
-      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('add-query')">Cancelar</button>
       <button class="btn-primary" onclick="saveQuery()">Salvar Query</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADD USUARIO -->
+<div class="modal-overlay" id="modal-add-usuario">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-usuario-title">Novo Usuário</div>
+      <div class="modal-close" onclick="closeModal('add-usuario')">✕</div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="usuario-edit-id">
+      <div class="field-group full"><label class="field-label">Nome *</label>
+        <input class="field-input" id="u-nome" placeholder="Nome completo"></div>
+      <div class="field-group"><label class="field-label">Login *</label>
+        <input class="field-input" id="u-login" placeholder="Login de acesso"></div>
+      <div class="field-group"><label class="field-label">Senha *</label>
+        <input class="field-input" type="password" id="u-senha" placeholder="Senha"></div>
+      <div class="field-group full"><label class="field-label">Perfil *</label>
+        <select class="field-select" id="u-perfil"><option value="">Selecione...</option><option>Gerente</option><option>Usuario</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('add-usuario')">Cancelar</button>
+      <button class="btn-primary" onclick="saveUsuario()">Salvar Usuário</button>
     </div>
   </div>
 </div>
@@ -438,226 +483,90 @@
 
 <script>
 // ══════════════════════════════════════════
-// CONFIGURAÇÃO SHAREPOINT
+// SUPABASE CONFIG
 // ══════════════════════════════════════════
-const SP_URL   = 'https://localfriologistica.sharepoint.com/sites/IntelignciaOperacional';
-const LIST_D   = 'App_Lista_Demandas';
-const LIST_Q   = 'App_Lista_Query';
-const SP_API   = `${SP_URL}/_api/web/lists/getbytitle`;
-const HEADERS  = { 'Accept': 'application/json;odata=verbose', 'Content-Type': 'application/json;odata=verbose' };
+const SUPA_URL  = 'https://ykznurwbphckingpxvnx.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlrem51cndicGhja2luZ3B4dm54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNzI3NzEsImV4cCI6MjA5NTg0ODc3MX0.vPkf9rjTCCL_5SGxEmYmFbDwLLb3cO4X3zUhiltMvPI';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
 const state = {
-  demandas: [], queries: [], currentPage: '',
-  viewD: 'tabela', viewQ: 'tabela',
-  tempFiles: { demanda: [], query: [] },
-  viewMode: null, viewId: null, viewEditing: false,
-  digestToken: null, digestExpiry: 0
+  demandas:[], queries:[], usuarios:[],
+  currentPage:'', viewD:'tabela', viewQ:'tabela',
+  viewMode:null, viewId:null, viewEditing:false,
+  user: null // { id, nome, login, perfil }
 };
 
 // ══════════════════════════════════════════
-// SHAREPOINT API
+// LOGIN
 // ══════════════════════════════════════════
+async function doLogin() {
+  const login = document.getElementById('inp-login').value.trim();
+  const senha = document.getElementById('inp-senha').value;
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('btn-login');
 
-// Busca o token de segurança (necessário para criar/editar)
-async function getDigest() {
-  const now = Date.now();
-  if (state.digestToken && now < state.digestExpiry) return state.digestToken;
-  const res = await fetch(`${SP_URL}/_api/contextinfo`, {
-    method: 'POST', headers: { 'Accept': 'application/json;odata=verbose' }
-  });
-  const text = await res.text();
-  let data;
-  try { data = JSON.parse(text); } catch(e) { throw new Error('Não foi possível autenticar com o SharePoint. Abra o app pela URL direta do arquivo.'); }
-  state.digestToken = data.d.GetContextWebInformation.FormDigestValue;
-  state.digestExpiry = now + (data.d.GetContextWebInformation.FormDigestTimeoutSeconds - 60) * 1000;
-  return state.digestToken;
-}
+  if (!login || !senha) { errEl.textContent = 'Preencha login e senha.'; return; }
+  errEl.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
 
-// Busca todos os itens de uma lista
-async function spGetItems(lista) {
-  const res = await fetch(
-    `${SP_API}('${lista}')/items?$top=5000&$orderby=Id desc`,
-    { headers: HEADERS }
-  );
-  if (!res.ok) throw new Error(`Erro ao buscar ${lista}: ${res.status}`);
-  const data = await res.json();
-  return data.d.results;
-}
-
-// Cria um item na lista
-async function spCreateItem(lista, campos) {
-  const token = await getDigest();
-  const tipo  = lista === LIST_D ? 'App_Lista_DemandasListItem' : 'App_Lista_QueryListItem';
-  const res = await fetch(`${SP_API}('${lista}')/items`, {
-    method: 'POST',
-    headers: { ...HEADERS, 'X-RequestDigest': token },
-    body: JSON.stringify({ __metadata: { type: `SP.Data.${tipo}` }, ...campos })
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    let msg = 'Erro ao criar item';
-    try { msg = JSON.parse(text).error?.message?.value || msg; } catch(e) {}
-    throw new Error(msg);
-  }
-  try { return JSON.parse(text).d; } catch(e) { return {}; }
-}
-
-// Atualiza um item existente
-async function spUpdateItem(lista, id, campos) {
-  const token = await getDigest();
-  const tipo  = lista === LIST_D ? 'App_Lista_DemandasListItem' : 'App_Lista_QueryListItem';
-  const res = await fetch(`${SP_API}('${lista}')/items(${id})`, {
-    method: 'POST',
-    headers: { ...HEADERS, 'X-RequestDigest': token, 'X-HTTP-Method': 'MERGE', 'IF-MATCH': '*' },
-    body: JSON.stringify({ __metadata: { type: `SP.Data.${tipo}` }, ...campos })
-  });
-  // 204 = sucesso sem conteúdo (normal no SharePoint)
-  if (res.status === 204) return;
-  if (!res.ok) {
-    let msg = `Erro ao atualizar item ${id}`;
-    try { const t = await res.text(); msg = JSON.parse(t).error?.message?.value || msg; } catch(e) {}
-    throw new Error(msg);
-  }
-}
-
-// Faz upload de anexo em um item
-async function spUploadAnexo(lista, itemId, file) {
-  const token = await getDigest();
-  const buffer = await file.arrayBuffer();
-  const url = `${SP_URL}/_api/web/lists/getbytitle('${lista}')/items(${itemId})/AttachmentFiles/add(FileName='${encodeURIComponent(file.name)}')`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'X-RequestDigest': token, 'Content-Type': 'application/octet-stream' },
-    body: buffer
-  });
-  if (!res.ok) console.warn(`Aviso: não foi possível anexar ${file.name}`);
-}
-
-// Busca anexos de um item
-async function spGetAnexos(lista, itemId) {
-  const res = await fetch(
-    `${SP_URL}/_api/web/lists/getbytitle('${lista}')/items(${itemId})/AttachmentFiles`,
-    { headers: HEADERS }
-  );
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.d.results.map(a => ({ name: a.FileName, url: a.ServerRelativeUrl }));
-}
-
-// Converte item SP → objeto local (Demandas)
-function spToDemanda(item) {
-  return {
-    id: item.Id,
-    spId: item.Id,
-    area: item.Area || '',
-    tipo: item['Tipo_x0020_da_x0020_Demanda'] || item.TipoDaDemanda || item.Tipo_da_Demanda || '',
-    demanda: item.Title || '',
-    terminal: item.Terminal || '',
-    solicitante: item.Solicitante || '',
-    responsavel: item.Responsavel || '',
-    prioridade: item.Prioridade || '',
-    prazo: isoToDate(item.Prazo),
-    inicio: isoToDate(item.DataInicio),
-    conclusao: isoToDate(item.DataConclusao),
-    obs: item.Observacao || '',
-    status: item.Status || '',
-    anexos: []
-  };
-}
-
-// Converte item SP → objeto local (Queries)
-function spToQuery(item) {
-  return {
-    id: item.Id, spId: item.Id,
-    sistema: item.Sistema || '',
-    obs: item.Obervacao || item.Observacao || '',
-    status: item.Status || '',
-    anexos: []
-  };
-}
-
-// Converte objeto local → campos SP (Demandas)
-function demandaToSP(obj) {
-  const campos = {
-    Title: obj.demanda,
-    Area: obj.area,
-    Terminal: obj.terminal,
-    Solicitante: obj.solicitante,
-    Responsavel: obj.responsavel,
-    Prioridade: obj.prioridade,
-    Observacao: obj.obs,
-    Status: obj.status,
-  };
-  // Tenta o nome interno mais comum para "Tipo da Demanda"
-  campos['Tipo_x0020_da_x0020_Demanda'] = obj.tipo;
-  if (obj.prazo)     campos.Prazo         = obj.prazo + 'T00:00:00Z';
-  if (obj.inicio)    campos.DataInicio    = obj.inicio + 'T00:00:00Z';
-  if (obj.conclusao) campos.DataConclusao = obj.conclusao + 'T00:00:00Z';
-  return campos;
-}
-
-// Converte objeto local → campos SP (Queries)
-function queryToSP(obj) {
-  return { Title: obj.sistema, Sistema: obj.sistema, Obervacao: obj.obs, Status: obj.status };
-}
-
-// ── Utilitários de data ──
-function isoToDate(iso) {
-  if (!iso) return '';
-  return iso.substring(0, 10);
-}
-
-// ══════════════════════════════════════════
-// LOADING / TOAST
-// ══════════════════════════════════════════
-function showLoading(msg='Carregando...') {
-  document.getElementById('loading-text').textContent = msg;
-  document.getElementById('loading-overlay').classList.add('show');
-}
-function hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); }
-
-function toast(msg, type='success') {
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
-}
-
-// ══════════════════════════════════════════
-// INIT / CARREGAR DADOS
-// ══════════════════════════════════════════
-async function enterApp() {
-  document.getElementById('screen-home').style.display = 'none';
-  document.getElementById('app-layout').style.display = 'block';
-  await carregarTudo();
-  navigate('demandas');
-}
-
-async function carregarTudo() {
-  showLoading('Carregando dados do SharePoint...');
   try {
-    await Promise.all([carregarDemandas(), carregarQueries()]);
-    toast('Dados carregados com sucesso!');
+    const { data, error } = await sb.from('usuarios').select('*').eq('login', login).eq('senha', senha).single();
+    if (error || !data) {
+      errEl.textContent = 'Login ou senha incorretos.';
+      btn.disabled = false; btn.textContent = 'Entrar'; return;
+    }
+    state.user = data;
+    document.getElementById('user-name-display').textContent = data.nome;
+    document.getElementById('user-role-display').textContent = data.perfil;
+    if (data.perfil === 'Gerente') document.getElementById('nav-usuarios').style.display = 'flex';
+    document.getElementById('screen-home').style.display = 'none';
+    document.getElementById('app-layout').style.display = 'block';
+    await carregarTudo();
+    navigate('demandas');
   } catch(e) {
-    toast('Erro ao carregar dados: ' + e.message, 'error');
-    console.error(e);
-  } finally {
-    hideLoading();
+    errEl.textContent = 'Erro ao conectar. Tente novamente.';
+    btn.disabled = false; btn.textContent = 'Entrar';
   }
 }
 
-async function carregarDemandas() {
-  const items = await spGetItems(LIST_D);
-  state.demandas = items.map(spToDemanda);
+function doLogout() {
+  state.user = null; state.demandas = []; state.queries = [];
+  document.getElementById('inp-login').value = '';
+  document.getElementById('inp-senha').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('btn-login').disabled = false;
+  document.getElementById('btn-login').textContent = 'Entrar';
+  document.getElementById('nav-usuarios').style.display = 'none';
+  document.getElementById('app-layout').style.display = 'none';
+  document.getElementById('screen-home').style.display = 'flex';
 }
 
-async function carregarQueries() {
-  const items = await spGetItems(LIST_Q);
-  state.queries = items.map(spToQuery);
+// ══════════════════════════════════════════
+// SUPABASE CRUD
+// ══════════════════════════════════════════
+async function carregarTudo() {
+  showLoading('Carregando dados...');
+  try {
+    const [{ data: d }, { data: q }] = await Promise.all([
+      sb.from('demandas').select('*').order('id', { ascending: false }),
+      sb.from('queries').select('*').order('id', { ascending: false })
+    ]);
+    state.demandas = d || [];
+    state.queries  = q || [];
+    toast('Dados carregados!');
+  } catch(e) {
+    toast('Erro ao carregar: ' + e.message, 'error');
+  } finally { hideLoading(); }
+}
+
+async function carregarUsuarios() {
+  const { data } = await sb.from('usuarios').select('*').order('id');
+  state.usuarios = data || [];
+  renderUsuarios();
 }
 
 // ══════════════════════════════════════════
@@ -675,20 +584,21 @@ function navigate(page) {
   if (page === 'demandas') renderDemandas();
   if (page === 'dashboard') renderDashboard();
   if (page === 'query') renderQueries();
+  if (page === 'usuarios') carregarUsuarios();
 }
 
 function setView(ctx, mode) {
   if (ctx === 'd') {
     state.viewD = mode;
-    document.getElementById('d-tabela').style.display = mode==='tabela' ? '' : 'none';
-    document.getElementById('d-kanban').style.display  = mode==='kanban' ? '' : 'none';
+    document.getElementById('d-tabela').style.display = mode==='tabela'?'':'none';
+    document.getElementById('d-kanban').style.display  = mode==='kanban'?'':'none';
     document.getElementById('btn-vt-d').classList.toggle('active', mode==='tabela');
     document.getElementById('btn-vk-d').classList.toggle('active', mode==='kanban');
     renderDemandas();
   } else {
     state.viewQ = mode;
-    document.getElementById('q-tabela').style.display = mode==='tabela' ? '' : 'none';
-    document.getElementById('q-kanban').style.display  = mode==='kanban' ? '' : 'none';
+    document.getElementById('q-tabela').style.display = mode==='tabela'?'':'none';
+    document.getElementById('q-kanban').style.display  = mode==='kanban'?'':'none';
     document.getElementById('btn-vt-q').classList.toggle('active', mode==='tabela');
     document.getElementById('btn-vk-q').classList.toggle('active', mode==='kanban');
     renderQueries();
@@ -696,263 +606,189 @@ function setView(ctx, mode) {
 }
 
 // ══════════════════════════════════════════
-// BADGES / UTILS
+// UTILS
 // ══════════════════════════════════════════
 function statusBadge(s) {
-  const m = {'em detalhamento':'detalhamento','a iniciar':'iniciar','em andamento':'andamento','homologação':'homologacao','finalizada':'finalizada','cancelada':'cancelada','Ativa':'ativa','Inativa':'inativa'};
+  const m={'em detalhamento':'detalhamento','a iniciar':'iniciar','em andamento':'andamento','homologação':'homologacao','finalizada':'finalizada','cancelada':'cancelada','Ativa':'ativa','Inativa':'inativa'};
   return `<span class="badge badge-${m[s]||'detalhamento'}">${s}</span>`;
 }
 function prioBadge(p) {
   if (!p) return '—';
-  const m = {'Crítica':'critica','Alta':'alta','Média':'media','Baixa':'baixa'};
-  const k = m[p]; return k ? `<span class="badge badge-${k}">${p}</span>` : p;
+  const m={'Crítica':'critica','Alta':'alta','Média':'media','Baixa':'baixa'};
+  const k=m[p]; return k?`<span class="badge badge-${k}">${p}</span>`:p;
 }
-function fmtDate(d) { if (!d) return '—'; const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y}`; }
-
-// ══════════════════════════════════════════
-// FILES
-// ══════════════════════════════════════════
-function handleFiles(input, ctx) {
-  Array.from(input.files).forEach(f => { if (!state.tempFiles[ctx].find(x=>x.name===f.name)) state.tempFiles[ctx].push(f); });
-  renderFileList(ctx); input.value = '';
+function perfilBadge(p) {
+  const m={'Gerente':'gerente','Usuario':'usuario'};
+  return `<span class="badge badge-${m[p]||'usuario'}">${p}</span>`;
 }
-function handleDrop(e, ctx) {
-  e.preventDefault();
-  Array.from(e.dataTransfer.files).forEach(f => { if (!state.tempFiles[ctx].find(x=>x.name===f.name)) state.tempFiles[ctx].push(f); });
-  renderFileList(ctx);
+function fmtDate(d) { if (!d) return '—'; const [y,m,dd]=d.split('-'); return `${dd}/${m}/${y}`; }
+function showLoading(msg='Carregando...') { document.getElementById('loading-text').textContent=msg; document.getElementById('loading-overlay').classList.add('show'); }
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); }
+function toast(msg, type='success') {
+  const el=document.createElement('div'); el.className=`toast ${type}`; el.textContent=msg;
+  document.body.appendChild(el); setTimeout(()=>el.remove(),3000);
 }
-function renderFileList(ctx) {
-  const c = document.getElementById('file-list-' + ctx); if (!c) return;
-  c.innerHTML = state.tempFiles[ctx].map((f,i) => `<div class="file-item"><div class="file-item-name">📎 <span>${f.name}</span></div><button class="file-remove" onclick="removeFile('${ctx}',${i})">✕</button></div>`).join('');
-}
-function removeFile(ctx, i) { state.tempFiles[ctx].splice(i,1); renderFileList(ctx); }
 
 // ══════════════════════════════════════════
 // MODALS
 // ══════════════════════════════════════════
 function openModal(type) {
   if (type==='add-demanda') { clearDemandaForm(); document.getElementById('modal-demanda-title').textContent='Nova Demanda'; document.getElementById('modal-add-demanda').classList.add('open'); }
-  if (type==='add-query')   { clearQueryForm();   document.getElementById('modal-query-title').textContent='Nova Query';     document.getElementById('modal-add-query').classList.add('open'); }
+  if (type==='add-query')   { clearQueryForm();   document.getElementById('modal-query-title').textContent='Nova Query'; document.getElementById('modal-add-query').classList.add('open'); }
+  if (type==='add-usuario') { clearUsuarioForm(); document.getElementById('modal-usuario-title').textContent='Novo Usuário'; document.getElementById('modal-add-usuario').classList.add('open'); }
 }
 function closeModal(type) {
-  if (type==='add-demanda') { document.getElementById('modal-add-demanda').classList.remove('open'); state.tempFiles.demanda=[]; renderFileList('demanda'); }
-  if (type==='add-query')   { document.getElementById('modal-add-query').classList.remove('open');   state.tempFiles.query=[];   renderFileList('query'); }
+  if (type==='add-demanda') document.getElementById('modal-add-demanda').classList.remove('open');
+  if (type==='add-query')   document.getElementById('modal-add-query').classList.remove('open');
+  if (type==='add-usuario') document.getElementById('modal-add-usuario').classList.remove('open');
   if (type==='view')        { document.getElementById('modal-view').classList.remove('open'); state.viewMode=null; state.viewId=null; state.viewEditing=false; }
 }
 
 // ══════════════════════════════════════════
-// DEMANDAS — SALVAR
+// DEMANDAS
 // ══════════════════════════════════════════
 function clearDemandaForm() {
-  ['d-area','d-tipo','d-demanda','d-terminal','d-status','d-solicitante','d-responsavel','d-prioridade','d-prazo','d-inicio','d-conclusao','d-obs']
-    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['d-area','d-tipo','d-demanda','d-terminal','d-status','d-solicitante','d-responsavel','d-prioridade','d-prazo','d-inicio','d-conclusao','d-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('demanda-edit-id').value='';
-  state.tempFiles.demanda=[]; renderFileList('demanda');
 }
 
 async function saveDemanda() {
-  const demanda   = document.getElementById('d-demanda').value.trim();
-  const area      = document.getElementById('d-area').value;
-  const conclusao = document.getElementById('d-conclusao').value;
-  let   status    = document.getElementById('d-status').value;
-  if (conclusao) status = 'finalizada';
-  if (!demanda || !area || !status) { alert('Preencha os campos obrigatórios: Área, Demanda e Status.'); return; }
+  const demanda=document.getElementById('d-demanda').value.trim();
+  const area=document.getElementById('d-area').value;
+  const conclusao=document.getElementById('d-conclusao').value;
+  let status=document.getElementById('d-status').value;
+  if (conclusao) status='finalizada';
+  if (!demanda||!area||!status) { alert('Preencha os campos obrigatórios: Área, Demanda e Status.'); return; }
 
-  const obj = {
-    area, tipo: document.getElementById('d-tipo').value, demanda,
-    terminal: document.getElementById('d-terminal').value,
-    solicitante: document.getElementById('d-solicitante').value,
-    responsavel: document.getElementById('d-responsavel').value,
-    prioridade: document.getElementById('d-prioridade').value,
-    prazo: document.getElementById('d-prazo').value,
-    inicio: document.getElementById('d-inicio').value,
-    conclusao, obs: document.getElementById('d-obs').value, status,
-  };
-
-  const editId = document.getElementById('demanda-edit-id').value;
-  showLoading(editId ? 'Atualizando demanda...' : 'Salvando demanda...');
-
+  const obj={ area, tipo:document.getElementById('d-tipo').value, demanda, terminal:document.getElementById('d-terminal').value, solicitante:document.getElementById('d-solicitante').value, responsavel:document.getElementById('d-responsavel').value, prioridade:document.getElementById('d-prioridade').value, prazo:document.getElementById('d-prazo').value||null, inicio:document.getElementById('d-inicio').value||null, conclusao:conclusao||null, observacao:document.getElementById('d-obs').value, status };
+  const editId=document.getElementById('demanda-edit-id').value;
+  showLoading(editId?'Atualizando...':'Salvando...');
   try {
-    if (editId) {
-      await spUpdateItem(LIST_D, editId, demandaToSP(obj));
-      for (const f of state.tempFiles.demanda) await spUploadAnexo(LIST_D, editId, f);
-      toast('Demanda atualizada!');
-    } else {
-      const novo = await spCreateItem(LIST_D, demandaToSP(obj));
-      for (const f of state.tempFiles.demanda) await spUploadAnexo(LIST_D, novo.Id, f);
-      toast('Demanda criada!');
-    }
-    await carregarDemandas();
-    closeModal('add-demanda');
-    renderDemandas();
-  } catch(e) {
-    toast('Erro: ' + e.message, 'error');
-    console.error(e);
-  } finally {
-    hideLoading();
-  }
+    if (editId) { await sb.from('demandas').update(obj).eq('id', editId); toast('Demanda atualizada!'); }
+    else { await sb.from('demandas').insert(obj); toast('Demanda criada!'); }
+    await carregarTudo(); closeModal('add-demanda'); renderDemandas();
+  } catch(e) { toast('Erro: '+e.message,'error'); } finally { hideLoading(); }
 }
 
-// ══════════════════════════════════════════
-// DEMANDAS — RENDER
-// ══════════════════════════════════════════
 function getFiltDemandas() {
-  const s  = (document.getElementById('search-demanda')?.value||'').toLowerCase();
-  const fs = document.getElementById('sel-status-d')?.value||'';
-  const ft = document.getElementById('sel-tipo-d')?.value||'';
-  return state.demandas.filter(d =>
-    (!fs||d.status===fs) && (!ft||d.tipo===ft) &&
-    (!s||d.demanda.toLowerCase().includes(s)||(d.solicitante||'').toLowerCase().includes(s)||(d.responsavel||'').toLowerCase().includes(s))
-  );
+  const s=(document.getElementById('search-demanda')?.value||'').toLowerCase();
+  const fs=document.getElementById('sel-status-d')?.value||'';
+  const ft=document.getElementById('sel-tipo-d')?.value||'';
+  return state.demandas.filter(d=>(!fs||d.status===fs)&&(!ft||d.tipo===ft)&&(!s||d.demanda.toLowerCase().includes(s)||(d.solicitante||'').toLowerCase().includes(s)||(d.responsavel||'').toLowerCase().includes(s)));
 }
 
 function renderDemandas() {
-  const f = getFiltDemandas();
+  const f=getFiltDemandas();
   if (state.viewD==='tabela') {
-    const tb = document.getElementById('tbody-demandas');
-    if (!f.length) { tb.innerHTML=`<tr><td colspan="9"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Nenhuma demanda encontrada</p></div></td></tr>`; return; }
-    tb.innerHTML = f.map(d => `<tr ondblclick="openView('demanda',${d.spId})"><td>${d.area||'—'}</td><td>${d.tipo||'—'}</td><td title="${d.demanda}">${d.demanda}</td><td>${d.terminal||'—'}</td><td>${d.solicitante||'—'}</td><td>${d.responsavel||'—'}</td><td>${prioBadge(d.prioridade)}</td><td>${fmtDate(d.prazo)}</td><td>${statusBadge(d.status)}</td></tr>`).join('');
+    const tb=document.getElementById('tbody-demandas');
+    if (!f.length){tb.innerHTML=`<tr><td colspan="9"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Nenhuma demanda encontrada</p></div></td></tr>`;return;}
+    tb.innerHTML=f.map(d=>`<tr ondblclick="openView('demanda',${d.id})"><td>${d.area||'—'}</td><td>${d.tipo||'—'}</td><td title="${d.demanda}">${d.demanda}</td><td>${d.terminal||'—'}</td><td>${d.solicitante||'—'}</td><td>${d.responsavel||'—'}</td><td>${prioBadge(d.prioridade)}</td><td>${fmtDate(d.prazo)}</td><td>${statusBadge(d.status)}</td></tr>`).join('');
   } else {
-    const cols = ['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada'];
-    document.getElementById('kb-demandas').innerHTML = cols.map(st => {
-      const items = f.filter(d=>d.status===st);
-      const cards = items.length
-        ? items.map(d=>`<div class="kanban-card" ondblclick="openView('demanda',${d.spId})"><div class="kanban-card-title">${d.demanda}</div><hr class="kanban-card-divider"><div class="kanban-card-label">Área</div><div class="kanban-card-value">${d.area||'—'}</div><div class="kanban-card-label">Terminal</div><div class="kanban-card-value">${d.terminal||'—'}</div><div class="kanban-card-label">Responsável</div><div class="kanban-card-value">${d.responsavel||'—'}</div><div class="kanban-card-label">Solicitante</div><div class="kanban-card-value">${d.solicitante||'—'}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">${prioBadge(d.prioridade)}<span style="font-size:11px;color:var(--text3)">${fmtDate(d.prazo)}</span></div></div>`).join('')
-        : `<div class="kanban-empty">Nenhuma demanda</div>`;
-      return `<div class="kanban-col"><div class="kanban-col-header">${statusBadge(st)}<span class="kanban-col-count">${items.length}</span></div>${cards}</div>`;
+    const cols=['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada'];
+    document.getElementById('kb-demandas').innerHTML=cols.map(st=>{
+      const items=f.filter(d=>d.status===st);
+      const cards=items.length?items.map(d=>`<div class="kanban-card" ondblclick="openView('demanda',${d.id})"><div class="kanban-card-title">${d.demanda}</div><hr class="kanban-card-divider"><div class="kanban-card-label">Área</div><div class="kanban-card-value">${d.area||'—'}</div><div class="kanban-card-label">Terminal</div><div class="kanban-card-value">${d.terminal||'—'}</div><div class="kanban-card-label">Responsável</div><div class="kanban-card-value">${d.responsavel||'—'}</div><div class="kanban-card-label">Solicitante</div><div class="kanban-card-value">${d.solicitante||'—'}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">${prioBadge(d.prioridade)}<span style="font-size:11px;color:var(--text3)">${fmtDate(d.prazo)}</span></div></div>`).join(''):`<div class="kanban-empty">Nenhuma demanda</div>`;
+      return`<div class="kanban-col"><div class="kanban-col-header">${statusBadge(st)}<span class="kanban-col-count">${items.length}</span></div>${cards}</div>`;
     }).join('');
   }
 }
 
 // ══════════════════════════════════════════
-// QUERIES — SALVAR
+// QUERIES
 // ══════════════════════════════════════════
 function clearQueryForm() {
-  ['q-sistema','q-status','q-obs'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['q-sistema','q-status','q-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('query-edit-id').value='';
-  state.tempFiles.query=[]; renderFileList('query');
 }
 
 async function saveQuery() {
-  const sistema = document.getElementById('q-sistema').value;
-  const status  = document.getElementById('q-status').value;
-  if (!sistema || !status) { alert('Preencha os campos obrigatórios: Sistema e Status.'); return; }
-
-  const obj = { sistema, obs: document.getElementById('q-obs').value, status };
-  const editId = document.getElementById('query-edit-id').value;
-  showLoading(editId ? 'Atualizando query...' : 'Salvando query...');
-
+  const sistema=document.getElementById('q-sistema').value;
+  const status=document.getElementById('q-status').value;
+  if (!sistema||!status){alert('Preencha os campos obrigatórios: Sistema e Status.');return;}
+  const obj={sistema, observacao:document.getElementById('q-obs').value, status};
+  const editId=document.getElementById('query-edit-id').value;
+  showLoading(editId?'Atualizando...':'Salvando...');
   try {
-    if (editId) {
-      await spUpdateItem(LIST_Q, editId, queryToSP(obj));
-      for (const f of state.tempFiles.query) await spUploadAnexo(LIST_Q, editId, f);
-      toast('Query atualizada!');
-    } else {
-      const novo = await spCreateItem(LIST_Q, queryToSP(obj));
-      for (const f of state.tempFiles.query) await spUploadAnexo(LIST_Q, novo.Id, f);
-      toast('Query criada!');
-    }
-    await carregarQueries();
-    closeModal('add-query');
-    renderQueries();
-  } catch(e) {
-    toast('Erro: ' + e.message, 'error');
-    console.error(e);
-  } finally {
-    hideLoading();
-  }
+    if (editId){await sb.from('queries').update(obj).eq('id',editId);toast('Query atualizada!');}
+    else{await sb.from('queries').insert(obj);toast('Query criada!');}
+    await carregarTudo();closeModal('add-query');renderQueries();
+  } catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
 }
 
-// ══════════════════════════════════════════
-// QUERIES — RENDER
-// ══════════════════════════════════════════
 function getFiltQueries() {
-  const s   = (document.getElementById('search-query')?.value||'').toLowerCase();
-  const fs  = document.getElementById('sel-status-q')?.value||'';
-  const fsi = document.getElementById('sel-sistema-q')?.value||'';
-  return state.queries.filter(q =>
-    (!fs||q.status===fs) && (!fsi||q.sistema===fsi) &&
-    (!s||(q.sistema||'').toLowerCase().includes(s)||(q.obs||'').toLowerCase().includes(s))
-  );
+  const s=(document.getElementById('search-query')?.value||'').toLowerCase();
+  const fs=document.getElementById('sel-status-q')?.value||'';
+  const fsi=document.getElementById('sel-sistema-q')?.value||'';
+  return state.queries.filter(q=>(!fs||q.status===fs)&&(!fsi||q.sistema===fsi)&&(!s||(q.sistema||'').toLowerCase().includes(s)||(q.observacao||'').toLowerCase().includes(s)));
 }
 
 function renderQueries() {
-  const f = getFiltQueries();
+  const f=getFiltQueries();
   if (state.viewQ==='tabela') {
-    const tb = document.getElementById('tbody-queries');
-    if (!f.length) { tb.innerHTML=`<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">🗄️</div><p>Nenhuma query encontrada</p></div></td></tr>`; return; }
-    tb.innerHTML = f.map(q=>`<tr ondblclick="openView('query',${q.spId})"><td>${q.sistema||'—'}</td><td title="${q.obs||''}">${(q.obs||'').substring(0,80)}${(q.obs||'').length>80?'...':''}</td><td>${q.anexos?.length?q.anexos.length+' arquivo(s)':'—'}</td><td>${statusBadge(q.status)}</td></tr>`).join('');
+    const tb=document.getElementById('tbody-queries');
+    if (!f.length){tb.innerHTML=`<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">🗄️</div><p>Nenhuma query encontrada</p></div></td></tr>`;return;}
+    tb.innerHTML=f.map(q=>`<tr ondblclick="openView('query',${q.id})"><td>${q.sistema||'—'}</td><td title="${q.observacao||''}">${(q.observacao||'').substring(0,80)}${(q.observacao||'').length>80?'...':''}</td><td>—</td><td>${statusBadge(q.status)}</td></tr>`).join('');
   } else {
-    const cols = ['Ativa','Inativa'];
-    document.getElementById('kb-queries').innerHTML = cols.map(st => {
-      const items = f.filter(q=>q.status===st);
-      const cards = items.length
-        ? items.map(q=>`<div class="kanban-card" ondblclick="openView('query',${q.spId})"><div class="kanban-card-title">${q.sistema}</div><hr class="kanban-card-divider"><div class="kanban-card-label">Observação</div><div class="kanban-card-value">${(q.obs||'').substring(0,120)}${(q.obs||'').length>120?'...':''}</div>${q.anexos?.length?`<div style="font-size:11px;color:var(--text3);margin-top:4px">📎 ${q.anexos.length} anexo(s)</div>`:''}</div>`).join('')
-        : `<div class="kanban-empty">Nenhuma query</div>`;
-      return `<div class="kanban-col"><div class="kanban-col-header">${statusBadge(st)}<span class="kanban-col-count">${items.length}</span></div>${cards}</div>`;
+    const cols=['Ativa','Inativa'];
+    document.getElementById('kb-queries').innerHTML=cols.map(st=>{
+      const items=f.filter(q=>q.status===st);
+      const cards=items.length?items.map(q=>`<div class="kanban-card" ondblclick="openView('query',${q.id})"><div class="kanban-card-title">${q.sistema}</div><hr class="kanban-card-divider"><div class="kanban-card-label">Observação</div><div class="kanban-card-value">${(q.observacao||'').substring(0,120)}${(q.observacao||'').length>120?'...':''}</div></div>`).join(''):`<div class="kanban-empty">Nenhuma query</div>`;
+      return`<div class="kanban-col"><div class="kanban-col-header">${statusBadge(st)}<span class="kanban-col-count">${items.length}</span></div>${cards}</div>`;
     }).join('');
   }
 }
 
 // ══════════════════════════════════════════
-// VIEW / EDIT MODAL
+// USUARIOS
 // ══════════════════════════════════════════
-async function openView(type, spId) {
-  state.viewMode = type; state.viewId = spId; state.viewEditing = false;
-  showLoading('Carregando detalhes...');
+function clearUsuarioForm() {
+  ['u-nome','u-login','u-senha','u-perfil'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('usuario-edit-id').value='';
+}
+
+async function saveUsuario() {
+  const nome=document.getElementById('u-nome').value.trim();
+  const login=document.getElementById('u-login').value.trim();
+  const senha=document.getElementById('u-senha').value;
+  const perfil=document.getElementById('u-perfil').value;
+  if (!nome||!login||!senha||!perfil){alert('Preencha todos os campos.');return;}
+  showLoading('Salvando usuário...');
   try {
-    // Carrega anexos do item
-    if (type==='demanda') {
-      const d = state.demandas.find(x=>x.spId===spId);
-      if (d) d.anexos = await spGetAnexos(LIST_D, spId);
-    } else {
-      const q = state.queries.find(x=>x.spId===spId);
-      if (q) q.anexos = await spGetAnexos(LIST_Q, spId);
-    }
-  } catch(e) { console.warn('Não carregou anexos', e); }
-  finally { hideLoading(); }
+    await sb.from('usuarios').insert({nome,login,senha,perfil});
+    toast('Usuário criado!');closeModal('add-usuario');carregarUsuarios();
+  } catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
+}
+
+function renderUsuarios() {
+  const tb=document.getElementById('tbody-usuarios');
+  if (!state.usuarios.length){tb.innerHTML=`<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">👥</div><p>Nenhum usuário encontrado</p></div></td></tr>`;return;}
+  tb.innerHTML=state.usuarios.map(u=>`<tr><td>${u.nome}</td><td>${u.login}</td><td>${perfilBadge(u.perfil)}</td><td>${fmtDate(u.created_at?.substring(0,10))}</td></tr>`).join('');
+}
+
+// ══════════════════════════════════════════
+// VIEW / EDIT
+// ══════════════════════════════════════════
+function openView(type,id) {
+  state.viewMode=type;state.viewId=id;state.viewEditing=false;
   renderViewModal();
   document.getElementById('modal-view').classList.add('open');
 }
 
 function renderViewModal() {
-  const isEdit = state.viewEditing;
-  document.getElementById('view-footer').style.display = isEdit ? 'flex' : 'none';
-  document.getElementById('btn-edit-view').style.display = isEdit ? 'none' : '';
-
+  const isEdit=state.viewEditing;
+  document.getElementById('view-footer').style.display=isEdit?'flex':'none';
+  document.getElementById('btn-edit-view').style.display=isEdit?'none':'';
   if (state.viewMode==='demanda') {
-    const d = state.demandas.find(x=>x.spId===state.viewId); if (!d) return;
-    document.getElementById('view-title').textContent = isEdit ? '✏️ Editando Demanda' : d.demanda;
-    document.getElementById('btn-save-edit').onclick = saveViewEdit;
-    const anexosHtml = d.anexos?.length
-      ? d.anexos.map(a=>`<a href="${SP_URL}${a.url}" target="_blank" style="color:var(--accent);text-decoration:none">📎 ${a.name}</a>`).join('<br>')
-      : '—';
-    document.getElementById('view-body').innerHTML = isEdit ? buildDeditForm(d) : `
-      <div class="detail-grid">
-        ${field('Área',d.area)} ${field('Tipo',d.tipo)}
-        ${fieldFull('Demanda',d.demanda)}
-        ${field('Terminal',d.terminal)} ${field('Status',statusBadge(d.status))}
-        ${field('Solicitante',d.solicitante)} ${field('Responsável',d.responsavel)}
-        ${field('Prioridade',prioBadge(d.prioridade))} ${field('Prazo de Entrega',fmtDate(d.prazo))}
-        ${field('Data de Início',fmtDate(d.inicio))} ${field('Data de Conclusão',fmtDate(d.conclusao))}
-        ${fieldFull('Observação / Etapas',d.obs||'—')}
-        ${fieldFull('Anexos',anexosHtml)}
-      </div>`;
+    const d=state.demandas.find(x=>x.id===state.viewId);if(!d)return;
+    document.getElementById('view-title').textContent=isEdit?'✏️ Editando Demanda':d.demanda;
+    document.getElementById('btn-save-edit').onclick=saveViewEdit;
+    document.getElementById('view-body').innerHTML=isEdit?buildDeditForm(d):`<div class="detail-grid">${field('Área',d.area)}${field('Tipo',d.tipo)}${fieldFull('Demanda',d.demanda)}${field('Terminal',d.terminal)}${field('Status',statusBadge(d.status))}${field('Solicitante',d.solicitante)}${field('Responsável',d.responsavel)}${field('Prioridade',prioBadge(d.prioridade))}${field('Prazo de Entrega',fmtDate(d.prazo))}${field('Data de Início',fmtDate(d.inicio))}${field('Data de Conclusão',fmtDate(d.conclusao))}${fieldFull('Observação / Etapas',d.observacao||'—')}</div>`;
   }
-
   if (state.viewMode==='query') {
-    const q = state.queries.find(x=>x.spId===state.viewId); if (!q) return;
-    document.getElementById('view-title').textContent = isEdit ? '✏️ Editando Query' : q.sistema;
-    document.getElementById('btn-save-edit').onclick = saveViewEdit;
-    const anexosHtml = q.anexos?.length
-      ? q.anexos.map(a=>`<a href="${SP_URL}${a.url}" target="_blank" style="color:var(--accent);text-decoration:none">📎 ${a.name}</a>`).join('<br>')
-      : '—';
-    document.getElementById('view-body').innerHTML = isEdit ? buildQeditForm(q) : `
-      <div class="detail-grid">
-        ${field('Sistema',q.sistema)} ${field('Status',statusBadge(q.status))}
-        ${fieldFull('Observação',q.obs||'—')}
-        ${fieldFull('Anexos',anexosHtml)}
-      </div>`;
+    const q=state.queries.find(x=>x.id===state.viewId);if(!q)return;
+    document.getElementById('view-title').textContent=isEdit?'✏️ Editando Query':q.sistema;
+    document.getElementById('btn-save-edit').onclick=saveViewEdit;
+    document.getElementById('view-body').innerHTML=isEdit?buildQeditForm(q):`<div class="detail-grid">${field('Sistema',q.sistema)}${field('Status',statusBadge(q.status))}${fieldFull('Observação',q.observacao||'—')}</div>`;
   }
 }
 
@@ -972,15 +808,7 @@ function buildDeditForm(d){
     <div class="field-group"><label class="field-label">Prazo de Entrega</label><input class="field-input" type="date" id="ve-prazo" value="${d.prazo||''}"></div>
     <div class="field-group"><label class="field-label">Data de Início</label><input class="field-input" type="date" id="ve-inicio" value="${d.inicio||''}"></div>
     <div class="field-group"><label class="field-label">Data de Conclusão</label><input class="field-input" type="date" id="ve-conclusao" value="${d.conclusao||''}" onchange="if(this.value)document.getElementById('ve-status').value='finalizada'"></div>
-    <div class="field-group full"><label class="field-label">Observação</label><textarea class="field-textarea" id="ve-obs" style="min-height:120px">${esc(d.obs)}</textarea></div>
-    <div class="field-group full"><label class="field-label">Adicionar Novos Anexos</label>
-      <div class="file-drop" onclick="document.getElementById('file-edit').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event,'demanda')">
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--text3);margin:auto"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-        <p>Clique ou arraste para adicionar arquivos</p>
-        <input type="file" id="file-edit" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif" onchange="handleFiles(this,'demanda')">
-      </div>
-      <div class="file-list" id="file-list-demanda"></div>
-    </div>
+    <div class="field-group full"><label class="field-label">Observação</label><textarea class="field-textarea" id="ve-obs" style="min-height:120px">${esc(d.observacao)}</textarea></div>
   </div>`;
 }
 
@@ -988,74 +816,39 @@ function buildQeditForm(q){
   return`<div class="detail-grid">
     <div class="field-group"><label class="field-label">Sistema</label><select class="field-select" id="ve-sistema">${opts(['','Query skisf'],q.sistema)}</select></div>
     <div class="field-group"><label class="field-label">Status</label><select class="field-select" id="ve-qstatus">${opts(['','Ativa','Inativa'],q.status)}</select></div>
-    <div class="field-group full"><label class="field-label">Observação</label><textarea class="field-textarea" id="ve-obs" style="min-height:140px">${esc(q.obs)}</textarea></div>
-    <div class="field-group full"><label class="field-label">Adicionar Novos Anexos</label>
-      <div class="file-drop" onclick="document.getElementById('file-edit-q').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event,'query')">
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--text3);margin:auto"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-        <p>Clique ou arraste para adicionar arquivos</p>
-        <input type="file" id="file-edit-q" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif" onchange="handleFiles(this,'query')">
-      </div>
-      <div class="file-list" id="file-list-query"></div>
-    </div>
+    <div class="field-group full"><label class="field-label">Observação</label><textarea class="field-textarea" id="ve-obs" style="min-height:140px">${esc(q.observacao)}</textarea></div>
   </div>`;
 }
 
 function opts(arr,sel){return arr.map(v=>`<option value="${v}"${v===sel?' selected':''}>${v||'Selecione...'}</option>`).join('');}
 function esc(s){return(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
-function switchToEdit(){state.tempFiles.demanda=[];state.tempFiles.query=[];state.viewEditing=true;renderViewModal();}
+function switchToEdit(){state.viewEditing=true;renderViewModal();}
 
 async function saveViewEdit() {
   showLoading('Salvando alterações...');
   try {
     if (state.viewMode==='demanda') {
-      const d = state.demandas.find(x=>x.spId===state.viewId); if (!d) return;
-      const conclusao = document.getElementById('ve-conclusao').value;
-      const status    = conclusao ? 'finalizada' : document.getElementById('ve-status').value;
-      const campos = {
-        area: document.getElementById('ve-area').value,
-        tipo: document.getElementById('ve-tipo').value,
-        demanda: document.getElementById('ve-demanda').value,
-        terminal: document.getElementById('ve-terminal').value,
-        status, solicitante: document.getElementById('ve-solicitante').value,
-        responsavel: document.getElementById('ve-responsavel').value,
-        prioridade: document.getElementById('ve-prioridade').value,
-        prazo: document.getElementById('ve-prazo').value,
-        inicio: document.getElementById('ve-inicio').value,
-        conclusao, obs: document.getElementById('ve-obs').value,
-      };
-      await spUpdateItem(LIST_D, state.viewId, demandaToSP(campos));
-      for (const f of state.tempFiles.demanda) await spUploadAnexo(LIST_D, state.viewId, f);
-      await carregarDemandas();
+      const conclusao=document.getElementById('ve-conclusao').value;
+      const status=conclusao?'finalizada':document.getElementById('ve-status').value;
+      const obj={area:document.getElementById('ve-area').value,tipo:document.getElementById('ve-tipo').value,demanda:document.getElementById('ve-demanda').value,terminal:document.getElementById('ve-terminal').value,status,solicitante:document.getElementById('ve-solicitante').value,responsavel:document.getElementById('ve-responsavel').value,prioridade:document.getElementById('ve-prioridade').value,prazo:document.getElementById('ve-prazo').value||null,inicio:document.getElementById('ve-inicio').value||null,conclusao:conclusao||null,observacao:document.getElementById('ve-obs').value};
+      await sb.from('demandas').update(obj).eq('id',state.viewId);
       toast('Demanda atualizada!');
     }
     if (state.viewMode==='query') {
-      const obj = { sistema: document.getElementById('ve-sistema').value, obs: document.getElementById('ve-obs').value, status: document.getElementById('ve-qstatus').value };
-      await spUpdateItem(LIST_Q, state.viewId, queryToSP(obj));
-      for (const f of state.tempFiles.query) await spUploadAnexo(LIST_Q, state.viewId, f);
-      await carregarQueries();
+      const obj={sistema:document.getElementById('ve-sistema').value,status:document.getElementById('ve-qstatus').value,observacao:document.getElementById('ve-obs').value};
+      await sb.from('queries').update(obj).eq('id',state.viewId);
       toast('Query atualizada!');
     }
-    state.viewEditing = false;
-    renderViewModal();
-    renderDemandas();
-    renderQueries();
-  } catch(e) {
-    toast('Erro: ' + e.message, 'error');
-    console.error(e);
-  } finally {
-    hideLoading();
-  }
+    await carregarTudo();state.viewEditing=false;renderViewModal();renderDemandas();renderQueries();
+  } catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
 }
 
 // ══════════════════════════════════════════
 // DASHBOARD
 // ══════════════════════════════════════════
-function renderDashboard() {
-  const tot=state.demandas.length, and=state.demandas.filter(d=>d.status==='em andamento').length,
-        fin=state.demandas.filter(d=>d.status==='finalizada').length, totQ=state.queries.length;
-  document.getElementById('dash-stats').innerHTML =
-    statCard('Total de Demandas',tot,'cadastradas') + statCard('Em Andamento',and,'demandas ativas') +
-    statCard('Finalizadas',fin,'concluídas') + statCard('Queries',totQ,'cadastradas');
+function renderDashboard(){
+  const tot=state.demandas.length,and=state.demandas.filter(d=>d.status==='em andamento').length,fin=state.demandas.filter(d=>d.status==='finalizada').length,totQ=state.queries.length;
+  document.getElementById('dash-stats').innerHTML=statCard('Total de Demandas',tot,'cadastradas')+statCard('Em Andamento',and,'demandas ativas')+statCard('Finalizadas',fin,'concluídas')+statCard('Queries',totQ,'cadastradas');
   renderBarChart('chart-status',countBy(state.demandas,'status'),['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada']);
   renderBarChart('chart-area',countBy(state.demandas,'area'),['Eficiência de Processos','Eficiência de Dados']);
   renderBarChart('chart-terminal',countBy(state.demandas,'terminal'),['Corporativo','ADM Central','Guarujá','Anhanguera','Itajaí','Suape']);
