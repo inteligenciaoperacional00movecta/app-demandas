@@ -1340,6 +1340,25 @@ function mmToScreen(wx,wy){
   return{x:(wx-mm.vx)*mm.vz,y:(wy-mm.vy)*mm.vz};
 }
 
+// Mede a largura real do texto para dimensionar a caixa com margem
+let _mmMeasureCtx = null;
+function mmTextWidth(text, isRoot){
+  if(!_mmMeasureCtx){
+    _mmMeasureCtx = document.createElement('canvas').getContext('2d');
+  }
+  const fs = isRoot ? 13 : 11;
+  const weight = isRoot ? 600 : 400;
+  _mmMeasureCtx.font = weight + ' ' + fs + 'px "Plus Jakarta Sans", sans-serif';
+  return _mmMeasureCtx.measureText(text).width;
+}
+// Largura da caixa em coords de mundo (texto medido + margem)
+function mmNodeWidth(n){
+  const isRoot = mmDepth(n.id)===0;
+  const label = n.text.length>22 ? n.text.slice(0,20)+'…' : n.text;
+  const PAD = 36; // margem interna total (18px de cada lado)
+  return Math.max(72, mmTextWidth(label, isRoot) + PAD);
+}
+
 function mmRender(){
   const wrap=document.getElementById('mm-canvas-wrap');
   const svg=document.getElementById('mm-canvas');
@@ -1387,7 +1406,7 @@ function mmRender(){
     const c=MM_COLORS[d%MM_COLORS.length];
     const sc=mmToScreen(n.x,n.y);
     const isRoot=d===0;
-    const rw=Math.max(70,n.text.length*7+24)*mm.vz;
+    const rw=mmNodeWidth(n)*mm.vz;
     const rh=(isRoot?38:30)*mm.vz;
     const rx=sc.x-rw/2,ry=sc.y-rh/2;
     const r=(isRoot?12:8)*mm.vz;
@@ -1464,15 +1483,14 @@ window.addEventListener('mousemove',e=>{
       const SNAP=9; // distância em px-mundo para encaixar
       mm._guides={v:null,h:null};
       // dimensões (em coords de mundo) do nó arrastado
-      const nIsRoot=mmDepth(n.id)===0;
-      const nW=Math.max(70,n.text.length*7+24);
+      const nW=mmNodeWidth(n);
       const nHalf=nW/2;
       // candidatos verticais: centro, borda esq, borda dir do nó arrastado
       let bestV=null,bestVDist=SNAP; // {nodeX, guideX}
       let bestH=null,bestHDist=SNAP;
       mm.nodes.forEach(o=>{
         if(o.id===n.id)return;
-        const oW=Math.max(70,o.text.length*7+24);
+        const oW=mmNodeWidth(o);
         const oHalf=oW/2;
         // linhas verticais do outro nó: centro, esq, dir
         const oVlines=[o.x, o.x-oHalf, o.x+oHalf];
