@@ -207,6 +207,7 @@
 
   /* EDITOR MAPA */
   #mm-editor-wrap{display:none;}
+  #page-mapas:has(#mm-editor-wrap.active){padding-bottom:12px;}
   #mm-editor-wrap.active{display:block;}
   .mm-editor-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
   .mm-editor-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;letter-spacing:-0.02em;color:var(--text);flex:1;}
@@ -217,7 +218,7 @@
   .mm-toolbar button:hover{border-color:var(--accent);color:var(--accent);}
   .mm-toolbar button.danger:hover{border-color:var(--danger);color:var(--danger);}
   .mm-toolbar .tsep{width:1px;height:22px;background:var(--border);margin:0 2px;}
-  #mm-canvas-wrap{width:100%;height:540px;overflow:hidden;position:relative;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:grab;}
+  #mm-canvas-wrap{width:100%;height:calc(100vh - 168px);min-height:480px;overflow:hidden;position:relative;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:grab;}
   #mm-canvas-wrap.panning{cursor:grabbing;}
   #mm-canvas{position:absolute;top:0;left:0;}
   .mm-hint{position:absolute;bottom:10px;right:14px;font-size:11px;color:var(--text3);pointer-events:none;}
