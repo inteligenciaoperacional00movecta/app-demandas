@@ -1414,8 +1414,16 @@ function mmRender(){
 
 function mmOnNodeMousedown(e,id){
   e.stopPropagation();
-  if(e.detail>1){return;} // ignora no duplo-clique para não iniciar drag
   const mm=state.mm;
+  // Detecção manual de duplo-clique (resiste à recriação do SVG)
+  const now=Date.now();
+  if(mm._lastClickId===id && (now-(mm._lastClickTime||0))<350){
+    mm._lastClickId=null;mm._lastClickTime=0;
+    mm.dragging=false;mm.dragId=null;
+    mmOpenNotePopup(id);
+    return;
+  }
+  mm._lastClickId=id;mm._lastClickTime=now;
   const wp=mmSvgPoint(e.clientX,e.clientY);
   const n=mm.nodes.find(n=>n.id===id);
   mm.selectedId=id;mm.dragging=true;mm.dragId=id;mm.dx0=wp.x;mm.dy0=wp.y;mm.nx0=n.x;mm.ny0=n.y;
@@ -1424,21 +1432,6 @@ function mmOnNodeMousedown(e,id){
 
 function mmInitCanvas(){
   const wrap=document.getElementById('mm-canvas-wrap');
-  // Duplo-clique em nó (delegação - resiste à recriação do DOM)
-  wrap.addEventListener('dblclick',e=>{
-    let el=e.target;
-    let id=null;
-    while(el && el!==wrap){
-      const v = el.getAttribute && el.getAttribute('data-id');
-      if(v){id=v;break;}
-      el=el.parentNode;
-    }
-    if(id!==null){
-      e.stopPropagation();
-      e.preventDefault();
-      mmOpenNotePopup(Number(id));
-    }
-  });
   wrap.addEventListener('mousedown',e=>{
     const mm=state.mm;
     if(mm.dragging)return;
@@ -1468,20 +1461,43 @@ window.addEventListener('mousemove',e=>{
     if(n){
       let nx=mm.nx0+(wp.x-mm.dx0);
       let ny=mm.ny0+(wp.y-mm.dy0);
-      // Snap de alinhamento com outros nós
-      const SNAP=8; // distância em px-mundo para encaixar
+      const SNAP=9; // distância em px-mundo para encaixar
       mm._guides={v:null,h:null};
-      let bestVX=null,bestVDist=SNAP;
-      let bestHY=null,bestHDist=SNAP;
+      // dimensões (em coords de mundo) do nó arrastado
+      const nIsRoot=mmDepth(n.id)===0;
+      const nW=Math.max(70,n.text.length*7+24);
+      const nHalf=nW/2;
+      // candidatos verticais: centro, borda esq, borda dir do nó arrastado
+      let bestV=null,bestVDist=SNAP; // {nodeX, guideX}
+      let bestH=null,bestHDist=SNAP;
       mm.nodes.forEach(o=>{
         if(o.id===n.id)return;
-        const dvx=Math.abs(o.x-nx);
-        if(dvx<bestVDist){bestVDist=dvx;bestVX=o.x;}
-        const dhy=Math.abs(o.y-ny);
-        if(dhy<bestHDist){bestHDist=dhy;bestHY=o.y;}
+        const oW=Math.max(70,o.text.length*7+24);
+        const oHalf=oW/2;
+        // linhas verticais do outro nó: centro, esq, dir
+        const oVlines=[o.x, o.x-oHalf, o.x+oHalf];
+        // pontos do nó arrastado que tentam alinhar: centro, esq, dir
+        const nVpoints=[{p:0},{p:-nHalf},{p:nHalf}];
+        oVlines.forEach(line=>{
+          nVpoints.forEach(np=>{
+            const candidateCenter=line-np.p; // centro do nó pra alinhar esse ponto à linha
+            const d=Math.abs(candidateCenter-nx);
+            if(d<bestVDist){bestVDist=d;bestV={center:candidateCenter,guide:line};}
+          });
+        });
+        // linhas horizontais: centro, topo, base
+        const oHlines=[o.y, o.y-15, o.y+15];
+        const nHpoints=[{p:0},{p:-15},{p:15}];
+        oHlines.forEach(line=>{
+          nHpoints.forEach(np=>{
+            const candidateCenter=line-np.p;
+            const d=Math.abs(candidateCenter-ny);
+            if(d<bestHDist){bestHDist=d;bestH={center:candidateCenter,guide:line};}
+          });
+        });
       });
-      if(bestVX!==null){nx=bestVX;mm._guides.v=bestVX;}
-      if(bestHY!==null){ny=bestHY;mm._guides.h=bestHY;}
+      if(bestV){nx=bestV.center;mm._guides.v=bestV.guide;}
+      if(bestH){ny=bestH.center;mm._guides.h=bestH.guide;}
       n.x=nx;n.y=ny;
     }
     mmRender();return;
