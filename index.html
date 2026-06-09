@@ -719,7 +719,7 @@
 </div>
 
 <!-- MODAL FORM PROJETO -->
-<div class="pj-modal-overlay" id="pj-form-overlay" onclick="pjCloseFormBg(event)">
+<div class="pj-modal-overlay" id="pj-form-overlay">
   <div class="pj-modal-panel" style="width:560px;max-width:95vw">
     <div class="pj-modal-hdr" style="display:flex;align-items:center;justify-content:space-between">
       <span id="pj-form-title" style="font-size:18px;font-weight:700;letter-spacing:-0.02em">Novo Projeto</span>
@@ -765,6 +765,27 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="pjCloseForm()">Cancelar</button>
       <button class="btn-primary" onclick="pjSaveProject()">Salvar Projeto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR INFO MAPA -->
+<div class="modal-overlay" id="modal-edit-mapa">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ Editar Informações do Mapa</div>
+      <div class="modal-close" onclick="closeModal('edit-mapa')">✕</div>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:18px">
+      <input type="hidden" id="edit-mapa-id">
+      <div class="field-group full"><label class="field-label">Nome do Mapa *</label>
+        <input class="field-input" id="edit-mapa-nome" placeholder="Nome do mapa..."></div>
+      <div class="field-group full"><label class="field-label">Descrição</label>
+        <textarea class="field-textarea" id="edit-mapa-desc" placeholder="Contexto ou objetivo do mapa..." style="min-height:90px"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('edit-mapa')">Cancelar</button>
+      <button class="btn-primary" onclick="salvarInfoMapa()">Salvar</button>
     </div>
   </div>
 </div>
@@ -982,10 +1003,14 @@ function openModal(type) {
   if (type==='add-mapa'){document.getElementById('mm-nome').value='';document.getElementById('mm-desc').value='';document.getElementById('modal-add-mapa').classList.add('open');}
 }
 function closeModal(type) {
-  if (type==='add-demanda') document.getElementById('modal-add-demanda').classList.remove('open');
+  if (type==='add-demanda') {
+    document.getElementById('modal-add-demanda').classList.remove('open');
+    ['d-area','d-tipo','d-demanda','d-terminal','d-status','d-solicitante','d-responsavel','d-prioridade','d-prazo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.borderColor='';});
+  }
   if (type==='add-query') document.getElementById('modal-add-query').classList.remove('open');
   if (type==='add-usuario') document.getElementById('modal-add-usuario').classList.remove('open');
   if (type==='add-mapa') document.getElementById('modal-add-mapa').classList.remove('open');
+  if (type==='edit-mapa') document.getElementById('modal-edit-mapa').classList.remove('open');
   if (type==='view'){document.getElementById('modal-view').classList.remove('open');state.viewMode=null;state.viewId=null;state.viewEditing=false;_pendingFileEdit=null;state._editAnexoUrl=null;}
 }
 
@@ -1078,12 +1103,35 @@ function clearDemandaForm() {
 }
 
 async function saveDemanda() {
+  // Validação visual de todos os campos obrigatórios
+  const campos = [
+    {id:'d-area',     label:'Área'},
+    {id:'d-tipo',     label:'Tipo de Demanda'},
+    {id:'d-demanda',  label:'Demanda'},
+    {id:'d-terminal', label:'Terminal'},
+    {id:'d-status',   label:'Status'},
+    {id:'d-solicitante', label:'Solicitante'},
+    {id:'d-responsavel', label:'Responsável'},
+    {id:'d-prioridade',  label:'Prioridade'},
+    {id:'d-prazo',       label:'Prazo de Entrega'},
+  ];
+  let ok=true;
+  campos.forEach(c=>{
+    const el=document.getElementById(c.id);
+    if(!el)return;
+    const vazio=!el.value.trim();
+    el.style.borderColor=vazio?'var(--danger)':'';
+    if(vazio)ok=false;
+  });
+  if(!ok){toast('Preencha todos os campos obrigatórios marcados em vermelho','error');return;}
+  // Limpa bordas vermelhas
+  campos.forEach(c=>{const el=document.getElementById(c.id);if(el)el.style.borderColor='';});
+
   const demanda=document.getElementById('d-demanda').value.trim();
   const area=document.getElementById('d-area').value;
   const conclusao=document.getElementById('d-conclusao').value;
   let status=document.getElementById('d-status').value;
   if (conclusao) status='finalizada';
-  if (!demanda||!area||!status){alert('Preencha os campos obrigatórios: Área, Demanda e Status.');return;}
 
   showLoading('Salvando...');
   try {
@@ -1341,12 +1389,16 @@ function renderListaMapas(){
     const data=typeof m.data==='string'?JSON.parse(m.data):m.data;
     const nos=(data.nodes||[]).length;
     const dt=m.atualizado_em?new Date(m.atualizado_em).toLocaleDateString('pt-BR'):'—';
-    return`<div class="mm-card" onclick="abrirEditorMapa(${m.id})">
-      <div class="mm-card-title">${m.nome}</div>
-      ${m.descricao?`<div class="mm-card-desc">${m.descricao}</div>`:''}
+    return`<div class="mm-card">
+      <div class="mm-card-title" onclick="abrirEditorMapa(${m.id})" style="cursor:pointer">${m.nome}</div>
+      ${m.descricao?`<div class="mm-card-desc" onclick="abrirEditorMapa(${m.id})" style="cursor:pointer">${m.descricao}</div>`:''}
       <div class="mm-card-footer">
         <span class="mm-card-nodes">🔵 ${nos} nós</span>
         <span class="mm-card-meta">Atualizado ${dt}</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+        <button class="btn-secondary" style="flex:1;padding:6px 10px;font-size:12px" onclick="abrirEditorMapa(${m.id})">✏️ Abrir</button>
+        <button class="btn-secondary" style="padding:6px 10px;font-size:12px" onclick="editarInfoMapa(${m.id},event)">⚙️ Editar info</button>
       </div>
     </div>`;
   }).join('');
@@ -1368,6 +1420,32 @@ async function criarMapa(){
     await carregarTudo();
     abrirEditorMapa(data.id);
   } catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
+}
+
+function editarInfoMapa(id, event){
+  if(event) event.stopPropagation();
+  const m=state.mapas.find(x=>x.id===id);
+  if(!m)return;
+  document.getElementById('edit-mapa-id').value=id;
+  document.getElementById('edit-mapa-nome').value=m.nome||'';
+  document.getElementById('edit-mapa-desc').value=m.descricao||'';
+  document.getElementById('modal-edit-mapa').classList.add('open');
+}
+
+async function salvarInfoMapa(){
+  const id=Number(document.getElementById('edit-mapa-id').value);
+  const nome=document.getElementById('edit-mapa-nome').value.trim();
+  if(!nome){alert('Nome obrigatório');return;}
+  const descricao=document.getElementById('edit-mapa-desc').value.trim();
+  showLoading('Salvando...');
+  try{
+    await sb.from('mapas_mentais').update({nome,descricao,atualizado_em:new Date().toISOString()}).eq('id',id);
+    toast('Informações salvas!');
+    await carregarTudo();
+    closeModal('edit-mapa');
+    renderListaMapas();
+  }catch(e){toast('Erro: '+e.message,'error');}
+  finally{hideLoading();}
 }
 
 function abrirNovoMapa(){openModal('add-mapa');}
@@ -1772,14 +1850,23 @@ async function exportarMapaPDF() {
 
 // ─── FUNÇÕES AUXILIARES PROJETOS ───
 function pjMaskMoney(el){
-  let v=el.value.replace(/\D/g,'');
-  if(!v){el.value='';return;}
-  v=parseInt(v,10);
-  el.value='R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  // Remove tudo que não é dígito ou vírgula
+  let v=el.value.replace(/[^\d,]/g,'');
+  // Se tem vírgula, separa parte inteira e decimal
+  const parts=v.split(',');
+  let intPart=parts[0].replace(/\D/g,'');
+  let decPart=parts[1]!==undefined?parts[1].replace(/\D/g,'').slice(0,2):'';
+  if(!intPart&&!decPart){el.value='';return;}
+  // Formata a parte inteira com separador de milhar
+  const intNum=parseInt(intPart||'0',10);
+  let formatted='R$ '+intNum.toLocaleString('pt-BR');
+  if(parts.length>1)formatted+=','+decPart;
+  el.value=formatted;
 }
 function pjUnmaskMoney(val){
   if(!val)return 0;
-  return parseFloat(val.replace(/[R$\s.]/g,'').replace(',','.'))||0;
+  // Remove R$, espaços e pontos de milhar; troca vírgula por ponto
+  return parseFloat(val.replace(/R\$\s*/,'').replace(/\./g,'').replace(',','.'))||0;
 }
 function pjMaskDate(el){
   let v=el.value.replace(/\D/g,'');
