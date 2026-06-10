@@ -228,6 +228,22 @@
   @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
   @keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
   @keyframes spin{to{transform:rotate(360deg);}}
+  .nav-btn-cal{width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--text2);font-size:18px;transition:all .15s;line-height:1;}
+  .nav-btn-cal:hover{border-color:var(--accent);color:var(--accent);}
+  .cal-event{display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;transition:all .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;margin-bottom:2px;}
+  .cal-event:hover{filter:brightness(1.2);}
+  .cal-event.demanda{background:rgba(59,130,246,.2);color:#93c5fd;border-left:2px solid #3b82f6;}
+  .cal-event.projeto{background:rgba(168,85,247,.2);color:#d8b4fe;border-left:2px solid #a855f7;}
+  .cal-event.documental{background:rgba(245,158,11,.2);color:#fcd34d;border-left:2px solid #f59e0b;}
+  .cal-event.atrasado{background:rgba(239,68,68,.2);color:#fca5a5;border-left:2px solid #ef4444;}
+  .cal-cell{min-height:105px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;transition:background .1s;}
+  .cal-cell:nth-child(7n){border-right:none;}
+  .cal-cell.out{opacity:.3;}
+  .cal-cell.today .cal-dnum{background:var(--accent);color:#fff;border-radius:50%;}
+  .cal-cell.weekend .cal-dnum{color:rgba(239,68,68,.6);}
+  .cal-dnum{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:3px;}
+  .cal-tooltip{position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;min-width:230px;max-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.5);pointer-events:none;opacity:0;transition:opacity .15s;}
+  .cal-tooltip.show{opacity:1;}
 
   /* ===== MÓDULO FLUXOGRAMAS ===== */
   .fx-tool-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;white-space:nowrap;}
@@ -413,6 +429,10 @@
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
         Projetos
       </div>
+      <div class="nav-item" onclick="navigate('calendario')">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Calendário
+      </div>
       <div class="nav-item" onclick="navigate('mapas')">
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z"/></svg>
         Mapas Mentais
@@ -524,6 +544,65 @@
         <div id="mm-canvas-wrap">
           <svg id="mm-canvas" xmlns="http://www.w3.org/2000/svg"></svg>
           <span class="mm-hint">Clique para selecionar · Arraste para mover · Scroll para zoom</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALENDÁRIO -->
+    <div id="page-calendario" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Calendário de Prazos</div>
+          <div class="page-subtitle">Vencimentos de Demandas, Projetos e Documentos</div>
+        </div>
+        <div class="page-header-right" style="align-items:center">
+          <button class="nav-btn-cal" onclick="calMudarMes(-1)">‹</button>
+          <div id="cal-month-label" style="font-size:16px;font-weight:700;min-width:180px;text-align:center;letter-spacing:-0.01em"></div>
+          <button class="nav-btn-cal" onclick="calMudarMes(1)">›</button>
+          <button class="btn-secondary" onclick="calIrHoje()" style="padding:7px 14px;font-size:12px">Hoje</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+        <select class="filter-select" id="cal-fil-resp" onchange="calRender()" style="min-width:180px">
+          <option value="">Todos os responsáveis</option>
+        </select>
+        <select class="filter-select" id="cal-fil-mod" onchange="calRender()" style="min-width:160px">
+          <option value="">Todos os módulos</option>
+          <option value="demanda">Demandas</option>
+          <option value="projeto">Projetos</option>
+          <option value="documental">Documental</option>
+        </select>
+        <div style="display:flex;gap:12px;align-items:center;margin-left:8px">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;border-radius:3px;background:#3b82f6"></div>Demandas</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;border-radius:3px;background:#a855f7"></div>Projetos</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;border-radius:3px;background:#f59e0b"></div>Documental</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;border-radius:3px;background:#ef4444"></div>Atrasado</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 260px;gap:16px;align-items:start">
+        <div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);background:var(--surface2);border-bottom:1px solid var(--border)">
+              <div style="padding:10px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)">Dom</div>
+              <div style="padding:10px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)">Seg</div>
+              <div style="padding:10px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)">Ter</div>
+              <div style="padding:10px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)">Qua</div>
+              <div style="padding:10px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)">Qui</div>
+              <div style="padding:10px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)">Sex</div>
+              <div style="padding:10px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(239,68,68,.5)">Sáb</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr)" id="cal-grid"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px">Resumo do Mês</div>
+            <div id="cal-kpis" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px">Próximos Vencimentos</div>
+            <div id="cal-proximos"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1201,6 +1280,7 @@ function navigate(page) {
   if (p) p.classList.add('active');
   if (page==='demandas') renderDemandas();
   if (page==='projetos') pjRenderInner();
+  if (page==='calendario') calRender();
   if (page==='fluxogramas') fxRenderLista();
   if (page==='documental') docRender();
   if (page==='query'){setViewQ('lista');renderQueries();}
@@ -3286,6 +3366,187 @@ function docExportCSV(){
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`${tipo}_moveprime.csv`;a.click();
 }
+
+
+// ════════════════════════════════════════════
+// MÓDULO CALENDÁRIO DE PRAZOS
+// ════════════════════════════════════════════
+const CAL = {
+  mes: new Date().getMonth(),
+  ano: new Date().getFullYear(),
+};
+const CAL_MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function calGetEventos(){
+  const resp=document.getElementById('cal-fil-resp')?.value||'';
+  const mod=document.getElementById('cal-fil-mod')?.value||'';
+  const eventos=[];
+  const today=new Date();today.setHours(0,0,0,0);
+
+  // Demandas
+  if(!mod||mod==='demanda'){
+    state.demandas.forEach(d=>{
+      if(!d.prazo)return;
+      if(resp&&d.responsavel!==resp)return;
+      const prazoDate=new Date(d.prazo+'T12:00:00');
+      const atrasado=prazoDate<today&&d.status!=='finalizada'&&d.status!=='cancelada';
+      eventos.push({id:'d'+d.id,tipo:'demanda',nome:d.nome,responsavel:d.responsavel||'—',prazo:d.prazo,status:d.status,prioridade:d.prioridade,atrasado});
+    });
+  }
+  // Projetos
+  if(!mod||mod==='projeto'){
+    state.projetos.forEach(p=>{
+      if(!p.fim)return;
+      if(resp&&p.resp!==resp)return;
+      const prazoDate=new Date(p.fim+'T12:00:00');
+      const atrasado=prazoDate<today&&p.status!=='finalizado'&&p.status!=='cancelado';
+      eventos.push({id:'p'+p.id,tipo:'projeto',nome:p.nome,responsavel:p.resp||'—',prazo:p.fim,status:p.status,prioridade:p.prior,atrasado});
+    });
+  }
+  // Documentos
+  if(!mod||mod==='documental'){
+    state.documentos.forEach(d=>{
+      if(!d.proxima_revisao)return;
+      if(resp&&d.responsavel!==resp)return;
+      const prazoDate=new Date(d.proxima_revisao+'T12:00:00');
+      const atrasado=prazoDate<today&&d.status!=='Obsoleto';
+      eventos.push({id:'doc'+d.id,tipo:'documental',nome:d.codigo?d.codigo+' '+d.titulo:d.titulo,responsavel:d.responsavel||'—',prazo:d.proxima_revisao,status:d.status,prioridade:d.criticidade,atrasado});
+    });
+  }
+  return eventos;
+}
+
+function calPopularFiltros(){
+  const sel=document.getElementById('cal-fil-resp');if(!sel||sel.options.length>1)return;
+  const resps=[...new Set([
+    ...state.demandas.map(d=>d.responsavel),
+    ...state.projetos.map(p=>p.resp),
+    ...state.documentos.map(d=>d.responsavel),
+  ].filter(Boolean))].sort();
+  resps.forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
+}
+
+function calRender(){
+  calPopularFiltros();
+  const label=document.getElementById('cal-month-label');
+  if(label)label.textContent=`${CAL_MESES[CAL.mes]} ${CAL.ano}`;
+
+  const grid=document.getElementById('cal-grid');if(!grid)return;
+  const eventos=calGetEventos();
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayStr=today.toISOString().substring(0,10);
+
+  // Agrupar por data
+  const byDate={};
+  eventos.forEach(e=>{
+    if(!byDate[e.prazo])byDate[e.prazo]=[];
+    byDate[e.prazo].push(e);
+  });
+
+  const primeiro=new Date(CAL.ano,CAL.mes,1);
+  const ultimo=new Date(CAL.ano,CAL.mes+1,0);
+  const startDow=primeiro.getDay();
+  let cells='';
+
+  // Dias do mês anterior
+  for(let i=0;i<startDow;i++){
+    const dd=new Date(CAL.ano,CAL.mes,1-startDow+i);
+    cells+=`<div class="cal-cell out"><span class="cal-dnum">${dd.getDate()}</span></div>`;
+  }
+
+  for(let d=1;d<=ultimo.getDate();d++){
+    const dateStr=`${CAL.ano}-${String(CAL.mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const evs=byDate[dateStr]||[];
+    const isToday=dateStr===todayStr;
+    const dow=(startDow+d-1)%7;
+    const isWeekend=dow===0||dow===6;
+    const MAX=3;
+    let evHtml='';
+    evs.slice(0,MAX).forEach(ev=>{
+      const cls=ev.atrasado?'atrasado':ev.tipo;
+      const nome=ev.nome.length>22?ev.nome.slice(0,20)+'…':ev.nome;
+      evHtml+=`<div class="cal-event ${cls}" onmouseenter="calShowTooltip(event,'${ev.id}')" onmouseleave="calHideTooltip()">
+        <span style="width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;display:inline-block"></span>${nome}
+      </div>`;
+    });
+    if(evs.length>MAX)evHtml+=`<div style="font-size:10px;color:var(--text3);padding:1px 4px">+${evs.length-MAX} mais</div>`;
+    cells+=`<div class="cal-cell${isToday?' today':''}${isWeekend?' weekend':''}">
+      <span class="cal-dnum">${d}</span>
+      <div>${evHtml}</div>
+    </div>`;
+  }
+
+  // Preencher restante
+  const total=startDow+ultimo.getDate();
+  const rem=(7-total%7)%7;
+  for(let i=1;i<=rem;i++)cells+=`<div class="cal-cell out"><span class="cal-dnum">${i}</span></div>`;
+  grid.innerHTML=cells;
+
+  // KPIs do mês
+  const mesEvs=eventos.filter(e=>e.prazo?.startsWith(`${CAL.ano}-${String(CAL.mes+1).padStart(2,'0')}`));
+  const atrasados=eventos.filter(e=>e.atrasado);
+  document.getElementById('cal-kpis').innerHTML=`
+    <div style="background:var(--surface2);border-radius:8px;padding:10px 12px"><div style="font-size:22px;font-weight:700;letter-spacing:-0.02em">${mesEvs.length}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Vencimentos</div></div>
+    <div style="background:var(--surface2);border-radius:8px;padding:10px 12px"><div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--danger)">${atrasados.length}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Atrasados</div></div>
+    <div style="background:var(--surface2);border-radius:8px;padding:10px 12px"><div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;color:#3b82f6">${mesEvs.filter(e=>e.tipo==='demanda').length}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Demandas</div></div>
+    <div style="background:var(--surface2);border-radius:8px;padding:10px 12px"><div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;color:#a855f7">${mesEvs.filter(e=>e.tipo==='projeto').length}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Projetos</div></div>
+  `;
+
+  // Próximos vencimentos
+  const proximos=eventos
+    .filter(e=>{const p=new Date(e.prazo+'T12:00:00');return p>=today&&e.prazo?.startsWith(`${CAL.ano}-${String(CAL.mes+1).padStart(2,'0')}`);})
+    .sort((a,b)=>a.prazo.localeCompare(b.prazo)).slice(0,6);
+  document.getElementById('cal-proximos').innerHTML=proximos.length?proximos.map(e=>{
+    const cor=e.tipo==='demanda'?'#3b82f6':e.tipo==='projeto'?'#a855f7':'#f59e0b';
+    const[yy,mm,dd]=e.prazo.split('-');
+    return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:3px;min-height:36px;border-radius:2px;background:${cor};flex-shrink:0"></div>
+      <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;color:var(--text);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nome}</div><div style="font-size:10px;color:var(--text3)">${e.responsavel}</div></div>
+      <div style="font-size:11px;font-weight:600;color:${cor};flex-shrink:0;padding-left:6px">${dd}/${mm}</div>
+    </div>`;
+  }).join(''):'<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px">Sem vencimentos pendentes</div>';
+
+  // Criar tooltip se não existir
+  if(!document.getElementById('cal-tooltip')){
+    const tt=document.createElement('div');tt.id='cal-tooltip';tt.className='cal-tooltip';document.body.appendChild(tt);
+  }
+}
+
+function calMudarMes(d){
+  CAL.mes+=d;
+  if(CAL.mes>11){CAL.mes=0;CAL.ano++;}
+  if(CAL.mes<0){CAL.mes=11;CAL.ano--;}
+  calRender();
+}
+function calIrHoje(){CAL.mes=new Date().getMonth();CAL.ano=new Date().getFullYear();calRender();}
+
+// Tooltip
+let _calEvCache={};
+function calShowTooltip(e,id){
+  // Reconstroi cache de eventos
+  const todos=calGetEventos();
+  todos.forEach(ev=>_calEvCache[ev.id]=ev);
+  const ev=_calEvCache[id];if(!ev)return;
+  const tt=document.getElementById('cal-tooltip');if(!tt)return;
+  const cor=ev.tipo==='demanda'?'#3b82f6':ev.tipo==='projeto'?'#a855f7':'#f59e0b';
+  const tipoLabel=ev.tipo==='demanda'?'Demanda':ev.tipo==='projeto'?'Projeto':'Documental';
+  const[yy,mm,dd]=ev.prazo.split('-');
+  tt.innerHTML=`
+    <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${ev.atrasado?'var(--danger)':cor};margin-bottom:8px">${tipoLabel}${ev.atrasado?' · ATRASADO':''}</div>
+    <div style="font-size:13px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:8px">${ev.nome}</div>
+    <div style="display:flex;gap:8px;font-size:11px;color:var(--text2);margin-bottom:3px"><span style="color:var(--text3);min-width:70px">Responsável</span>${ev.responsavel}</div>
+    <div style="display:flex;gap:8px;font-size:11px;color:var(--text2);margin-bottom:3px"><span style="color:var(--text3);min-width:70px">Prazo</span>${dd}/${mm}/${yy}</div>
+    <div style="display:flex;gap:8px;font-size:11px;color:var(--text2);margin-bottom:3px"><span style="color:var(--text3);min-width:70px">Status</span>${ev.status}</div>
+    <div style="display:flex;gap:8px;font-size:11px;color:var(--text2)"><span style="color:var(--text3);min-width:70px">Prioridade</span>${ev.prioridade||'—'}</div>
+  `;
+  const r=e.target.getBoundingClientRect();
+  let left=r.right+10,top=r.top-8;
+  if(left+260>window.innerWidth)left=r.left-268;
+  if(top+180>window.innerHeight)top=window.innerHeight-190;
+  tt.style.left=left+'px';tt.style.top=top+'px';
+  tt.classList.add('show');
+}
+function calHideTooltip(){const tt=document.getElementById('cal-tooltip');if(tt)tt.classList.remove('show');}
 
 
 // ─── FUNÇÕES AUXILIARES PROJETOS ───
