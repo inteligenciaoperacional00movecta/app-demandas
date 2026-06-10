@@ -1256,6 +1256,8 @@ async function carregarTudo() {
     state.fluxogramas=fx||[];
     state.documentos=docs||[];
     toast('Dados carregados!');
+    // Atualiza calendário se estiver ativo
+    if(state.currentPage==='calendario') calRender();
   } catch(e){toast('Erro ao carregar: '+e.message,'error');}
   finally{hideLoading();}
 }
@@ -1280,7 +1282,7 @@ function navigate(page) {
   if (p) p.classList.add('active');
   if (page==='demandas') renderDemandas();
   if (page==='projetos') pjRenderInner();
-  if (page==='calendario') calRender();
+  if (page==='calendario') { if(state.demandas.length) calRender(); else carregarTudo().then(()=>calRender()); }
   if (page==='fluxogramas') fxRenderLista();
   if (page==='documental') docRender();
   if (page==='query'){setViewQ('lista');renderQueries();}
@@ -3417,13 +3419,15 @@ function calGetEventos(){
 }
 
 function calPopularFiltros(){
-  const sel=document.getElementById('cal-fil-resp');if(!sel||sel.options.length>1)return;
+  const sel=document.getElementById('cal-fil-resp');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Todos os responsáveis</option>';
   const resps=[...new Set([
     ...state.demandas.map(d=>d.responsavel),
     ...state.projetos.map(p=>p.resp),
     ...state.documentos.map(d=>d.responsavel),
   ].filter(Boolean))].sort();
-  resps.forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
+  resps.forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;if(r===cur)o.selected=true;sel.appendChild(o);});
 }
 
 function calRender(){
@@ -3451,7 +3455,7 @@ function calRender(){
   // Dias do mês anterior
   for(let i=0;i<startDow;i++){
     const dd=new Date(CAL.ano,CAL.mes,1-startDow+i);
-    cells+=`<div class="cal-cell out"><span class="cal-dnum">${dd.getDate()}</span></div>`;
+    cells+=`<div style="min-height:100px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;opacity:.3"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:3px">${dd.getDate()}</span></div>`;
   }
 
   for(let d=1;d<=ultimo.getDate();d++){
@@ -3470,8 +3474,10 @@ function calRender(){
       </div>`;
     });
     if(evs.length>MAX)evHtml+=`<div style="font-size:10px;color:var(--text3);padding:1px 4px">+${evs.length-MAX} mais</div>`;
-    cells+=`<div class="cal-cell${isToday?' today':''}${isWeekend?' weekend':''}">
-      <span class="cal-dnum">${d}</span>
+    const todayCss=isToday?'background:rgba(59,130,246,0.05);':'';
+    const dnumCss=isToday?'style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;background:var(--accent);color:#fff;border-radius:50%;margin-bottom:3px"':'style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;color:'+(isWeekend?'rgba(239,68,68,.6)':'var(--text2)')+';margin-bottom:3px"';
+    cells+=`<div style="min-height:100px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;${todayCss}">
+      <span ${dnumCss}>${d}</span>
       <div>${evHtml}</div>
     </div>`;
   }
@@ -3479,7 +3485,7 @@ function calRender(){
   // Preencher restante
   const total=startDow+ultimo.getDate();
   const rem=(7-total%7)%7;
-  for(let i=1;i<=rem;i++)cells+=`<div class="cal-cell out"><span class="cal-dnum">${i}</span></div>`;
+  for(let i=1;i<=rem;i++)cells+=`<div style="min-height:100px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;opacity:.3"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:3px">${i}</span></div>`;
   grid.innerHTML=cells;
 
   // KPIs do mês
