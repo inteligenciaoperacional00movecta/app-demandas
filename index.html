@@ -421,6 +421,10 @@
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
         Fluxogramas
       </div>
+      <div class="nav-item" onclick="navigate('documental')">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Documental
+      </div>
       <div class="nav-item" onclick="navigate('query')">
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 12c0 2.21 3.582 4 8 4s8-1.79 8-4"/></svg>
         API / Query / View
@@ -611,6 +615,41 @@
     </div>
 
     <!-- DASHBOARD -->
+    <!-- DOCUMENTAL -->
+    <div id="page-documental" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Documental</div><div class="page-subtitle">Gestão de Procedimentos e Instruções de Trabalho</div></div>
+        <div class="page-header-right">
+          <button class="btn-secondary" onclick="docExportCSV()">↓ Exportar CSV</button>
+          <button class="btn-primary" id="doc-btn-novo" onclick="docAbrirForm()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            <span id="doc-btn-label">Novo Procedimento</span>
+          </button>
+        </div>
+      </div>
+      <div class="inner-tabs" style="margin-bottom:16px">
+        <button class="inner-tab active" id="doc-tab-proc" onclick="docSetTipo('procedimento',this)">Procedimentos</button>
+        <button class="inner-tab" id="doc-tab-it" onclick="docSetTipo('instrucao',this)">Instruções de Trabalho</button>
+      </div>
+      <div class="pj-filter-bar" id="doc-filter-bar">
+        <input class="fw" type="text" id="docfi-titulo" placeholder="🔍 Buscar título ou código..." oninput="docRender()" style="min-width:200px">
+        <input type="text" id="docfi-area" placeholder="🔍 Área..." oninput="docRender()" style="min-width:140px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;">
+        <select id="docfi-status" onchange="docRender()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;cursor:pointer;min-width:150px">
+          <option value="">Todos os Status</option>
+          <option>Rascunho</option><option>Em Aprovação</option><option>Vigente</option><option>Obsoleto</option>
+        </select>
+        <select id="docfi-crit" onchange="docRender()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;cursor:pointer;min-width:140px">
+          <option value="">Todas Criticidades</option>
+          <option>Baixa</option><option>Média</option><option>Alta</option>
+        </select>
+        <select id="docfi-resp" onchange="docRender()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;cursor:pointer;min-width:160px">
+          <option value="">Todos os Responsáveis</option>
+        </select>
+        <button class="btn-secondary" style="padding:8px 12px;font-size:12px" onclick="docClearFilters()">✕ Limpar</button>
+      </div>
+      <div id="doc-content"></div>
+    </div>
+
     <!-- QUERY DE DADOS -->
     <div id="page-query" class="page">
       <div class="page-header">
@@ -779,6 +818,66 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('add-query')">Cancelar</button>
       <button class="btn-primary" onclick="saveQuery(event)">Salvar Registro</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DOCUMENTAL -->
+<div class="modal-overlay" id="modal-doc-form">
+  <div class="modal" style="max-width:820px">
+    <div class="modal-header">
+      <div class="modal-title" id="doc-modal-title">Novo Procedimento</div>
+      <div class="modal-close" onclick="document.getElementById('modal-doc-form').classList.remove('open')">✕</div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="doc-edit-id">
+      <input type="hidden" id="doc-edit-tipo">
+      <div class="field-group"><label class="field-label">Código *</label>
+        <input class="field-input" id="doc-codigo" placeholder="Ex: PROC-001"></div>
+      <div class="field-group"><label class="field-label">Título *</label>
+        <input class="field-input" id="doc-titulo" placeholder="Nome do documento"></div>
+      <div class="field-group"><label class="field-label">Área *</label>
+        <input class="field-input" id="doc-area" placeholder="Ex: Aduaneiro, Transportes..."></div>
+      <div class="field-group"><label class="field-label">Responsável *</label>
+        <select class="field-select" id="doc-responsavel"><option value="">Selecione...</option></select></div>
+      <div class="field-group"><label class="field-label">Versão *</label>
+        <input class="field-input" id="doc-versao" placeholder="Ex: 1.0"></div>
+      <div class="field-group"><label class="field-label">Status *</label>
+        <select class="field-select" id="doc-status">
+          <option value="">Selecione...</option>
+          <option>Rascunho</option><option>Em Aprovação</option><option>Vigente</option><option>Obsoleto</option>
+        </select></div>
+      <div class="field-group"><label class="field-label">Criticidade *</label>
+        <select class="field-select" id="doc-criticidade">
+          <option value="">Selecione...</option>
+          <option>Baixa</option><option>Média</option><option>Alta</option>
+        </select></div>
+      <div class="field-group"><label class="field-label">Aprovador</label>
+        <input class="field-input" id="doc-aprovador" placeholder="Nome do gestor aprovador"></div>
+      <div class="field-group"><label class="field-label">Data de Criação</label>
+        <input class="field-input" type="date" id="doc-data-criacao"></div>
+      <div class="field-group"><label class="field-label">Última Revisão</label>
+        <input class="field-input" type="date" id="doc-ultima-revisao"></div>
+      <div class="field-group"><label class="field-label">Próxima Revisão</label>
+        <input class="field-input" type="date" id="doc-proxima-revisao"></div>
+      <div class="field-group full"><label class="field-label">Observações</label>
+        <textarea class="field-textarea" id="doc-obs" placeholder="Comentários gerais..." style="min-height:100px"></textarea></div>
+      <div class="field-group full">
+        <label class="field-label">Anexo (PDF, Word, SharePoint)</label>
+        <div class="file-upload-area" id="upload-area-doc">
+          <input type="file" id="doc-anexo-file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx">
+          <div class="upload-icon">📎</div>
+          <p>Clique ou arraste o documento aqui</p>
+        </div>
+        <div id="doc-anexo-preview" style="display:none" class="file-preview">
+          <span id="doc-anexo-nome">—</span>
+          <button onclick="docRemoverAnexo()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;margin-left:auto">✕</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="document.getElementById('modal-doc-form').classList.remove('open')">Cancelar</button>
+      <button class="btn-primary" onclick="docSalvar(event)">Salvar</button>
     </div>
   </div>
 </div>
@@ -1013,7 +1112,7 @@ const STORAGE_BUCKET = 'anexos';
 // STATE
 // ══════════════════════════════════════════
 const state = {
-  demandas:[], queries:[], usuarios:[], mapas:[], projetos:[], fluxogramas:[],
+  demandas:[], queries:[], usuarios:[], mapas:[], projetos:[], fluxogramas:[], documentos:[],
   currentPage:'', viewD:'tabela', viewQ:'tabela',
   viewMode:null, viewId:null, viewEditing:false,
   user:null,
@@ -1063,18 +1162,20 @@ function doLogout() {
 async function carregarTudo() {
   showLoading('Carregando dados...');
   try {
-    const [{data:d},{data:q},{data:m},{data:pj},{data:fx}]=await Promise.all([
+    const [{data:d},{data:q},{data:m},{data:pj},{data:fx},{data:docs}]=await Promise.all([
       sb.from('demandas').select('*').order('prazo',{ascending:true,nullsFirst:false}),
       sb.from('queries').select('*').order('id',{ascending:false}),
       sb.from('mapas_mentais').select('*').order('atualizado_em',{ascending:false}),
       sb.from('projetos').select('*, projeto_tasks(*), projeto_comments(*), projeto_attachments(*)').order('fim',{ascending:true,nullsFirst:false}),
-      sb.from('fluxogramas').select('*').order('atualizado_em',{ascending:false})
+      sb.from('fluxogramas').select('*').order('atualizado_em',{ascending:false}),
+      sb.from('documentos').select('*').order('created_at',{ascending:false})
     ]);
     state.demandas=d||[];
     state.queries=q||[];
     state.mapas=m||[];
     state.projetos=pjNormalize(pj||[]);
     state.fluxogramas=fx||[];
+    state.documentos=docs||[];
     toast('Dados carregados!');
   } catch(e){toast('Erro ao carregar: '+e.message,'error');}
   finally{hideLoading();}
@@ -1101,6 +1202,7 @@ function navigate(page) {
   if (page==='demandas') renderDemandas();
   if (page==='projetos') pjRenderInner();
   if (page==='fluxogramas') fxRenderLista();
+  if (page==='documental') docRender();
   if (page==='query'){setViewQ('lista');renderQueries();}
   if (page==='usuarios') carregarUsuarios();
   if (page==='mapas') renderListaMapas();
@@ -2913,6 +3015,276 @@ function exportQueryCSV(){
   state.queries.forEach(q=>rows.push([q.nome||'',q.sistema||'',q.tipo||'',q.descricao||'',q.status||'',q.anexo_url||'']));
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='queries_moveprime.csv';a.click();
+}
+
+
+// ════════════════════════════════════════════
+// MÓDULO DOCUMENTAL
+// ════════════════════════════════════════════
+let _docTipo = 'procedimento';
+let _pendingFileDoc = null;
+
+const DOC_STATUS_COLORS = {
+  'Rascunho':     {bg:'rgba(139,145,168,.15)', color:'#8b91a8'},
+  'Em Aprovação': {bg:'rgba(245,158,11,.15)',  color:'#fbbf24'},
+  'Vigente':      {bg:'rgba(34,197,94,.15)',   color:'#4ade80'},
+  'Obsoleto':     {bg:'rgba(239,68,68,.15)',   color:'#f87171'},
+};
+const DOC_CRIT_COLORS = {
+  'Baixa': {bg:'rgba(34,197,94,.12)',  color:'#4ade80'},
+  'Média': {bg:'rgba(245,158,11,.12)', color:'#fbbf24'},
+  'Alta':  {bg:'rgba(239,68,68,.12)',  color:'#f87171'},
+};
+
+function docStatusBadge(s){
+  const c=DOC_STATUS_COLORS[s]||{bg:'rgba(139,145,168,.15)',color:'#8b91a8'};
+  return `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${c.bg};color:${c.color}"><span style="width:5px;height:5px;border-radius:50%;background:${c.color};display:inline-block"></span>${s||'—'}</span>`;
+}
+function docCritBadge(s){
+  const c=DOC_CRIT_COLORS[s]||{bg:'rgba(139,145,168,.15)',color:'#8b91a8'};
+  return `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${c.bg};color:${c.color}">${s||'—'}</span>`;
+}
+
+function docSetTipo(tipo, el){
+  _docTipo = tipo;
+  document.querySelectorAll('#page-documental .inner-tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const label = tipo==='procedimento'?'Novo Procedimento':'Nova Instrução de Trabalho';
+  document.getElementById('doc-btn-label').textContent = label;
+  docPopularRespFilter();
+  docRender();
+}
+
+function docGetFiltered(){
+  const titulo=(document.getElementById('docfi-titulo')?.value||'').toLowerCase();
+  const area=(document.getElementById('docfi-area')?.value||'').toLowerCase();
+  const st=document.getElementById('docfi-status')?.value||'';
+  const cr=document.getElementById('docfi-crit')?.value||'';
+  const resp=document.getElementById('docfi-resp')?.value||'';
+  return state.documentos.filter(d=>{
+    if(d.tipo!==_docTipo)return false;
+    if(titulo&&!(d.titulo||'').toLowerCase().includes(titulo)&&!(d.codigo||'').toLowerCase().includes(titulo))return false;
+    if(area&&!(d.area||'').toLowerCase().includes(area))return false;
+    if(st&&d.status!==st)return false;
+    if(cr&&d.criticidade!==cr)return false;
+    if(resp&&d.responsavel!==resp)return false;
+    return true;
+  }).sort((a,b)=>(a.codigo||'').localeCompare(b.codigo||''));
+}
+
+function docClearFilters(){
+  ['docfi-titulo','docfi-area','docfi-status','docfi-crit','docfi-resp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  docRender();
+}
+
+function docPopularRespFilter(){
+  const sel=document.getElementById('docfi-resp');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Todos os Responsáveis</option>';
+  state.usuarios.forEach(u=>{
+    const opt=document.createElement('option');opt.value=u.nome;opt.textContent=u.nome;
+    if(u.nome===cur)opt.selected=true;sel.appendChild(opt);
+  });
+}
+
+function docRender(){
+  docPopularRespFilter();
+  const f=docGetFiltered();
+  const el=document.getElementById('doc-content');if(!el)return;
+  if(!f.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📄</div><p>Nenhum ${_docTipo==='procedimento'?'procedimento':'instrução de trabalho'} encontrado.</p></div>`;return;
+  }
+  const rows=f.map(d=>`<tr ondblclick="docAbrirDetalhe(${d.id})" style="cursor:pointer">
+    <td style="padding:12px 14px;color:var(--accent);font-weight:600;white-space:nowrap">${d.codigo||'—'}</td>
+    <td style="padding:12px 14px;font-weight:500;color:var(--text);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.titulo||''}">${d.titulo||'—'}</td>
+    <td style="padding:12px 14px;color:var(--text2)">${d.area||'—'}</td>
+    <td style="padding:12px 14px;color:var(--text2)">${d.responsavel||'—'}</td>
+    <td style="padding:12px 14px;color:var(--text3);text-align:center">${d.versao||'—'}</td>
+    <td style="padding:12px 14px">${docStatusBadge(d.status)}</td>
+    <td style="padding:12px 14px">${docCritBadge(d.criticidade)}</td>
+    <td style="padding:12px 14px;color:var(--text2)">${d.aprovador||'—'}</td>
+    <td style="padding:12px 14px;color:var(--text3);font-size:11px;white-space:nowrap">${fmtDate(d.data_criacao)}</td>
+    <td style="padding:12px 14px;color:var(--text3);font-size:11px;white-space:nowrap">${fmtDate(d.ultima_revisao)}</td>
+    <td style="padding:12px 14px;font-size:11px;white-space:nowrap" class="${docProxRevisaoClass(d)}">${fmtDate(d.proxima_revisao)}</td>
+    <td style="padding:12px 14px;text-align:center">${d.anexo_url?`<a href="${d.anexo_url}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);font-size:14px;text-decoration:none" title="Abrir anexo">📎</a>`:'—'}</td>
+  </tr>`).join('');
+  el.innerHTML=`<div class="table-wrap" style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:1100px">
+      <thead><tr style="background:var(--surface2)">
+        ${['Código','Título','Área','Responsável','Versão','Status','Criticidade','Aprovador','Criação','Últ. Revisão','Próx. Revisão','Anexo'].map(h=>`<th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap">${h}</th>`).join('')}
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function docProxRevisaoClass(d){
+  if(!d.proxima_revisao)return '';
+  const today=new Date();today.setHours(0,0,0,0);
+  const pr=new Date(d.proxima_revisao+'T00:00:00');
+  const diff=(pr-today)/86400000;
+  if(diff<0)return 'prazo-late';
+  if(diff<=30)return 'prazo-warn';
+  return '';
+}
+
+// ─── DETALHE ───
+function docAbrirDetalhe(id){
+  const d=state.documentos.find(x=>x.id===id);if(!d)return;
+  const tipo=d.tipo==='procedimento'?'Procedimento':'Instrução de Trabalho';
+  document.getElementById('modal-q-detail-body').innerHTML=`
+    <div class="modal-header">
+      <div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+          <span style="font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);background:rgba(59,130,246,.1);padding:3px 10px;border-radius:6px">${tipo}</span>
+          ${docStatusBadge(d.status)}${docCritBadge(d.criticidade)}
+        </div>
+        <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:3px">${d.codigo||''}</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.02em">${d.titulo||'—'}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:3px">${d.area||''} · Versão ${d.versao||'—'}</div>
+      </div>
+      <div style="display:flex;gap:7px;flex-shrink:0">
+        <button class="btn-secondary" style="padding:6px 12px;font-size:12px" onclick="docEditarRegistro(${d.id})">✏ Editar</button>
+        <button onclick="document.getElementById('modal-q-detail').classList.remove('open')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:22px;line-height:1;padding:0 4px">×</button>
+      </div>
+    </div>
+    <div style="padding:20px 24px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Responsável</div><div style="font-size:13px;color:var(--text)">${d.responsavel||'—'}</div></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Aprovador</div><div style="font-size:13px;color:var(--text)">${d.aprovador||'—'}</div></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Data de Criação</div><div style="font-size:13px;color:var(--text)">${fmtDate(d.data_criacao)}</div></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Última Revisão</div><div style="font-size:13px;color:var(--text)">${fmtDate(d.ultima_revisao)}</div></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;grid-column:1/-1"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Próxima Revisão</div><div style="font-size:13px;class="${docProxRevisaoClass(d)}">${fmtDate(d.proxima_revisao)}</div></div>
+      ${d.observacoes?`<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;grid-column:1/-1"><div style="font-size:10px;color:var(--text3);margin-bottom:6px">Observações</div><div style="font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-wrap">${d.observacoes}</div></div>`:''}
+      ${d.anexo_url?`<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;grid-column:1/-1;display:flex;align-items:center;gap:10px"><span style="font-size:20px">📎</span><a href="${d.anexo_url}" target="_blank" style="color:var(--accent);font-size:13px;text-decoration:none">Abrir documento →</a></div>`:''}
+    </div>`;
+  document.getElementById('modal-q-detail').classList.add('open');
+}
+
+// ─── FORM ───
+function docAbrirForm(){
+  document.getElementById('doc-edit-id').value='';
+  document.getElementById('doc-edit-tipo').value=_docTipo;
+  const label=_docTipo==='procedimento'?'Novo Procedimento':'Nova Instrução de Trabalho';
+  document.getElementById('doc-modal-title').textContent=label;
+  ['doc-codigo','doc-titulo','doc-area','doc-versao','doc-aprovador','doc-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['doc-status','doc-criticidade','doc-responsavel','doc-data-criacao','doc-ultima-revisao','doc-proxima-revisao'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('doc-criticidade').value='Média';
+  document.getElementById('doc-status').value='Rascunho';
+  _pendingFileDoc=null;
+  document.getElementById('doc-anexo-file').value='';
+  document.getElementById('doc-anexo-preview').style.display='none';
+  document.getElementById('upload-area-doc').style.display='block';
+  // Popular select responsável
+  docPopularRespSelect('');
+  document.getElementById('modal-doc-form').classList.add('open');
+}
+
+function docEditarRegistro(id){
+  document.getElementById('modal-q-detail').classList.remove('open');
+  const d=state.documentos.find(x=>x.id===id);if(!d)return;
+  document.getElementById('doc-edit-id').value=id;
+  document.getElementById('doc-edit-tipo').value=d.tipo;
+  const label=d.tipo==='procedimento'?'Editar Procedimento':'Editar Instrução de Trabalho';
+  document.getElementById('doc-modal-title').textContent=label;
+  document.getElementById('doc-codigo').value=d.codigo||'';
+  document.getElementById('doc-titulo').value=d.titulo||'';
+  document.getElementById('doc-area').value=d.area||'';
+  document.getElementById('doc-versao').value=d.versao||'';
+  document.getElementById('doc-aprovador').value=d.aprovador||'';
+  document.getElementById('doc-obs').value=d.observacoes||'';
+  document.getElementById('doc-status').value=d.status||'';
+  document.getElementById('doc-criticidade').value=d.criticidade||'';
+  document.getElementById('doc-data-criacao').value=d.data_criacao||'';
+  document.getElementById('doc-ultima-revisao').value=d.ultima_revisao||'';
+  document.getElementById('doc-proxima-revisao').value=d.proxima_revisao||'';
+  _pendingFileDoc=null;
+  document.getElementById('doc-anexo-file').value='';
+  document.getElementById('doc-anexo-preview').style.display='none';
+  document.getElementById('upload-area-doc').style.display='block';
+  docPopularRespSelect(d.responsavel||'');
+  document.getElementById('modal-doc-form').classList.add('open');
+}
+
+function docPopularRespSelect(valorAtual){
+  const el=document.getElementById('doc-responsavel');if(!el)return;
+  el.innerHTML='<option value="">Selecione...</option>';
+  state.usuarios.forEach(u=>{
+    const opt=document.createElement('option');opt.value=u.nome;opt.textContent=u.nome;
+    if(u.nome===valorAtual)opt.selected=true;el.appendChild(opt);
+  });
+  if(valorAtual&&!state.usuarios.find(u=>u.nome===valorAtual)){
+    const opt=document.createElement('option');opt.value=valorAtual;opt.textContent=valorAtual;opt.selected=true;el.appendChild(opt);
+  }
+}
+
+// ─── ANEXO ───
+document.addEventListener('change',function(e){
+  if(e.target&&e.target.id==='doc-anexo-file'){
+    if(e.target.files&&e.target.files[0]){
+      _pendingFileDoc=e.target.files[0];
+      document.getElementById('doc-anexo-nome').textContent=_pendingFileDoc.name;
+      document.getElementById('doc-anexo-preview').style.display='flex';
+      document.getElementById('upload-area-doc').style.display='none';
+    }
+  }
+});
+function docRemoverAnexo(){
+  _pendingFileDoc=null;
+  document.getElementById('doc-anexo-file').value='';
+  document.getElementById('doc-anexo-preview').style.display='none';
+  document.getElementById('upload-area-doc').style.display='block';
+}
+
+// ─── SAVE ───
+async function docSalvar(e){
+  const btn=e?.target;if(btn&&btn.disabled)return;
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  const codigo=document.getElementById('doc-codigo').value.trim();
+  const titulo=document.getElementById('doc-titulo').value.trim();
+  const area=document.getElementById('doc-area').value.trim();
+  const responsavel=document.getElementById('doc-responsavel').value;
+  const versao=document.getElementById('doc-versao').value.trim();
+  const status=document.getElementById('doc-status').value;
+  const criticidade=document.getElementById('doc-criticidade').value;
+  // Validação
+  let ok=true;
+  [{id:'doc-codigo',v:codigo},{id:'doc-titulo',v:titulo},{id:'doc-area',v:area},{id:'doc-responsavel',v:responsavel},{id:'doc-versao',v:versao},{id:'doc-status',v:status},{id:'doc-criticidade',v:criticidade}].forEach(({id,v})=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.style.borderColor=v?'':'var(--danger)';if(!v)ok=false;
+  });
+  if(!ok){toast('Preencha os campos obrigatórios','error');if(btn){btn.disabled=false;btn.textContent='Salvar';}return;}
+  showLoading('Salvando...');
+  try{
+    const editId=document.getElementById('doc-edit-id').value;
+    const tipo=document.getElementById('doc-edit-tipo').value||_docTipo;
+    let anexo_url=null;
+    if(editId){const cur=state.documentos.find(x=>x.id===Number(editId));if(cur)anexo_url=cur.anexo_url||null;}
+    if(_pendingFileDoc){anexo_url=await uploadArquivo(_pendingFileDoc);_pendingFileDoc=null;}
+    const obj={tipo,codigo,titulo,area,responsavel,versao,status,criticidade,
+      aprovador:document.getElementById('doc-aprovador').value.trim(),
+      data_criacao:document.getElementById('doc-data-criacao').value||null,
+      ultima_revisao:document.getElementById('doc-ultima-revisao').value||null,
+      proxima_revisao:document.getElementById('doc-proxima-revisao').value||null,
+      observacoes:document.getElementById('doc-obs').value,
+      anexo_url};
+    if(editId){
+      const{error}=await sb.from('documentos').update(obj).eq('id',Number(editId));if(error)throw error;toast('Documento atualizado!');
+    }else{
+      const{error}=await sb.from('documentos').insert(obj);if(error)throw error;toast('Documento criado!');
+    }
+    await carregarTudo();document.getElementById('modal-doc-form').classList.remove('open');docRender();
+  }catch(e){toast('Erro: '+e.message,'error');}
+  finally{hideLoading();if(btn){btn.disabled=false;btn.textContent='Salvar';}}
+}
+
+// ─── EXPORT CSV ───
+function docExportCSV(){
+  const f=docGetFiltered();
+  const tipo=_docTipo==='procedimento'?'Procedimentos':'Instrucoes_de_Trabalho';
+  const rows=[['Código','Título','Área','Responsável','Versão','Status','Criticidade','Aprovador','Criação','Últ. Revisão','Próx. Revisão']];
+  f.forEach(d=>rows.push([d.codigo||'',d.titulo||'',d.area||'',d.responsavel||'',d.versao||'',d.status||'',d.criticidade||'',d.aprovador||'',d.data_criacao||'',d.ultima_revisao||'',d.proxima_revisao||'']));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`${tipo}_moveprime.csv`;a.click();
 }
 
 
