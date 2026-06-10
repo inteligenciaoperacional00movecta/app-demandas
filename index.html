@@ -169,7 +169,7 @@
   .modal-footer{padding:16px 28px 24px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);}
 
   /* DASHBOARD */
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px;}
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:28px;}
   .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
   .stat-label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
   .stat-value{font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:700;letter-spacing:-0.02em;color:var(--text);line-height:1;}
@@ -228,6 +228,17 @@
   @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
   @keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
   @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ===== MÓDULO FLUXOGRAMAS ===== */
+  .fx-tool-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+  .fx-tool-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .fx-tool-btn.active{background:rgba(59,130,246,.15);border-color:var(--accent);color:var(--accent);}
+  .fx-tool-btn.danger:hover{border-color:var(--danger);color:var(--danger);}
+  .fx-node{cursor:pointer;}
+  .fx-node:hover .fx-node-body{filter:brightness(1.15);}
+  .fx-node.selected .fx-node-body{stroke-width:2.5px;}
+  .fx-edge-label{font-size:11px;fill:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;}
+  .fx-lane-label{font-size:12px;font-weight:600;fill:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:0.04em;}
 
   /* ===== MÓDULO PROJETOS ===== */
   .pj-mono{font-family:'Plus Jakarta Sans',sans-serif;}
@@ -398,18 +409,21 @@
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
         Demandas
       </div>
-      <div class="nav-item" onclick="navigate('mapas')">
-        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z"/></svg>
-        Mapas Mentais
-      </div>
       <div class="nav-item" onclick="navigate('projetos')">
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
         Projetos
       </div>
-
+      <div class="nav-item" onclick="navigate('mapas')">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z"/></svg>
+        Mapas Mentais
+      </div>
+      <div class="nav-item" onclick="navigate('fluxogramas')">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+        Fluxogramas
+      </div>
       <div class="nav-item" onclick="navigate('query')">
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 12c0 2.21 3.582 4 8 4s8-1.79 8-4"/></svg>
-        Query de Dados
+        API / Query / View
       </div>
       <div class="nav-item" id="nav-usuarios" onclick="navigate('usuarios')" style="display:none">
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
@@ -510,6 +524,71 @@
       </div>
     </div>
 
+    <!-- FLUXOGRAMAS -->
+    <div id="page-fluxogramas" class="page">
+      <div id="fx-lista-wrap">
+        <div class="page-header">
+          <div><div class="page-title">Fluxogramas</div><div class="page-subtitle">Modelagem de processos no padrão BPMN</div></div>
+          <button class="btn-primary" onclick="fxAbrirNovo()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>Novo Fluxograma
+          </button>
+        </div>
+        <div id="fx-grid" class="mm-grid"></div>
+      </div>
+      <div id="fx-editor-wrap" style="display:none">
+        <div class="mm-editor-header">
+          <button class="btn-secondary" style="padding:7px 14px;font-size:12px" onclick="fxVoltarLista()">← Voltar</button>
+          <div class="mm-editor-title" id="fx-editor-nome">Fluxograma</div>
+          <button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="fxSalvar()">💾 Salvar</button>
+          <button class="btn-secondary" style="padding:8px 14px;font-size:13px" onclick="fxExportarPDF()">📄 PDF</button>
+        </div>
+        <!-- BPMN Toolbar -->
+        <div id="fx-toolbar" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:10px">
+          <span style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-right:4px">Inserir:</span>
+          <button class="fx-tool-btn" onclick="fxSetTool('start')" id="fxt-start" title="Evento de Início">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>Início
+          </button>
+          <button class="fx-tool-btn" onclick="fxSetTool('end')" id="fxt-end" title="Evento de Fim">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5" fill="currentColor"/></svg>Fim
+          </button>
+          <button class="fx-tool-btn" onclick="fxSetTool('task')" id="fxt-task" title="Tarefa">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="3"/></svg>Tarefa
+          </button>
+          <button class="fx-tool-btn" onclick="fxSetTool('gateway')" id="fxt-gateway" title="Gateway (Decisão)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L22 12 12 22 2 12Z"/></svg>Gateway
+          </button>
+          <button class="fx-tool-btn" onclick="fxSetTool('subprocess')" id="fxt-subprocess" title="Sub-processo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="3"/><rect x="9" y="10" width="6" height="4" rx="1"/></svg>Sub-proc.
+          </button>
+          <button class="fx-tool-btn" onclick="fxSetTool('annotation')" id="fxt-annotation" title="Anotação">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 8h10M7 12h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>Nota
+          </button>
+          <div style="width:1px;height:24px;background:var(--border);margin:0 4px"></div>
+          <button class="fx-tool-btn" onclick="fxSetTool('lane')" id="fxt-lane" title="Adicionar Raia (Swimlane)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="12" x2="22" y2="12"/></svg>Raia
+          </button>
+          <div style="width:1px;height:24px;background:var(--border);margin:0 4px"></div>
+          <button class="fx-tool-btn" onclick="fxSetTool('connect')" id="fxt-connect" title="Conectar elementos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Conectar
+          </button>
+          <button class="fx-tool-btn" onclick="fxSetTool('select')" id="fxt-select" title="Selecionar/Mover">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l6 18 3-7 7-3z"/></svg>Mover
+          </button>
+          <div style="width:1px;height:24px;background:var(--border);margin:0 4px"></div>
+          <button class="fx-tool-btn danger" onclick="fxDeleteSelected()" title="Deletar selecionado">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Deletar
+          </button>
+          <button class="fx-tool-btn" onclick="fxFitView()" title="Centralizar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>Fit
+          </button>
+        </div>
+        <div id="fx-canvas-wrap" style="width:100%;height:calc(100vh - 220px);min-height:480px;overflow:hidden;position:relative;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:crosshair">
+          <svg id="fx-canvas" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0"></svg>
+          <div style="position:absolute;bottom:10px;right:14px;font-size:11px;color:var(--text3);pointer-events:none" id="fx-hint">Selecione uma ferramenta e clique no canvas para inserir</div>
+        </div>
+      </div>
+    </div>
+
     <!-- PROJETOS -->
     <div id="page-projetos" class="page">
       <div class="page-header">
@@ -535,35 +614,41 @@
     <!-- QUERY DE DADOS -->
     <div id="page-query" class="page">
       <div class="page-header">
-        <div><div class="page-title">Query de Dados</div><div class="page-subtitle">Gerencie as queries cadastradas</div></div>
+        <div><div class="page-title">API / Query / View</div><div class="page-subtitle">Catálogo de integrações e consultas de dados</div></div>
         <div class="page-header-right">
-          <div class="view-toggle">
-            <button class="view-btn active" id="btn-vt-q" onclick="setView('q','tabela')">
-              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M10 4v16M3 4h18v16H3z"/></svg>Tabela
-            </button>
-            <button class="view-btn" id="btn-vk-q" onclick="setView('q','kanban')">
-              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>Kanban
-            </button>
-          </div>
+          <button class="btn-secondary" onclick="exportQueryCSV()">↓ Exportar CSV</button>
           <button class="btn-primary" onclick="openModal('add-query')">
-            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>Nova Query
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>Novo Registro
           </button>
         </div>
       </div>
-      <div class="toolbar">
-        <div class="search-box">
-          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
-          <input type="text" id="search-query" placeholder="Buscar query..." oninput="renderQueries()">
-        </div>
-        <select class="filter-select" id="sel-status-q" onchange="renderQueries()">
-          <option value="">Todos os Status</option><option>Ativa</option><option>Inativa</option>
-        </select>
-        <select class="filter-select" id="sel-sistema-q" onchange="renderQueries()">
-          <option value="">Todos os Sistemas</option><option>NOVVS</option><option>KMM</option><option>SITA</option><option>MOVESYNC</option><option>DATABUS</option>
-        </select>
+      <div class="inner-tabs" style="margin-bottom:16px">
+        <button class="inner-tab active" id="btn-vt-q" onclick="setViewQ('lista')">Lista</button>
+        <button class="inner-tab" id="btn-vc-q" onclick="setViewQ('cards')">Cards</button>
+        <button class="inner-tab" id="btn-vk-q" onclick="setViewQ('kanban')">Kanban</button>
       </div>
-      <div id="q-tabela"><div class="table-wrap"><table><thead><tr><th>Sistema</th><th>Observação</th><th>Anexos</th><th>Status</th></tr></thead><tbody id="tbody-queries"></tbody></table></div></div>
-      <div id="q-kanban" style="display:none"><div class="kanban-board" id="kb-queries"></div></div>
+      <div class="pj-filter-bar">
+        <input class="fw" type="text" id="qfi-nome" placeholder="🔍 Buscar nome..." oninput="renderQueries()">
+        <input type="text" id="qfi-desc" style="min-width:180px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;" placeholder="🔍 Buscar descrição..." oninput="renderQueries()">
+        <select id="qfi-sistema" onchange="renderQueries()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;cursor:pointer;min-width:140px">
+          <option value="">Todos os Sistemas</option>
+          <option>NOVVS</option><option>KMM</option><option>ATS</option><option>SITA</option>
+          <option>MoveSync</option><option>MoveDepot</option><option>Traction</option>
+          <option>DataBus</option><option>Quadrar</option>
+        </select>
+        <select id="qfi-tipo" onchange="renderQueries()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;cursor:pointer;min-width:120px">
+          <option value="">Todos os Tipos</option>
+          <option>API</option><option>Query</option><option>View</option>
+        </select>
+        <select id="qfi-status" onchange="renderQueries()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;cursor:pointer;min-width:120px">
+          <option value="">Todos os Status</option>
+          <option>Ativo</option><option>Inativo</option>
+        </select>
+        <button class="btn-secondary" style="padding:8px 12px;font-size:12px" onclick="qClearFilters()">✕ Limpar</button>
+      </div>
+      <div id="q-lista"></div>
+      <div id="q-cards" style="display:none"></div>
+      <div id="q-kanban" style="display:none"></div>
     </div>
 
     <!-- USUARIOS -->
@@ -576,7 +661,7 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th>Criado em</th><th>Ações</th></tr></thead>
+          <thead><tr><th>Nome</th><th>Login</th><th>Email</th><th>Perfil</th><th>Criado em</th><th>Ações</th></tr></thead>
           <tbody id="tbody-usuarios"></tbody>
         </table>
       </div>
@@ -614,7 +699,7 @@
       <div class="field-group"><label class="field-label">Solicitante</label>
         <input class="field-input" id="d-solicitante" placeholder="Nome do solicitante"></div>
       <div class="field-group"><label class="field-label">Responsável</label>
-        <input class="field-input" id="d-responsavel" placeholder="Nome do responsável"></div>
+        <select class="field-select" id="d-responsavel"><option value="">Selecione o responsável...</option></select></div>
       <div class="field-group"><label class="field-label">Prioridade</label>
         <select class="field-select" id="d-prioridade"><option value="">Selecione...</option><option>Crítica</option><option>Alta</option><option>Média</option><option>Baixa</option></select></div>
       <div class="field-group"><label class="field-label">Prazo de Entrega</label>
@@ -640,32 +725,67 @@
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('add-demanda')">Cancelar</button>
-      <button class="btn-primary" onclick="saveDemanda()">Salvar Demanda</button>
+      <button class="btn-primary" onclick="if(!this.disabled){this.disabled=true;this.textContent='Salvando...';saveDemanda().finally(()=>{this.disabled=false;this.textContent='Salvar Demanda';})}">Salvar Demanda</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL ADD QUERY -->
 <div class="modal-overlay" id="modal-add-query">
-  <div class="modal">
+  <div class="modal" style="max-width:700px">
     <div class="modal-header">
-      <div class="modal-title" id="modal-query-title">Nova Query</div>
+      <div class="modal-title" id="modal-query-title">Novo Registro</div>
       <div class="modal-close" onclick="closeModal('add-query')">✕</div>
     </div>
     <div class="modal-body">
       <input type="hidden" id="query-edit-id">
+      <div class="field-group full"><label class="field-label">Nome do Dado *</label>
+        <input class="field-input" id="q-nome" placeholder="Ex: API de Containers, View de Movimentações..."></div>
       <div class="field-group"><label class="field-label">Sistema *</label>
-        <select class="field-select" id="q-sistema"><option value="">Selecione...</option><option>NOVVS</option><option>KMM</option><option>SITA</option><option>MOVESYNC</option><option>DATABUS</option></select></div>
+        <select class="field-select" id="q-sistema">
+          <option value="">Selecione...</option>
+          <option>NOVVS</option><option>KMM</option><option>ATS</option><option>SITA</option>
+          <option>MoveSync</option><option>MoveDepot</option><option>Traction</option>
+          <option>DataBus</option><option>Quadrar</option>
+        </select>
+      </div>
+      <div class="field-group"><label class="field-label">Tipo *</label>
+        <select class="field-select" id="q-tipo">
+          <option value="">Selecione...</option>
+          <option>API</option><option>Query</option><option>View</option>
+        </select>
+      </div>
       <div class="field-group"><label class="field-label">Status *</label>
-        <select class="field-select" id="q-status"><option value="">Selecione...</option><option>Ativa</option><option>Inativa</option></select></div>
-      <div class="field-group full"><label class="field-label">Observação</label>
-        <textarea class="field-textarea" id="q-obs" placeholder="Descrição, finalidade, etapas..." style="min-height:140px"></textarea></div>
+        <select class="field-select" id="q-status">
+          <option value="">Selecione...</option>
+          <option>Ativo</option><option>Inativo</option>
+        </select>
+      </div>
+      <div class="field-group full"><label class="field-label">Descrição</label>
+        <textarea class="field-textarea" id="q-desc" placeholder="Descreva o dado, finalidade, como usar..." style="min-height:140px"></textarea></div>
+      <div class="field-group full">
+        <label class="field-label">Anexo</label>
+        <div class="file-upload-area" id="upload-area-query">
+          <input type="file" id="q-anexo-file" onchange="previewAnexoQ()">
+          <div class="upload-icon">📎</div>
+          <p>Clique ou arraste um arquivo aqui</p>
+        </div>
+        <div id="q-anexo-preview" style="display:none" class="file-preview">
+          <span id="q-anexo-nome">—</span>
+          <button onclick="removerAnexoQ()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;margin-left:auto">✕</button>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('add-query')">Cancelar</button>
-      <button class="btn-primary" onclick="saveQuery()">Salvar Query</button>
+      <button class="btn-primary" onclick="saveQuery(event)">Salvar Registro</button>
     </div>
   </div>
+</div>
+
+<!-- MODAL DETALHE QUERY -->
+<div class="pj-modal-overlay" id="modal-q-detail" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="pj-modal-panel" style="width:700px;max-width:95vw" id="modal-q-detail-body"></div>
 </div>
 
 <!-- MODAL ADD USUARIO -->
@@ -681,6 +801,8 @@
         <input class="field-input" id="u-nome" placeholder="Nome completo"></div>
       <div class="field-group"><label class="field-label">Login *</label>
         <input class="field-input" id="u-login" placeholder="Login de acesso"></div>
+      <div class="field-group"><label class="field-label">Email *</label>
+        <input class="field-input" type="email" id="u-email" placeholder="email@movecta.com.br"></div>
       <div class="field-group"><label class="field-label">Senha <span id="senha-hint" style="font-weight:400;text-transform:none;letter-spacing:0">(deixe em branco para manter)</span></label>
         <input class="field-input" type="password" id="u-senha" placeholder="Nova senha..."></div>
       <div class="field-group full"><label class="field-label">Perfil *</label>
@@ -733,7 +855,7 @@
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
         <div class="field-group"><label class="field-label">Responsável</label><input class="field-input" id="pjf-resp" placeholder="Nome do responsável"></div>
-        <div class="field-group"><label class="field-label">Setor</label>
+        <div class="field-group"><label class="field-label">Setor *</label>
           <select class="field-select" id="pjf-setor">
             <option value="">Selecione...</option>
             <option>Eficiência Operacional</option>
@@ -742,6 +864,15 @@
             <option>Operação</option>
             <option>Planejamento</option>
             <option>Torre de Controle</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="field-group"><label class="field-label">Acompanhado por EO? *</label>
+          <select class="field-select" id="pjf-acomp-eo">
+            <option value="">Selecione...</option>
+            <option value="Sim">✓ Sim</option>
+            <option value="Não">✗ Não</option>
           </select>
         </div>
       </div>
@@ -764,7 +895,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="pjCloseForm()">Cancelar</button>
-      <button class="btn-primary" onclick="pjSaveProject()">Salvar Projeto</button>
+      <button class="btn-primary" onclick="if(!this.disabled){this.disabled=true;this.textContent='Salvando...';pjSaveProject().finally(()=>{this.disabled=false;this.textContent='Salvar Projeto';})}">Salvar Projeto</button>
     </div>
   </div>
 </div>
@@ -786,6 +917,47 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('edit-mapa')">Cancelar</button>
       <button class="btn-primary" onclick="salvarInfoMapa()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVO FLUXOGRAMA -->
+<div class="modal-overlay" id="modal-add-fluxo">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title">🔷 Novo Fluxograma</div>
+      <div class="modal-close" onclick="document.getElementById('modal-add-fluxo').classList.remove('open')">✕</div>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:18px">
+      <div class="field-group full"><label class="field-label">Nome do Fluxograma *</label>
+        <input class="field-input" id="fxn-nome" placeholder="Ex: Processo de Admissão..." onkeydown="if(event.key==='Enter')fxCriarNovo()"></div>
+      <div class="field-group full"><label class="field-label">Descrição</label>
+        <textarea class="field-textarea" id="fxn-desc" placeholder="Objetivo e escopo do processo..." style="min-height:90px"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="document.getElementById('modal-add-fluxo').classList.remove('open')">Cancelar</button>
+      <button class="btn-primary" onclick="fxCriarNovo()">Criar Fluxograma</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR INFO FLUXOGRAMA -->
+<div class="modal-overlay" id="modal-edit-fluxo">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ Editar Fluxograma</div>
+      <div class="modal-close" onclick="document.getElementById('modal-edit-fluxo').classList.remove('open')">✕</div>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:18px">
+      <input type="hidden" id="fxe-id">
+      <div class="field-group full"><label class="field-label">Nome *</label>
+        <input class="field-input" id="fxe-nome" placeholder="Nome do fluxograma..."></div>
+      <div class="field-group full"><label class="field-label">Descrição</label>
+        <textarea class="field-textarea" id="fxe-desc" placeholder="Objetivo do processo..." style="min-height:90px"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="document.getElementById('modal-edit-fluxo').classList.remove('open')">Cancelar</button>
+      <button class="btn-primary" onclick="fxSalvarInfo()">Salvar</button>
     </div>
   </div>
 </div>
@@ -841,7 +1013,7 @@ const STORAGE_BUCKET = 'anexos';
 // STATE
 // ══════════════════════════════════════════
 const state = {
-  demandas:[], queries:[], usuarios:[], mapas:[], projetos:[],
+  demandas:[], queries:[], usuarios:[], mapas:[], projetos:[], fluxogramas:[],
   currentPage:'', viewD:'tabela', viewQ:'tabela',
   viewMode:null, viewId:null, viewEditing:false,
   user:null,
@@ -891,16 +1063,18 @@ function doLogout() {
 async function carregarTudo() {
   showLoading('Carregando dados...');
   try {
-    const [{data:d},{data:q},{data:m},{data:pj}]=await Promise.all([
+    const [{data:d},{data:q},{data:m},{data:pj},{data:fx}]=await Promise.all([
       sb.from('demandas').select('*').order('prazo',{ascending:true,nullsFirst:false}),
       sb.from('queries').select('*').order('id',{ascending:false}),
       sb.from('mapas_mentais').select('*').order('atualizado_em',{ascending:false}),
-      sb.from('projetos').select('*, projeto_tasks(*), projeto_comments(*), projeto_attachments(*)').order('fim',{ascending:true,nullsFirst:false})
+      sb.from('projetos').select('*, projeto_tasks(*), projeto_comments(*), projeto_attachments(*)').order('fim',{ascending:true,nullsFirst:false}),
+      sb.from('fluxogramas').select('*').order('atualizado_em',{ascending:false})
     ]);
     state.demandas=d||[];
     state.queries=q||[];
     state.mapas=m||[];
     state.projetos=pjNormalize(pj||[]);
+    state.fluxogramas=fx||[];
     toast('Dados carregados!');
   } catch(e){toast('Erro ao carregar: '+e.message,'error');}
   finally{hideLoading();}
@@ -926,7 +1100,8 @@ function navigate(page) {
   if (p) p.classList.add('active');
   if (page==='demandas') renderDemandas();
   if (page==='projetos') pjRenderInner();
-  if (page==='query') renderQueries();
+  if (page==='fluxogramas') fxRenderLista();
+  if (page==='query'){setViewQ('lista');renderQueries();}
   if (page==='usuarios') carregarUsuarios();
   if (page==='mapas') renderListaMapas();
 }
@@ -943,11 +1118,7 @@ function setView(ctx,mode) {
     if(mode==='dashboard') renderDashboard();
     else renderDemandas();
   } else {
-    state.viewQ=mode;
-    document.getElementById('q-tabela').style.display=mode==='tabela'?'':'none';
-    document.getElementById('q-kanban').style.display=mode==='kanban'?'':'none';
-    document.getElementById('btn-vt-q').classList.toggle('active',mode==='tabela');
-    document.getElementById('btn-vk-q').classList.toggle('active',mode==='kanban');
+    // query view agora usa setViewQ
     renderQueries();
   }
 }
@@ -997,8 +1168,8 @@ function limparFiltros() {
 // MODALS
 // ══════════════════════════════════════════
 function openModal(type) {
-  if (type==='add-demanda'){clearDemandaForm();document.getElementById('modal-demanda-title').textContent='Nova Demanda';document.getElementById('modal-add-demanda').classList.add('open');}
-  if (type==='add-query'){clearQueryForm();document.getElementById('modal-query-title').textContent='Nova Query';document.getElementById('modal-add-query').classList.add('open');}
+  if (type==='add-demanda'){clearDemandaForm();document.getElementById('modal-demanda-title').textContent='Nova Demanda';document.getElementById('modal-add-demanda').classList.add('open');popularResponsavelSelect('d-responsavel','');}
+  if (type==='add-query'){qClearForm();document.getElementById('modal-query-title').textContent='Novo Registro';document.getElementById('modal-add-query').classList.add('open');}
   if (type==='add-usuario'){clearUsuarioForm();document.getElementById('modal-usuario-title').textContent='Novo Usuário';document.getElementById('modal-add-usuario').classList.add('open');}
   if (type==='add-mapa'){document.getElementById('mm-nome').value='';document.getElementById('mm-desc').value='';document.getElementById('modal-add-mapa').classList.add('open');}
 }
@@ -1007,7 +1178,7 @@ function closeModal(type) {
     document.getElementById('modal-add-demanda').classList.remove('open');
     ['d-area','d-tipo','d-demanda','d-terminal','d-status','d-solicitante','d-responsavel','d-prioridade','d-prazo'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.borderColor='';});
   }
-  if (type==='add-query') document.getElementById('modal-add-query').classList.remove('open');
+  if (type==='add-query'){document.getElementById('modal-add-query').classList.remove('open');qClearForm();}
   if (type==='add-usuario') document.getElementById('modal-add-usuario').classList.remove('open');
   if (type==='add-mapa') document.getElementById('modal-add-mapa').classList.remove('open');
   if (type==='edit-mapa') document.getElementById('modal-edit-mapa').classList.remove('open');
@@ -1203,53 +1374,74 @@ function renderDemandas() {
 // ══════════════════════════════════════════
 // QUERIES
 // ══════════════════════════════════════════
-function clearQueryForm(){['q-sistema','q-status','q-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('query-edit-id').value='';}
 
-async function saveQuery() {
-  const sistema=document.getElementById('q-sistema').value;
-  const status=document.getElementById('q-status').value;
-  if (!sistema||!status){alert('Preencha os campos obrigatórios.');return;}
-  const obj={sistema,observacao:document.getElementById('q-obs').value,status};
-  const editId=document.getElementById('query-edit-id').value;
-  showLoading(editId?'Atualizando...':'Salvando...');
-  try {
-    if (editId){await sb.from('queries').update(obj).eq('id',editId);toast('Query atualizada!');}
-    else{await sb.from('queries').insert(obj);toast('Query criada!');}
-    await carregarTudo();closeModal('add-query');renderQueries();
-  } catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
-}
 
-function getFiltQueries(){
-  const s=(document.getElementById('search-query')?.value||'').toLowerCase();
-  const fs=document.getElementById('sel-status-q')?.value||'';
-  const fsi=document.getElementById('sel-sistema-q')?.value||'';
-  return state.queries.filter(q=>(!fs||q.status===fs)&&(!fsi||q.sistema===fsi)&&(!s||(q.sistema||'').toLowerCase().includes(s)||(q.observacao||'').toLowerCase().includes(s)));
-}
 
-function renderQueries(){
-  const f=getFiltQueries();
-  if (state.viewQ==='tabela'){
-    const tb=document.getElementById('tbody-queries');
-    if (!f.length){tb.innerHTML=`<tr><td colspan="4"><div class="empty-state"><div class="empty-state-icon">🗄️</div><p>Nenhuma query encontrada</p></div></td></tr>`;return;}
-    tb.innerHTML=f.map(q=>`<tr ondblclick="openView('query',${q.id})"><td>${q.sistema||'—'}</td><td title="${q.observacao||''}">${(q.observacao||'').substring(0,80)}${(q.observacao||'').length>80?'...':''}</td><td>—</td><td>${statusBadge(q.status)}</td></tr>`).join('');
-  } else {
-    const cols=['Ativa','Inativa'];
-    document.getElementById('kb-queries').innerHTML=cols.map(st=>{
-      const items=f.filter(q=>q.status===st);
-      const cards=items.length?items.map(q=>`<div class="kanban-card" ondblclick="openView('query',${q.id})"><div class="kanban-card-title">${q.sistema}</div><hr class="kanban-card-divider"><div class="kanban-card-label">Observação</div><div class="kanban-card-value">${(q.observacao||'').substring(0,120)}${(q.observacao||'').length>120?'...':''}</div></div>`).join(''):`<div class="kanban-empty">Nenhuma query</div>`;
-      return`<div class="kanban-col"><div class="kanban-col-header">${statusBadge(st)}<span class="kanban-col-count">${items.length}</span></div>${cards}</div>`;
-    }).join('');
-  }
-}
+
+
+
+
 
 // ══════════════════════════════════════════
 // USUARIOS
 // ══════════════════════════════════════════
-function clearUsuarioForm(){['u-nome','u-login','u-senha','u-perfil'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('usuario-edit-id').value='';document.getElementById('modal-usuario-title').textContent='Novo Usuário';}
-function editarUsuario(id){const u=state.usuarios.find(x=>x.id===id);if(!u)return;document.getElementById('u-nome').value=u.nome;document.getElementById('u-login').value=u.login;document.getElementById('u-senha').value='';document.getElementById('u-perfil').value=u.perfil;document.getElementById('usuario-edit-id').value=u.id;document.getElementById('modal-usuario-title').textContent='✏️ Editar Usuário';document.getElementById('modal-add-usuario').classList.add('open');}
-async function saveUsuario(){const nome=document.getElementById('u-nome').value.trim();const login=document.getElementById('u-login').value.trim();const senha=document.getElementById('u-senha').value;const perfil=document.getElementById('u-perfil').value;const editId=document.getElementById('usuario-edit-id').value;if(!nome||!login||!perfil){alert('Preencha todos os campos.');return;}if(!editId&&!senha){alert('Preencha a senha.');return;}showLoading(editId?'Atualizando...':'Salvando...');try{if(editId){const upd={nome,login,perfil};if(senha)upd.senha=senha;const{error}=await sb.from('usuarios').update(upd).eq('id',Number(editId));if(error)throw error;toast('Usuário atualizado!');}else{const{error}=await sb.from('usuarios').insert({nome,login,senha,perfil});if(error)throw error;toast('Usuário criado!');}closeModal('add-usuario');await carregarUsuarios();}catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}}
+function clearUsuarioForm(){
+  ['u-nome','u-login','u-email','u-senha','u-perfil'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('usuario-edit-id').value='';
+  document.getElementById('modal-usuario-title').textContent='Novo Usuário';
+  // Sempre mostra o campo de senha ao criar novo
+  const senhaField=document.getElementById('u-senha')?.closest('.field-group');
+  if(senhaField)senhaField.style.display='';
+}
+function editarUsuario(id){
+  const u=state.usuarios.find(x=>x.id===id);if(!u)return;
+  const isSelf=state.user&&state.user.id===id;
+  document.getElementById('u-nome').value=u.nome;
+  document.getElementById('u-login').value=u.login;
+  document.getElementById('u-email').value=u.email||'';
+  document.getElementById('u-senha').value='';
+  document.getElementById('u-perfil').value=u.perfil;
+  document.getElementById('usuario-edit-id').value=u.id;
+  document.getElementById('modal-usuario-title').textContent='✏️ Editar Usuário';
+  // Mostrar/ocultar campo de senha conforme quem está editando
+  const senhaField=document.getElementById('u-senha').closest('.field-group');
+  if(senhaField){
+    senhaField.style.display=isSelf?'':'none';
+    const hint=document.getElementById('senha-hint');
+    if(hint&&isSelf)hint.textContent='(deixe em branco para manter)';
+  }
+  document.getElementById('modal-add-usuario').classList.add('open');
+}
+async function saveUsuario(){
+  const nome=document.getElementById('u-nome').value.trim();
+  const login=document.getElementById('u-login').value.trim();
+  const email=document.getElementById('u-email').value.trim();
+  const senha=document.getElementById('u-senha').value;
+  const perfil=document.getElementById('u-perfil').value;
+  const editId=document.getElementById('usuario-edit-id').value;
+  const isSelf=state.user&&editId&&state.user.id===Number(editId);
+  const senhaField=document.getElementById('u-senha')?.closest('.field-group');
+  const senhaVisivel=!editId||isSelf||(senhaField&&senhaField.style.display!=='none');
+  if(!nome||!login||!email||!perfil){toast('Preencha todos os campos obrigatórios','error');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('E-mail inválido','error');document.getElementById('u-email').style.borderColor='var(--danger)';return;}
+  document.getElementById('u-email').style.borderColor='';
+  if(!editId&&!senha){toast('Preencha a senha','error');return;}
+  showLoading(editId?'Atualizando...':'Salvando...');
+  try{
+    if(editId){
+      const upd={nome,login,email,perfil};
+      if(senhaVisivel&&senha)upd.senha=senha;
+      const{error}=await sb.from('usuarios').update(upd).eq('id',Number(editId));
+      if(error)throw error;toast('Usuário atualizado!');
+    }else{
+      const{error}=await sb.from('usuarios').insert({nome,login,email,senha,perfil});
+      if(error)throw error;toast('Usuário criado!');
+    }
+    closeModal('add-usuario');await carregarUsuarios();
+  }catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
+}
 async function excluirUsuario(id){if(!confirm('Tem certeza?'))return;showLoading('Excluindo...');try{const{error}=await sb.from('usuarios').delete().eq('id',Number(id));if(error)throw error;toast('Usuário excluído!');await carregarUsuarios();}catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}}
-function renderUsuarios(){const tb=document.getElementById('tbody-usuarios');if(!state.usuarios.length){tb.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">👥</div><p>Nenhum usuário</p></div></td></tr>`;return;}tb.innerHTML=state.usuarios.map(u=>`<tr ondblclick="editarUsuario(${u.id})"><td>${u.nome}</td><td>${u.login}</td><td>${perfilBadge(u.perfil)}</td><td>${fmtDate(u.created_at?.substring(0,10))}</td><td style="display:flex;gap:6px"><button class="btn-secondary" style="padding:5px 10px;font-size:11px" onclick="editarUsuario(${u.id})">✏️</button><button class="btn-secondary" style="padding:5px 10px;font-size:11px;border-color:var(--danger);color:var(--danger)" onclick="excluirUsuario(${u.id})">🗑️</button></td></tr>`).join('');}
+function renderUsuarios(){const tb=document.getElementById('tbody-usuarios');if(!state.usuarios.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👥</div><p>Nenhum usuário</p></div></td></tr>`;return;}tb.innerHTML=state.usuarios.map(u=>`<tr ondblclick="editarUsuario(${u.id})"><td>${u.nome}</td><td>${u.login}</td><td><a href="mailto:${u.email||''}" style="color:var(--accent);font-size:12px;text-decoration:none">${u.email||'—'}</a></td><td>${perfilBadge(u.perfil)}</td><td>${fmtDate(u.created_at?.substring(0,10))}</td><td style="display:flex;gap:6px"><button class="btn-secondary" style="padding:5px 10px;font-size:11px" onclick="editarUsuario(${u.id})">✏️</button><button class="btn-secondary" style="padding:5px 10px;font-size:11px;border-color:var(--danger);color:var(--danger)" onclick="excluirUsuario(${u.id})">🗑️</button></td></tr>`).join('');}
 
 // ══════════════════════════════════════════
 // VIEW / EDIT MODAL
@@ -1261,6 +1453,11 @@ function switchToEdit(){
   state.viewEditing=true;
   _pendingFileEdit = null;
   renderViewModal();
+  // Popula select de responsável com valor atual
+  if(state.viewMode==='demanda'){
+    const dem=state.demandas.find(x=>x.id===state.viewId);
+    if(dem) popularResponsavelSelect('ve-responsavel', dem.responsavel);
+  }
 }
 
 function renderViewModal(){
@@ -1293,7 +1490,7 @@ function buildDeditForm(d){
     <div class="field-group"><label class="field-label">Terminal</label><select class="field-select" id="ve-terminal">${opts(['','Corporativo','ADM Central','Guarujá','Anhanguera','Itajaí','Suape'],d.terminal)}</select></div>
     <div class="field-group"><label class="field-label">Status</label><select class="field-select" id="ve-status">${opts(['','em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada'],d.status)}</select></div>
     <div class="field-group"><label class="field-label">Solicitante</label><input class="field-input" id="ve-solicitante" value="${esc(d.solicitante)}"></div>
-    <div class="field-group"><label class="field-label">Responsável</label><input class="field-input" id="ve-responsavel" value="${esc(d.responsavel)}"></div>
+    <div class="field-group"><label class="field-label">Responsável</label><select class="field-select" id="ve-responsavel">${buildUsuariosOptions(d.responsavel)}</select></div>
     <div class="field-group"><label class="field-label">Prioridade</label><select class="field-select" id="ve-prioridade">${opts(['','Crítica','Alta','Média','Baixa'],d.prioridade)}</select></div>
     <div class="field-group"><label class="field-label">Prazo de Entrega</label><input class="field-input" type="date" id="ve-prazo" value="${d.prazo||''}"></div>
     <div class="field-group"><label class="field-label">Data de Início</label><input class="field-input" type="date" id="ve-inicio" value="${d.inicio||''}"></div>
@@ -1357,12 +1554,28 @@ async function saveViewEdit(){
 // DASHBOARD
 // ══════════════════════════════════════════
 function renderDashboard(){
-  const tot=state.demandas.length,and=state.demandas.filter(d=>d.status==='em andamento').length,fin=state.demandas.filter(d=>d.status==='finalizada').length,atr=state.demandas.filter(d=>d.status==='Em atraso').length;
-  document.getElementById('dash-stats').innerHTML=statCard('Total de Demandas',tot,'cadastradas')+statCard('Em Andamento',and,'ativas')+statCard('Finalizadas',fin,'concluídas')+statCard('Em Atraso',atr,'com prazo vencido');
-  renderBarChart('chart-status',countBy(state.demandas,'status'),['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada','Em atraso']);
-  renderBarChart('chart-area',countBy(state.demandas,'area'),['Eficiência de Processos','Eficiência de Dados']);
-  renderBarChart('chart-terminal',countBy(state.demandas,'terminal'),['Corporativo','ADM Central','Guarujá','Anhanguera','Itajaí','Suape']);
-  renderBarChart('chart-tipo',countBy(state.demandas,'tipo'),['Criação de Dashboard','Melhoria','Análise','Outros']);
+  const ds=state.demandas;
+  const tot=ds.length;
+  const det=ds.filter(d=>d.status==='em detalhamento').length;
+  const ini=ds.filter(d=>d.status==='a iniciar').length;
+  const and=ds.filter(d=>d.status==='em andamento').length;
+  const hom=ds.filter(d=>d.status==='homologação').length;
+  const fin=ds.filter(d=>d.status==='finalizada').length;
+  const can=ds.filter(d=>d.status==='cancelada').length;
+  const atr=ds.filter(d=>d.status==='Em atraso').length;
+  document.getElementById('dash-stats').innerHTML=
+    statCard('Total',tot,'cadastradas')+
+    statCard('Em Detalhamento',det,'demandas')+
+    statCard('A Iniciar',ini,'demandas')+
+    statCard('Em Andamento',and,'ativas')+
+    statCard('Homologação',hom,'demandas')+
+    statCard('Finalizadas',fin,'concluídas')+
+    statCard('Canceladas',can,'demandas')+
+    statCard('Em Atraso',atr,'prazo vencido');
+  renderBarChart('chart-status',countBy(ds,'status'),['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada','Em atraso']);
+  renderBarChart('chart-area',countBy(ds,'area'),['Eficiência de Processos','Eficiência de Dados']);
+  renderBarChart('chart-terminal',countBy(ds,'terminal'),['Corporativo','ADM Central','Guarujá','Anhanguera','Itajaí','Suape']);
+  renderBarChart('chart-tipo',countBy(ds,'tipo'),['Criação de Dashboard','Melhoria','Análise','Outros']);
 }
 function statCard(l,v,s){return`<div class="stat-card"><div class="stat-label">${l}</div><div class="stat-value">${v}</div><div class="stat-sub">${s}</div></div>`;}
 function countBy(arr,key){const r={};arr.forEach(i=>{const v=i[key]||'—';r[v]=(r[v]||0)+1;});return r;}
@@ -1848,6 +2061,861 @@ async function exportarMapaPDF() {
   }
 }
 
+// ════════════════════════════════════════════
+// MÓDULO FLUXOGRAMAS BPMN
+// ════════════════════════════════════════════
+const FX = {
+  id: null, nome: '',
+  nodes: [], edges: [], lanes: [],
+  idCtr: 0,
+  // viewport
+  vx: 0, vy: 0, vz: 1,
+  // interaction
+  tool: 'select',
+  selectedId: null, selectedType: null, // 'node'|'edge'|'lane'
+  dragging: false, dragId: null, dragType: null, dx0: 0, dy0: 0, nx0: 0, ny0: 0,
+  panning: false, px0: 0, py0: 0, vx0: 0, vy0: 0,
+  connecting: false, connectFrom: null,
+  // dblclick
+  _lastClickId: null, _lastClickTime: 0,
+};
+
+const FX_COLORS = {
+  start:   {fill:'#0f3d1f', stroke:'#22c55e', text:'#4ade80'},
+  end:     {fill:'#3d0f0f', stroke:'#ef4444', text:'#f87171'},
+  task:    {fill:'#1a2540', stroke:'#3b82f6', text:'#93c5fd'},
+  gateway: {fill:'#2a1f0a', stroke:'#f59e0b', text:'#fcd34d'},
+  subprocess:{fill:'#1a1f35', stroke:'#6366f1', text:'#a5b4fc'},
+  annotation:{fill:'#1a1e29', stroke:'#555d78', text:'#8b91a8'},
+  lane:    {fill:'rgba(255,255,255,0.03)', stroke:'#252a38', text:'#555d78'},
+};
+
+const FX_SIZE = {
+  start:   {w:48, h:48},
+  end:     {w:48, h:48},
+  task:    {w:140, h:54},
+  gateway: {w:54, h:54},
+  subprocess:{w:160, h:60},
+  annotation:{w:150, h:50},
+  lane:    {w:900, h:100},
+};
+
+function fxNewId(){ return ++FX.idCtr; }
+
+function fxSvgPoint(ex, ey){
+  const r = document.getElementById('fx-canvas-wrap').getBoundingClientRect();
+  return { x:(ex-r.left)/FX.vz+FX.vx, y:(ey-r.top)/FX.vz+FX.vy };
+}
+function fxToScreen(wx, wy){ return { x:(wx-FX.vx)*FX.vz, y:(wy-FX.vy)*FX.vz }; }
+
+// ─── TOOLS ───
+function fxSetTool(tool){
+  FX.tool = tool;
+  FX.connecting = false; FX.connectFrom = null;
+  document.querySelectorAll('.fx-tool-btn').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('fxt-'+tool);
+  if(btn) btn.classList.add('active');
+  const wrap = document.getElementById('fx-canvas-wrap');
+  if(wrap) wrap.style.cursor = tool==='select'?'default':tool==='connect'?'crosshair':'copy';
+  const hint = document.getElementById('fx-hint');
+  if(hint){
+    const msgs = {
+      start:'Clique no canvas para inserir Evento de Início',
+      end:'Clique no canvas para inserir Evento de Fim',
+      task:'Clique no canvas para inserir Tarefa',
+      gateway:'Clique no canvas para inserir Gateway (Decisão)',
+      subprocess:'Clique no canvas para inserir Sub-processo',
+      annotation:'Clique no canvas para inserir Anotação',
+      lane:'Clique no canvas para inserir Raia (Swimlane)',
+      connect:'Clique no nó de origem e depois no destino para conectar',
+      select:'Clique para selecionar · Arraste para mover · Duplo-clique para editar',
+    };
+    hint.textContent = msgs[tool]||'';
+  }
+  fxRender();
+}
+
+// ─── RENDER ───
+function fxRender(){
+  const svg = document.getElementById('fx-canvas');
+  const wrap = document.getElementById('fx-canvas-wrap');
+  if(!svg||!wrap) return;
+  const cw=wrap.clientWidth||900, ch=wrap.clientHeight||500;
+  svg.setAttribute('width',cw); svg.setAttribute('height',ch);
+  svg.innerHTML='';
+
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  // Arrow markers
+  ['seq','msg','default'].forEach(t=>{
+    const m=document.createElementNS('http://www.w3.org/2000/svg','marker');
+    m.setAttribute('id','fx-arr-'+t); m.setAttribute('markerWidth','8'); m.setAttribute('markerHeight','8');
+    m.setAttribute('refX','7'); m.setAttribute('refY','3'); m.setAttribute('orient','auto');
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d','M0,0 L0,6 L8,3 z');
+    p.setAttribute('fill', t==='seq'?'#3b82f6':t==='msg'?'#22c55e':'#555d78');
+    m.appendChild(p); defs.appendChild(m);
+  });
+  // Grid pattern
+  const pat=document.createElementNS('http://www.w3.org/2000/svg','pattern');
+  pat.setAttribute('id','fx-grid'); pat.setAttribute('width',20*FX.vz); pat.setAttribute('height',20*FX.vz);
+  pat.setAttribute('patternUnits','userSpaceOnUse');
+  pat.setAttribute('x', (-FX.vx*FX.vz)%(20*FX.vz)); pat.setAttribute('y', (-FX.vy*FX.vz)%(20*FX.vz));
+  const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('cx','1'); dot.setAttribute('cy','1'); dot.setAttribute('r','0.8'); dot.setAttribute('fill','#252a38');
+  pat.appendChild(dot); defs.appendChild(pat);
+  svg.appendChild(defs);
+
+  // Grid background
+  const bg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  bg.setAttribute('width',cw); bg.setAttribute('height',ch); bg.setAttribute('fill','url(#fx-grid)');
+  svg.appendChild(bg);
+
+  // Lanes first (background)
+  FX.lanes.forEach(l=>fxRenderLane(svg, l));
+
+  // Edges
+  FX.edges.forEach(e=>fxRenderEdge(svg, e));
+
+  // Connect preview line
+  if(FX.connecting && FX.connectFrom){
+    const src = FX.nodes.find(n=>n.id===FX.connectFrom);
+    if(src){
+      const sc = fxToScreen(src.x, src.y);
+      const mp = FX._mousePos||{x:sc.x+80,y:sc.y};
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',sc.x); line.setAttribute('y1',sc.y);
+      line.setAttribute('x2',mp.x); line.setAttribute('y2',mp.y);
+      line.setAttribute('stroke','#3b82f6'); line.setAttribute('stroke-width','2');
+      line.setAttribute('stroke-dasharray','6 4'); line.setAttribute('pointer-events','none');
+      svg.appendChild(line);
+    }
+  }
+
+  // Nodes
+  FX.nodes.forEach(n=>fxRenderNode(svg, n));
+}
+
+function fxRenderLane(svg, l){
+  const sc = fxToScreen(l.x, l.y);
+  const lw = (l.w||900)*FX.vz, lh = (l.h||100)*FX.vz;
+  const c = FX_COLORS.lane;
+  const sel = FX.selectedId===l.id && FX.selectedType==='lane';
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('data-id',l.id); g.setAttribute('data-type','lane');
+  const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  rect.setAttribute('x',sc.x); rect.setAttribute('y',sc.y); rect.setAttribute('width',lw); rect.setAttribute('height',lh);
+  rect.setAttribute('fill',c.fill); rect.setAttribute('stroke',sel?'#3b82f6':c.stroke);
+  rect.setAttribute('stroke-width', sel?2*FX.vz:1);
+  g.appendChild(rect);
+  // label tab on left
+  const tab=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  tab.setAttribute('x',sc.x); tab.setAttribute('y',sc.y); tab.setAttribute('width',28*FX.vz); tab.setAttribute('height',lh);
+  tab.setAttribute('fill','rgba(59,130,246,0.08)'); tab.setAttribute('stroke',sel?'#3b82f6':c.stroke);
+  tab.setAttribute('stroke-width',sel?2*FX.vz:1);
+  g.appendChild(tab);
+  const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+  txt.setAttribute('x',sc.x+14*FX.vz); txt.setAttribute('y',sc.y+lh/2);
+  txt.setAttribute('text-anchor','middle'); txt.setAttribute('dominant-baseline','central');
+  txt.setAttribute('transform',`rotate(-90,${sc.x+14*FX.vz},${sc.y+lh/2})`);
+  txt.setAttribute('font-size',Math.max(9,12*FX.vz)+'px'); txt.setAttribute('font-weight','600');
+  txt.setAttribute('fill',c.text); txt.setAttribute('font-family','Plus Jakarta Sans,sans-serif');
+  txt.setAttribute('pointer-events','none');
+  txt.textContent=l.label||'Raia';
+  g.appendChild(txt);
+  // resize handle (bottom-right)
+  const rh=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  rh.setAttribute('x',sc.x+lw-10*FX.vz); rh.setAttribute('y',sc.y+lh-10*FX.vz);
+  rh.setAttribute('width',10*FX.vz); rh.setAttribute('height',10*FX.vz);
+  rh.setAttribute('fill',sel?'#3b82f6':'#252a38'); rh.setAttribute('cursor','se-resize');
+  rh.setAttribute('data-resize','true'); rh.setAttribute('data-laneid',l.id);
+  g.appendChild(rh);
+  g.addEventListener('mousedown',e=>fxOnLaneMousedown(e,l.id));
+  svg.appendChild(g);
+}
+
+function fxRenderNode(svg, n){
+  const sc = fxToScreen(n.x, n.y);
+  const sz = FX_SIZE[n.type]||{w:120,h:50};
+  const nw=sz.w*FX.vz, nh=sz.h*FX.vz;
+  const c = FX_COLORS[n.type]||FX_COLORS.task;
+  const sel = FX.selectedId===n.id && FX.selectedType==='node';
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('class','fx-node'); g.setAttribute('data-id',n.id); g.setAttribute('data-type','node');
+  g.setAttribute('cursor', FX.tool==='connect'?'crosshair':'pointer');
+
+  if(sel){
+    const glow=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    glow.setAttribute('x',sc.x-nw/2-4); glow.setAttribute('y',sc.y-nh/2-4);
+    glow.setAttribute('width',nw+8); glow.setAttribute('height',nh+8); glow.setAttribute('rx',8*FX.vz);
+    glow.setAttribute('fill','none'); glow.setAttribute('stroke','#3b82f6'); glow.setAttribute('stroke-width',2*FX.vz); glow.setAttribute('opacity','0.6');
+    g.appendChild(glow);
+  }
+
+  // Shape
+  if(n.type==='start'||n.type==='end'){
+    const r=nw/2;
+    const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('class','fx-node-body'); circle.setAttribute('cx',sc.x); circle.setAttribute('cy',sc.y);
+    circle.setAttribute('r',r); circle.setAttribute('fill',c.fill); circle.setAttribute('stroke',c.stroke);
+    circle.setAttribute('stroke-width',(n.type==='end'?3:2)*FX.vz);
+    g.appendChild(circle);
+    if(n.type==='end'){
+      const inner=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      inner.setAttribute('cx',sc.x); inner.setAttribute('cy',sc.y); inner.setAttribute('r',r*0.55);
+      inner.setAttribute('fill',c.stroke); inner.setAttribute('pointer-events','none');
+      g.appendChild(inner);
+    }
+  } else if(n.type==='gateway'){
+    const diamond=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    const hw=nw/2, hh=nh/2;
+    diamond.setAttribute('class','fx-node-body');
+    diamond.setAttribute('points',`${sc.x},${sc.y-hh} ${sc.x+hw},${sc.y} ${sc.x},${sc.y+hh} ${sc.x-hw},${sc.y}`);
+    diamond.setAttribute('fill',c.fill); diamond.setAttribute('stroke',c.stroke); diamond.setAttribute('stroke-width',2*FX.vz);
+    g.appendChild(diamond);
+    // X inside gateway
+    const gw_txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    gw_txt.setAttribute('x',sc.x); gw_txt.setAttribute('y',sc.y);
+    gw_txt.setAttribute('text-anchor','middle'); gw_txt.setAttribute('dominant-baseline','central');
+    gw_txt.setAttribute('font-size',Math.max(10,16*FX.vz)+'px'); gw_txt.setAttribute('fill',c.stroke);
+    gw_txt.setAttribute('pointer-events','none'); gw_txt.setAttribute('font-weight','bold');
+    gw_txt.textContent='✕';
+    g.appendChild(gw_txt);
+  } else {
+    const rx_val = n.type==='annotation'?4:8;
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('class','fx-node-body');
+    rect.setAttribute('x',sc.x-nw/2); rect.setAttribute('y',sc.y-nh/2);
+    rect.setAttribute('width',nw); rect.setAttribute('height',nh); rect.setAttribute('rx',rx_val*FX.vz);
+    rect.setAttribute('fill',c.fill); rect.setAttribute('stroke',c.stroke); rect.setAttribute('stroke-width',2*FX.vz);
+    if(n.type==='subprocess'){
+      rect.setAttribute('stroke-dasharray',`${4*FX.vz} ${2*FX.vz}`);
+    }
+    g.appendChild(rect);
+    // subprocess marker
+    if(n.type==='subprocess'){
+      const marker=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      marker.setAttribute('x',sc.x-8*FX.vz); marker.setAttribute('y',sc.y+nh/2-12*FX.vz);
+      marker.setAttribute('width',16*FX.vz); marker.setAttribute('height',10*FX.vz); marker.setAttribute('rx',2*FX.vz);
+      marker.setAttribute('fill','none'); marker.setAttribute('stroke',c.stroke); marker.setAttribute('stroke-width',1.5*FX.vz);
+      marker.setAttribute('pointer-events','none');
+      const plus=document.createElementNS('http://www.w3.org/2000/svg','text');
+      plus.setAttribute('x',sc.x); plus.setAttribute('y',sc.y+nh/2-7*FX.vz);
+      plus.setAttribute('text-anchor','middle'); plus.setAttribute('dominant-baseline','central');
+      plus.setAttribute('font-size',9*FX.vz+'px'); plus.setAttribute('fill',c.stroke); plus.setAttribute('pointer-events','none');
+      plus.textContent='+';
+      g.appendChild(marker); g.appendChild(plus);
+    }
+  }
+
+  // Label
+  if(n.type!=='start'&&n.type!=='end'){
+    const label=n.label||'';
+    const maxLen=Math.floor((FX_SIZE[n.type].w)/7);
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('x',sc.x); txt.setAttribute('y',sc.y);
+    txt.setAttribute('text-anchor','middle'); txt.setAttribute('dominant-baseline','central');
+    txt.setAttribute('font-size',Math.max(8,11*FX.vz)+'px'); txt.setAttribute('fill',c.text);
+    txt.setAttribute('font-family','Plus Jakarta Sans,sans-serif'); txt.setAttribute('pointer-events','none');
+    txt.setAttribute('font-weight',n.type==='task'?'500':'400');
+    // wrap text into 2 lines max
+    const words=label.split(' ');
+    if(label.length<=maxLen){
+      txt.textContent=label||'(sem título)';
+    } else {
+      const half=Math.ceil(words.length/2);
+      const l1=words.slice(0,half).join(' '), l2=words.slice(half).join(' ');
+      const t1=document.createElementNS('http://www.w3.org/2000/svg','tspan');
+      t1.setAttribute('x',sc.x); t1.setAttribute('dy',`${-7*FX.vz}px`); t1.textContent=l1;
+      const t2=document.createElementNS('http://www.w3.org/2000/svg','tspan');
+      t2.setAttribute('x',sc.x); t2.setAttribute('dy',`${14*FX.vz}px`); t2.textContent=l2;
+      txt.appendChild(t1); txt.appendChild(t2);
+    }
+    g.appendChild(txt);
+  } else if(n.label){
+    // start/end label below
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('x',sc.x); txt.setAttribute('y',sc.y+30*FX.vz);
+    txt.setAttribute('text-anchor','middle'); txt.setAttribute('font-size',Math.max(8,10*FX.vz)+'px');
+    txt.setAttribute('fill',c.text); txt.setAttribute('font-family','Plus Jakarta Sans,sans-serif');
+    txt.setAttribute('pointer-events','none');
+    txt.textContent=n.label;
+    g.appendChild(txt);
+  }
+
+  // Connection ports on hover (small circles)
+  if(FX.tool==='connect'){
+    [{dx:0,dy:-1},{dx:1,dy:0},{dx:0,dy:1},{dx:-1,dy:0}].forEach(({dx,dy})=>{
+      const sz2=FX_SIZE[n.type]||{w:120,h:50};
+      const px=sc.x+dx*(sz2.w/2)*FX.vz, py=sc.y+dy*(sz2.h/2)*FX.vz;
+      const port=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      port.setAttribute('cx',px); port.setAttribute('cy',py); port.setAttribute('r',6*FX.vz);
+      port.setAttribute('fill','#3b82f6'); port.setAttribute('opacity','0.7'); port.setAttribute('cursor','crosshair');
+      g.appendChild(port);
+    });
+  }
+
+  g.addEventListener('mousedown',e=>fxOnNodeMousedown(e,n.id));
+  svg.appendChild(g);
+}
+
+function fxRenderEdge(svg, e){
+  const src=FX.nodes.find(n=>n.id===e.from);
+  const tgt=FX.nodes.find(n=>n.id===e.to);
+  if(!src||!tgt) return;
+  const ss=fxToScreen(src.x,src.y), ts=fxToScreen(tgt.x,tgt.y);
+  const sel=(FX.selectedId===e.id&&FX.selectedType==='edge');
+  const mx=(ss.x+ts.x)/2;
+  const d=`M${ss.x},${ss.y} C${mx},${ss.y} ${mx},${ts.y} ${ts.x},${ts.y}`;
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d',d); path.setAttribute('fill','none');
+  path.setAttribute('stroke',sel?'#60a5fa':'#3b82f6'); path.setAttribute('stroke-width',Math.max(1.5,1.8*FX.vz));
+  path.setAttribute('marker-end','url(#fx-arr-seq)'); path.setAttribute('cursor','pointer');
+  if(e.type==='dashed') path.setAttribute('stroke-dasharray',`${6*FX.vz} ${3*FX.vz}`);
+  path.setAttribute('data-id',e.id); path.setAttribute('data-type','edge');
+  path.addEventListener('mousedown',ev=>{ev.stopPropagation();FX.selectedId=e.id;FX.selectedType='edge';fxRender();});
+  // edge label
+  if(e.label){
+    const lx=(ss.x+ts.x)/2, ly=(ss.y+ts.y)/2-10*FX.vz;
+    const lt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lt.setAttribute('x',lx); lt.setAttribute('y',ly); lt.setAttribute('text-anchor','middle');
+    lt.setAttribute('font-size',Math.max(9,10*FX.vz)+'px'); lt.setAttribute('fill','#8b91a8');
+    lt.setAttribute('font-family','Plus Jakarta Sans,sans-serif'); lt.setAttribute('pointer-events','none');
+    lt.textContent=e.label;
+    svg.appendChild(lt);
+  }
+  svg.insertBefore(path, svg.firstChild.nextSibling||null);
+}
+
+// ─── MOUSE EVENTS ───
+function fxOnNodeMousedown(e, id){
+  e.stopPropagation();
+  const now=Date.now();
+  if(FX.tool==='connect'){
+    if(!FX.connecting){FX.connecting=true;FX.connectFrom=id;fxRender();return;}
+    else{
+      if(FX.connectFrom!==id){
+        FX.edges.push({id:fxNewId(),from:FX.connectFrom,to:id,label:'',type:'seq'});
+        toast('Conexão criada!');
+      }
+      FX.connecting=false;FX.connectFrom=null;fxRender();return;
+    }
+  }
+  // dblclick to edit
+  if(FX._lastClickId===id&&(now-FX._lastClickTime)<350){
+    FX._lastClickId=null;FX.dragging=false;FX.dragId=null;
+    fxOpenEditNode(id);return;
+  }
+  FX._lastClickId=id;FX._lastClickTime=now;
+  FX.selectedId=id;FX.selectedType='node';
+  FX.dragging=true;FX.dragId=id;FX.dragType='node';
+  const wp=fxSvgPoint(e.clientX,e.clientY);
+  const n=FX.nodes.find(x=>x.id===id);
+  FX.dx0=wp.x;FX.dy0=wp.y;FX.nx0=n.x;FX.ny0=n.y;
+  fxRender();
+}
+
+function fxOnLaneMousedown(e, id){
+  e.stopPropagation();
+  const isResize=e.target.getAttribute('data-resize');
+  FX.selectedId=id;FX.selectedType='lane';
+  FX.dragging=true;FX.dragType=isResize?'lane-resize':'lane';FX.dragId=id;
+  const wp=fxSvgPoint(e.clientX,e.clientY);
+  const l=FX.lanes.find(x=>x.id===id);
+  FX.dx0=wp.x;FX.dy0=wp.y;FX.nx0=l.x;FX.ny0=l.y;
+  FX.lw0=l.w;FX.lh0=l.h;
+  fxRender();
+}
+
+function fxInitCanvas(){
+  const wrap=document.getElementById('fx-canvas-wrap');
+  if(!wrap) return;
+  wrap.addEventListener('mousedown',e=>{
+    if(FX.dragging)return;
+    const wp=fxSvgPoint(e.clientX,e.clientY);
+    // place node if tool is a shape
+    const shapeTools=['start','end','task','gateway','subprocess','annotation','lane'];
+    if(shapeTools.includes(FX.tool)){
+      if(FX.tool==='lane'){
+        const l={id:fxNewId(),x:wp.x-20,y:wp.y-50,w:800,h:100,label:'Responsável'};
+        FX.lanes.push(l);
+        FX.selectedId=l.id;FX.selectedType='lane';
+        fxOpenEditLane(l.id);
+      } else {
+        const n={id:fxNewId(),type:FX.tool,x:wp.x,y:wp.y,label:FX.tool==='start'?'Início':FX.tool==='end'?'Fim':'Nova '+FX.tool};
+        FX.nodes.push(n);
+        FX.selectedId=n.id;FX.selectedType='node';
+        fxRender();
+        setTimeout(()=>fxOpenEditNode(n.id),50);
+      }
+      return;
+    }
+    // pan
+    FX.connecting=false;FX.connectFrom=null;
+    FX.selectedId=null;FX.selectedType=null;
+    FX.panning=true;FX.px0=e.clientX;FX.py0=e.clientY;FX.vx0=FX.vx;FX.vy0=FX.vy;
+    wrap.style.cursor='grabbing';
+    fxRender();
+  });
+  wrap.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const r=wrap.getBoundingClientRect();
+    const mx=(e.clientX-r.left)/FX.vz+FX.vx, my=(e.clientY-r.top)/FX.vz+FX.vy;
+    const factor=e.deltaY<0?1.1:0.9;
+    FX.vz=Math.min(3,Math.max(0.2,FX.vz*factor));
+    FX.vx=mx-(e.clientX-r.left)/FX.vz; FX.vy=my-(e.clientY-r.top)/FX.vz;
+    fxRender();
+  },{passive:false});
+  wrap.addEventListener('mousemove',e=>{ FX._mousePos={x:e.clientX-wrap.getBoundingClientRect().left, y:e.clientY-wrap.getBoundingClientRect().top}; if(FX.connecting)fxRender(); });
+}
+
+window.addEventListener('mousemove',e=>{
+  if(!document.getElementById('fx-editor-wrap')||document.getElementById('fx-editor-wrap').style.display==='none')return;
+  if(FX.dragging&&FX.dragId!==null){
+    const wp=fxSvgPoint(e.clientX,e.clientY);
+    if(FX.dragType==='node'){
+      const n=FX.nodes.find(x=>x.id===FX.dragId);
+      if(n){n.x=FX.nx0+(wp.x-FX.dx0);n.y=FX.ny0+(wp.y-FX.dy0);}
+    } else if(FX.dragType==='lane'){
+      const l=FX.lanes.find(x=>x.id===FX.dragId);
+      if(l){l.x=FX.nx0+(wp.x-FX.dx0);l.y=FX.ny0+(wp.y-FX.dy0);}
+    } else if(FX.dragType==='lane-resize'){
+      const l=FX.lanes.find(x=>x.id===FX.dragId);
+      if(l){l.w=Math.max(200,FX.lw0+(wp.x-FX.dx0));l.h=Math.max(60,FX.lh0+(wp.y-FX.dy0));}
+    }
+    fxRender();return;
+  }
+  if(FX.panning){
+    FX.vx=FX.vx0-(e.clientX-FX.px0)/FX.vz; FX.vy=FX.vy0-(e.clientY-FX.py0)/FX.vz;
+    fxRender();
+  }
+});
+window.addEventListener('mouseup',()=>{
+  FX.dragging=false;FX.dragId=null;FX.dragType=null;FX.panning=false;
+  const wrap=document.getElementById('fx-canvas-wrap');
+  if(wrap&&FX.tool==='select')wrap.style.cursor='default';
+});
+
+// ─── EDIT DIALOGS ───
+function fxOpenEditNode(id){
+  const n=FX.nodes.find(x=>x.id===id);if(!n)return;
+  const label=prompt('Texto do elemento:',n.label||'');
+  if(label!==null){n.label=label.trim();fxRender();}
+}
+function fxOpenEditLane(id){
+  const l=FX.lanes.find(x=>x.id===id);if(!l)return;
+  const label=prompt('Nome da raia:',l.label||'Responsável');
+  if(label!==null){l.label=label.trim();fxRender();}
+}
+function fxDeleteSelected(){
+  if(!FX.selectedId)return;
+  if(!confirm('Deletar o item selecionado?'))return;
+  if(FX.selectedType==='node'){
+    FX.nodes=FX.nodes.filter(n=>n.id!==FX.selectedId);
+    FX.edges=FX.edges.filter(e=>e.from!==FX.selectedId&&e.to!==FX.selectedId);
+  } else if(FX.selectedType==='edge'){
+    FX.edges=FX.edges.filter(e=>e.id!==FX.selectedId);
+  } else if(FX.selectedType==='lane'){
+    FX.lanes=FX.lanes.filter(l=>l.id!==FX.selectedId);
+  }
+  FX.selectedId=null;FX.selectedType=null;fxRender();
+}
+function fxFitView(){
+  const wrap=document.getElementById('fx-canvas-wrap');if(!wrap)return;
+  const all=[...FX.nodes.map(n=>({x:n.x,y:n.y})),...FX.lanes.map(l=>({x:l.x+l.w/2,y:l.y+l.h/2}))];
+  if(!all.length)return;
+  const xs=all.map(p=>p.x),ys=all.map(p=>p.y);
+  const minX=Math.min(...xs)-80,maxX=Math.max(...xs)+80,minY=Math.min(...ys)-60,maxY=Math.max(...ys)+60;
+  const cw=wrap.clientWidth,ch=wrap.clientHeight;
+  FX.vz=Math.min(cw/(maxX-minX),ch/(maxY-minY),1.5)*0.88;
+  FX.vx=minX-(cw/FX.vz-(maxX-minX))/2;FX.vy=minY-(ch/FX.vz-(maxY-minY))/2;fxRender();
+}
+
+// ─── EXPORT PDF ───
+async function fxExportarPDF(){
+  if(typeof html2canvas==='undefined'){toast('html2canvas não disponível','error');return;}
+  toast('Gerando PDF...','loading');
+  try{
+    const wrap=document.getElementById('fx-canvas-wrap');
+    const canvas=await html2canvas(wrap,{backgroundColor:'#13161e',scale:2,useCORS:true,logging:false});
+    const imgData=canvas.toDataURL('image/png');
+    const{jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:canvas.width>canvas.height?'landscape':'portrait',unit:'px',format:[canvas.width/2,canvas.height/2]});
+    pdf.addImage(imgData,'PNG',0,0,canvas.width/2,canvas.height/2);
+    const nome=(FX.nome||'fluxograma').replace(/[^a-zA-Z0-9_\-]/g,'_');
+    pdf.save(`${nome}.pdf`);toast('PDF exportado!');
+  }catch(e){toast('Erro: '+e.message,'error');}
+}
+
+// ─── CRUD (Supabase) ───
+function fxRenderLista(){
+  const wrap=document.getElementById('fx-lista-wrap');
+  const edWrap=document.getElementById('fx-editor-wrap');
+  if(wrap)wrap.style.display='';
+  if(edWrap)edWrap.style.display='none';
+  const grid=document.getElementById('fx-grid');
+  if(!grid)return;
+  if(!state.fluxogramas.length){
+    grid.innerHTML=`<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-state-icon">🔷</div><p>Nenhum fluxograma criado ainda.<br>Clique em "Novo Fluxograma" para começar.</p></div></div>`;return;
+  }
+  grid.innerHTML=state.fluxogramas.map(f=>{
+    const data=typeof f.data==='string'?JSON.parse(f.data):f.data;
+    const nos=(data.nodes||[]).length;
+    const raias=(data.lanes||[]).length;
+    const dt=f.atualizado_em?new Date(f.atualizado_em).toLocaleDateString('pt-BR'):'—';
+    return`<div class="mm-card">
+      <div class="mm-card-title" onclick="fxAbrirEditor(${f.id})" style="cursor:pointer">${f.nome}</div>
+      ${f.descricao?`<div class="mm-card-desc">${f.descricao}</div>`:''}
+      <div class="mm-card-footer">
+        <span class="mm-card-nodes">🔷 ${nos} elem · ${raias} raias</span>
+        <span class="mm-card-meta">Atualizado ${dt}</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+        <button class="btn-secondary" style="flex:1;padding:6px 10px;font-size:12px" onclick="fxAbrirEditor(${f.id})">✏️ Abrir</button>
+        <button class="btn-secondary" style="padding:6px 10px;font-size:12px" onclick="fxEditarInfo(${f.id},event)">⚙️ Editar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fxAbrirNovo(){
+  document.getElementById('modal-add-fluxo').classList.add('open');
+  setTimeout(()=>document.getElementById('fxn-nome').focus(),50);
+}
+
+async function fxCriarNovo(){
+  const nome=document.getElementById('fxn-nome').value.trim();
+  if(!nome){alert('Nome obrigatório');return;}
+  const desc=document.getElementById('fxn-desc').value.trim();
+  const dataJson={nodes:[],edges:[],lanes:[]};
+  showLoading('Criando fluxograma...');
+  try{
+    const{data,error}=await sb.from('fluxogramas').insert({nome,descricao:desc,data:dataJson}).select().single();
+    if(error)throw error;
+    toast('Fluxograma criado!');
+    document.getElementById('modal-add-fluxo').classList.remove('open');
+    document.getElementById('fxn-nome').value='';document.getElementById('fxn-desc').value='';
+    await carregarTudo();fxAbrirEditor(data.id);
+  }catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
+}
+
+function fxAbrirEditor(id){
+  const f=state.fluxogramas.find(x=>x.id===id);if(!f)return;
+  const data=typeof f.data==='string'?JSON.parse(f.data):f.data;
+  FX.id=id;FX.nome=f.nome;
+  FX.nodes=JSON.parse(JSON.stringify(data.nodes||[]));
+  FX.edges=JSON.parse(JSON.stringify(data.edges||[]));
+  FX.lanes=JSON.parse(JSON.stringify(data.lanes||[]));
+  FX.idCtr=Math.max(...[...FX.nodes,...FX.edges,...FX.lanes].map(x=>x.id||0),0);
+  FX.selectedId=null;FX.selectedType=null;FX.vx=0;FX.vy=0;FX.vz=1;FX.tool='select';
+  document.getElementById('fx-editor-nome').textContent=f.nome;
+  document.getElementById('fx-lista-wrap').style.display='none';
+  document.getElementById('fx-editor-wrap').style.display='block';
+  fxSetTool('select');
+  setTimeout(()=>{fxInitCanvas();fxFitView();},60);
+}
+
+function fxVoltarLista(){
+  document.getElementById('fx-lista-wrap').style.display='';
+  document.getElementById('fx-editor-wrap').style.display='none';
+  fxRenderLista();
+}
+
+async function fxSalvar(){
+  if(!FX.id)return;
+  showLoading('Salvando...');
+  try{
+    const dataJson={nodes:FX.nodes,edges:FX.edges,lanes:FX.lanes};
+    await sb.from('fluxogramas').update({data:dataJson,atualizado_em:new Date().toISOString()}).eq('id',FX.id);
+    toast('Fluxograma salvo!');await carregarTudo();
+  }catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
+}
+
+function fxEditarInfo(id,event){
+  if(event)event.stopPropagation();
+  const f=state.fluxogramas.find(x=>x.id===id);if(!f)return;
+  document.getElementById('fxe-id').value=id;
+  document.getElementById('fxe-nome').value=f.nome||'';
+  document.getElementById('fxe-desc').value=f.descricao||'';
+  document.getElementById('modal-edit-fluxo').classList.add('open');
+}
+async function fxSalvarInfo(){
+  const id=Number(document.getElementById('fxe-id').value);
+  const nome=document.getElementById('fxe-nome').value.trim();
+  if(!nome){alert('Nome obrigatório');return;}
+  const descricao=document.getElementById('fxe-desc').value.trim();
+  showLoading('Salvando...');
+  try{
+    await sb.from('fluxogramas').update({nome,descricao,atualizado_em:new Date().toISOString()}).eq('id',id);
+    toast('Informações salvas!');await carregarTudo();
+    document.getElementById('modal-edit-fluxo').classList.remove('open');
+    fxRenderLista();
+  }catch(e){toast('Erro: '+e.message,'error');}finally{hideLoading();}
+}
+
+
+// ════════════════════════════════════════════
+// MÓDULO API / QUERY / VIEW
+// ════════════════════════════════════════════
+let _pendingFileQuery = null;
+let qViewMode = 'lista';
+
+const Q_SISTEMAS = ['NOVVS','KMM','ATS','SITA','MoveSync','MoveDepot','Traction','DataBus','Quadrar'];
+const Q_TIPOS = ['API','Query','View'];
+
+const Q_TIPO_COLORS = {
+  'API':   {bg:'rgba(99,102,241,0.15)', color:'#a5b4fc', dot:'#6366f1'},
+  'Query': {bg:'rgba(59,130,246,0.15)', color:'#93c5fd', dot:'#3b82f6'},
+  'View':  {bg:'rgba(34,197,94,0.15)',  color:'#86efac', dot:'#22c55e'},
+};
+const Q_STATUS_COLORS = {
+  'Ativo':   {bg:'rgba(34,197,94,0.12)',  color:'#4ade80'},
+  'Inativo': {bg:'rgba(239,68,68,0.12)',  color:'#f87171'},
+};
+
+function qTypeBadge(t){
+  const c=Q_TIPO_COLORS[t]||{bg:'rgba(139,145,168,.15)',color:'var(--text2)',dot:'var(--text3)'};
+  return `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${c.bg};color:${c.color}"><span style="width:5px;height:5px;border-radius:50%;background:${c.color};flex-shrink:0;display:inline-block"></span>${t||'—'}</span>`;
+}
+function qStatusBadge(s){
+  const c=Q_STATUS_COLORS[s]||{bg:'rgba(139,145,168,.15)',color:'var(--text2)'};
+  return `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${c.bg};color:${c.color}"><span style="width:5px;height:5px;border-radius:50%;background:${c.color};flex-shrink:0;display:inline-block"></span>${s||'—'}</span>`;
+}
+
+// ─── VIEW SWITCH ───
+function setViewQ(mode){
+  qViewMode=mode;
+  ['lista','cards','kanban'].forEach(v=>{
+    const el=document.getElementById('q-'+v);
+    if(el)el.style.display=v===mode?'':'none';
+  });
+  document.getElementById('btn-vt-q').classList.toggle('active',mode==='lista');
+  document.getElementById('btn-vc-q').classList.toggle('active',mode==='cards');
+  document.getElementById('btn-vk-q').classList.toggle('active',mode==='kanban');
+  renderQueries();
+}
+
+// ─── FILTERS ───
+function qGetFiltered(){
+  const nome=(document.getElementById('qfi-nome')?.value||'').toLowerCase();
+  const desc=(document.getElementById('qfi-desc')?.value||'').toLowerCase();
+  const sis=document.getElementById('qfi-sistema')?.value||'';
+  const tipo=document.getElementById('qfi-tipo')?.value||'';
+  const st=document.getElementById('qfi-status')?.value||'';
+  return state.queries.filter(q=>{
+    if(nome&&!(q.nome||'').toLowerCase().includes(nome))return false;
+    if(desc&&!(q.descricao||'').toLowerCase().includes(desc))return false;
+    if(sis&&q.sistema!==sis)return false;
+    if(tipo&&q.tipo!==tipo)return false;
+    if(st&&q.status!==st)return false;
+    return true;
+  }).sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
+}
+function qClearFilters(){
+  ['qfi-nome','qfi-desc','qfi-sistema','qfi-tipo','qfi-status'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  renderQueries();
+}
+
+// ─── RENDER ───
+function renderQueries(){
+  const f=qGetFiltered();
+  if(qViewMode==='lista') qRenderLista(f);
+  else if(qViewMode==='cards') qRenderCards(f);
+  else if(qViewMode==='kanban') qRenderKanban(f);
+}
+
+function qRenderLista(f){
+  const el=document.getElementById('q-lista');if(!el)return;
+  if(!f.length){el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">🗄️</div><p>Nenhum registro encontrado</p></div>`;return;}
+  el.innerHTML=`<div class="table-wrap"><table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr>
+      <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border)">Nome do Dado</th>
+      <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border)">Sistema</th>
+      <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border)">Tipo</th>
+      <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border);max-width:300px">Descrição</th>
+      <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border)">Status</th>
+      <th style="padding:12px 16px;text-align:center;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border)">Anexo</th>
+    </tr></thead>
+    <tbody>${f.map(q=>`<tr style="border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''" ondblclick="qOpenDetail(${q.id})">
+      <td style="padding:13px 16px;color:var(--text);font-weight:500;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${q.nome||''}">${q.nome||'—'}</td>
+      <td style="padding:13px 16px;color:var(--text2)">${q.sistema||'—'}</td>
+      <td style="padding:13px 16px">${qTypeBadge(q.tipo)}</td>
+      <td style="padding:13px 16px;color:var(--text2);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(q.descricao||'').replace(/"/g,'&quot;')}">${(q.descricao||'').substring(0,80)}${(q.descricao||'').length>80?'...':''}</td>
+      <td style="padding:13px 16px">${qStatusBadge(q.status)}</td>
+      <td style="padding:13px 16px;text-align:center">${q.anexo_url?`<a href="${q.anexo_url}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);font-size:14px;text-decoration:none" title="Abrir anexo">📎</a>`:'—'}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function qRenderCards(f){
+  const el=document.getElementById('q-cards');if(!el)return;
+  if(!f.length){el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">🗄️</div><p>Nenhum registro encontrado</p></div>`;return;}
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">${f.map(q=>`
+    <div ondblclick="qOpenDetail(${q.id})" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:10px" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div style="font-size:14px;font-weight:600;color:var(--text);line-height:1.3;flex:1">${q.nome||'—'}</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">${qTypeBadge(q.tipo)}${qStatusBadge(q.status)}</div>
+      </div>
+      <div style="font-size:12px;font-weight:600;color:var(--accent)">${q.sistema||'—'}</div>
+      ${q.descricao?`<div style="font-size:12px;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${q.descricao}</div>`:''}
+      ${q.anexo_url?`<div style="margin-top:auto;padding-top:8px;border-top:1px solid var(--border)"><a href="${q.anexo_url}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);font-size:12px;text-decoration:none">📎 Ver anexo</a></div>`:''}
+    </div>`).join('')}</div>`;
+}
+
+function qRenderKanban(f){
+  const el=document.getElementById('q-kanban');if(!el)return;
+  el.innerHTML=`<div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;min-height:calc(100vh - 300px)">${Q_TIPOS.map(tipo=>{
+    const items=f.filter(q=>q.tipo===tipo);
+    const c=Q_TIPO_COLORS[tipo]||{bg:'rgba(139,145,168,.15)',color:'var(--text2)'};
+    return`<div style="flex:1;min-width:240px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;overflow-y:auto;max-height:calc(100vh - 310px)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${c.color}">${tipo}</span>
+        <span style="font-size:11px;color:var(--text2);background:var(--surface2);padding:2px 8px;border-radius:10px">${items.length}</span>
+      </div>
+      ${items.length?items.map(q=>`<div ondblclick="qOpenDetail(${q.id})" style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 12px;margin-bottom:8px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.3">${q.nome||'—'}</div>
+        <div style="font-size:11px;color:var(--accent);font-weight:500;margin-bottom:6px">${q.sistema||'—'}</div>
+        ${q.descricao?`<div style="font-size:11px;color:var(--text3);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${q.descricao}</div>`:''}
+        <div style="margin-top:8px">${qStatusBadge(q.status)}</div>
+      </div>`).join(''):`<div style="text-align:center;padding:24px 12px;color:var(--text3);font-size:12px;background:var(--surface);border:1px dashed var(--border);border-radius:10px">Nenhum registro</div>`}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ─── DETAIL MODAL ───
+function qOpenDetail(id){
+  const q=state.queries.find(x=>x.id===id);if(!q)return;
+  document.getElementById('modal-q-detail-body').innerHTML=`
+    <div class="modal-header">
+      <div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">${qTypeBadge(q.tipo)}${qStatusBadge(q.status)}</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.02em">${q.nome||'—'}</div>
+        <div style="font-size:12px;color:var(--accent);margin-top:3px;font-weight:500">${q.sistema||'—'}</div>
+      </div>
+      <div style="display:flex;gap:7px;flex-shrink:0">
+        <button class="btn-secondary" style="padding:6px 12px;font-size:12px" onclick="qEditarRegistro(${q.id})">✏ Editar</button>
+        <button onclick="document.getElementById('modal-q-detail').classList.remove('open')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:22px;line-height:1;padding:0 4px">×</button>
+      </div>
+    </div>
+    <div style="padding:20px 24px;display:flex;flex-direction:column;gap:16px">
+      ${q.descricao?`<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;font-weight:600">Descrição</div><div style="font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap">${q.descricao}</div></div>`:''}
+      ${q.anexo_url?`<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px"><span style="font-size:20px">📎</span><div style="flex:1"><div style="font-size:11px;color:var(--text3);margin-bottom:2px">Anexo</div><a href="${q.anexo_url}" target="_blank" style="color:var(--accent);font-size:13px;text-decoration:none;word-break:break-all">Abrir arquivo →</a></div></div>`:''}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Cadastrado em</div><div style="font-size:13px;color:var(--text)">${q.created_at?new Date(q.created_at).toLocaleDateString('pt-BR'):'—'}</div></div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">ID</div><div style="font-size:13px;color:var(--text)">#${q.id}</div></div>
+      </div>
+    </div>`;
+  document.getElementById('modal-q-detail').classList.add('open');
+}
+function qEditarRegistro(id){
+  document.getElementById('modal-q-detail').classList.remove('open');
+  const q=state.queries.find(x=>x.id===id);if(!q)return;
+  document.getElementById('query-edit-id').value=id;
+  document.getElementById('modal-query-title').textContent='Editar Registro';
+  document.getElementById('q-nome').value=q.nome||'';
+  document.getElementById('q-sistema').value=q.sistema||'';
+  document.getElementById('q-tipo').value=q.tipo||'';
+  document.getElementById('q-status').value=q.status||'';
+  document.getElementById('q-desc').value=q.descricao||'';
+  // anexo atual
+  _pendingFileQuery=null;
+  document.getElementById('q-anexo-file').value='';
+  document.getElementById('q-anexo-preview').style.display='none';
+  document.getElementById('upload-area-query').style.display='block';
+  document.getElementById('modal-add-query').classList.add('open');
+}
+
+// ─── ANEXO QUERY ───
+function previewAnexoQ(){
+  const file=document.getElementById('q-anexo-file').files[0];
+  if(!file)return;
+  _pendingFileQuery=file;
+  document.getElementById('q-anexo-nome').textContent=file.name;
+  document.getElementById('q-anexo-preview').style.display='flex';
+  document.getElementById('upload-area-query').style.display='none';
+}
+function removerAnexoQ(){
+  _pendingFileQuery=null;
+  document.getElementById('q-anexo-file').value='';
+  document.getElementById('q-anexo-preview').style.display='none';
+  document.getElementById('upload-area-query').style.display='block';
+}
+document.addEventListener('change',function(e){
+  if(e.target&&e.target.id==='q-anexo-file'){
+    if(e.target.files&&e.target.files[0]){
+      _pendingFileQuery=e.target.files[0];
+      document.getElementById('q-anexo-nome').textContent=_pendingFileQuery.name;
+      document.getElementById('q-anexo-preview').style.display='flex';
+      document.getElementById('upload-area-query').style.display='none';
+    }
+  }
+});
+
+// ─── FORM ───
+function qClearForm(){
+  ['q-nome','q-sistema','q-tipo','q-status','q-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('query-edit-id').value='';
+  _pendingFileQuery=null;
+  document.getElementById('q-anexo-file').value='';
+  document.getElementById('q-anexo-preview').style.display='none';
+  document.getElementById('upload-area-query').style.display='block';
+}
+
+async function saveQuery(){
+  const btn=event?.target;
+  if(btn&&btn.disabled)return;
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  const nome=document.getElementById('q-nome').value.trim();
+  const sistema=document.getElementById('q-sistema').value;
+  const tipo=document.getElementById('q-tipo').value;
+  const status=document.getElementById('q-status').value;
+  // Validação obrigatória
+  let ok=true;
+  [{id:'q-nome',v:nome},{id:'q-sistema',v:sistema},{id:'q-tipo',v:tipo},{id:'q-status',v:status}].forEach(({id,v})=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.style.borderColor=v?'':'var(--danger)';if(!v)ok=false;
+  });
+  if(!ok){
+    toast('Preencha os campos obrigatórios','error');
+    if(btn){btn.disabled=false;btn.textContent='Salvar Registro';}
+    return;
+  }
+  ['q-nome','q-sistema','q-tipo','q-status'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.borderColor='';});
+  showLoading('Salvando...');
+  try{
+    let anexo_url=null;
+    const editId=document.getElementById('query-edit-id').value;
+    if(editId){const cur=state.queries.find(x=>x.id===Number(editId));if(cur)anexo_url=cur.anexo_url||null;}
+    if(_pendingFileQuery){
+      anexo_url=await uploadArquivo(_pendingFileQuery);
+      _pendingFileQuery=null;
+    }
+    const obj={nome,sistema,tipo,descricao:document.getElementById('q-desc').value,status,anexo_url};
+    if(editId){
+      const{error}=await sb.from('queries').update(obj).eq('id',Number(editId));
+      if(error)throw error;toast('Registro atualizado!');
+    }else{
+      const{error}=await sb.from('queries').insert(obj);
+      if(error)throw error;toast('Registro criado!');
+    }
+    await carregarTudo();closeModal('add-query');renderQueries();
+  }catch(e){toast('Erro: '+e.message,'error');}
+  finally{
+    hideLoading();
+    if(btn){btn.disabled=false;btn.textContent='Salvar Registro';}
+  }
+}
+
+// ─── EXPORT CSV ───
+function exportQueryCSV(){
+  const rows=[['Nome do Dado','Sistema','Tipo','Descrição','Status','Anexo']];
+  state.queries.forEach(q=>rows.push([q.nome||'',q.sistema||'',q.tipo||'',q.descricao||'',q.status||'',q.anexo_url||'']));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='queries_moveprime.csv';a.click();
+}
+
+
 // ─── FUNÇÕES AUXILIARES PROJETOS ───
 function pjMaskMoney(el){
   // Remove tudo que não é dígito ou vírgula
@@ -1903,6 +2971,33 @@ function exportDemandaCSV(){
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='demandas_moveprime.csv';a.click();
 }
 
+// Popula o select de responsável com os usuários cadastrados
+function popularResponsavelSelect(selectId, valorAtual){
+  const el=document.getElementById(selectId);
+  if(!el)return;
+  const current=valorAtual||el.value||'';
+  el.innerHTML='<option value="">Selecione o responsável...</option>';
+  state.usuarios.forEach(u=>{
+    const opt=document.createElement('option');
+    opt.value=u.nome;
+    opt.textContent=u.nome;
+    if(u.nome===current)opt.selected=true;
+    el.appendChild(opt);
+  });
+  // se valor atual não está na lista (texto livre antigo), adiciona como opção
+  if(current&&!state.usuarios.find(u=>u.nome===current)){
+    const opt=document.createElement('option');
+    opt.value=current;opt.textContent=current;opt.selected=true;
+    el.appendChild(opt);
+  }
+}
+function buildUsuariosOptions(sel){
+  let opts='<option value="">Selecione...</option>';
+  state.usuarios.forEach(u=>{opts+=`<option value="${u.nome}"${u.nome===sel?' selected':''}>${u.nome}</option>`;});
+  if(sel&&!state.usuarios.find(u=>u.nome===sel)){opts+=`<option value="${sel}" selected>${sel}</option>`;}
+  return opts;
+}
+
 window.addEventListener('resize',()=>{
   if(document.getElementById('mm-editor-wrap').classList.contains('active')) mmRender();
 });
@@ -1924,7 +3019,7 @@ function pjNormalize(rows){
     id:p.id, nome:p.nome, valor:Number(p.valor)||0, save:Number(p.save)||0,
     resp:p.resp||'Não atribuído', setor:p.setor||'Geral',
     inicio:p.inicio||'', fim:p.fim||'', status:p.status||'a_iniciar',
-    prior:p.prior||'Média', desc:p.descricao||'',
+    prior:p.prior||'Média', acomp_eo:p.acomp_eo||'Não', desc:p.descricao||'',
     tasks:(p.projeto_tasks||[]).map(t=>({id:t.id,nome:t.nome,done:t.done,resp:t.resp,due:t.due})).sort((a,b)=>a.id-b.id),
     comments:(p.projeto_comments||[]).map(c=>({id:c.id,autor:c.autor,texto:c.texto,created_at:c.created_at})).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),
     attachments:(p.projeto_attachments||[]).map(a=>({id:a.id,name:a.nome,url:a.url,size:a.tamanho}))
@@ -2036,8 +3131,8 @@ function pjGetFiltered(){
     else if(pjFilters.st&&p.status!==pjFilters.st)return false;
     if(pjFilters.se&&p.setor!==pjFilters.se)return false;
     if(pjFilters.p&&p.prior!==pjFilters.p)return false;
-    // Filtro EO
-    const isEO=p.setor==='Eficiência Operacional';
+    // Filtro EO (usa campo acomp_eo)
+    const isEO=p.acomp_eo==='Sim';
     if(pjFilters.ac==='sim'&&!isEO)return false;
     if(pjFilters.ac==='nao'&&isEO)return false;
     // Filtro data (sobreposição com intervalo inicio-fim do projeto)
@@ -2062,6 +3157,7 @@ function pjBuildTable(list){
   if(!list.length)return '<div class="pj-empty">Nenhum projeto encontrado. Clique em "Novo Projeto" para começar.</div>';
   const rows=list.map(p=>{
     const pct=pjTPct(p.tasks);
+    const eoIcon=p.acomp_eo==='Sim'?'<span style="color:var(--success);font-weight:700;font-size:12px">✓ Sim</span>':'<span style="color:var(--danger);font-weight:700;font-size:12px">✕ Não</span>';
     return `<tr onclick="pjOpenDetail(${p.id})">
       <td><div style="font-weight:500;color:var(--text)">${p.nome}</div></td>
       <td>${pjPrazoStatus(p)==='atrasado'?'<span class="pj-badge b-atrasado">● Atrasado</span>':'<span class="pj-badge b-'+p.status+'">'+PJ_SL[p.status]+'</span>'}</td>
@@ -2072,9 +3168,10 @@ function pjBuildTable(list){
       <td style="color:var(--success);font-weight:600">${pjFmtM(p.save)}</td>
       <td><div style="display:flex;align-items:center;gap:7px;min-width:90px"><div class="prog-bar" style="flex:1;margin:0"><div class="prog-fill" style="width:${pct}%;background:${pjPColor(pct)}"></div></div><span style="font-size:10px;color:${pjPColor(pct)}">${pct}%</span></div></td>
       <td class="${pjPrazoClass(p)}" style="font-size:11px">${pjFmtD(p.fim)}${p.status!=='finalizado'&&pjPrazoStatus(p)==='alerta'?' ⚠':p.status!=='finalizado'&&pjPrazoStatus(p)==='atrasado'?' 🔴':''}</td>
+      <td style="text-align:center">${eoIcon}</td>
     </tr>`;
   }).join('');
-  return `<div class="table-wrap"><table class="proj-table"><thead><tr><th>Projeto</th><th>Status</th><th>Prioridade</th><th>Setor</th><th>Responsável</th><th>Valor</th><th>Save</th><th>Progresso</th><th>Prazo</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  return `<div class="table-wrap"><table class="proj-table"><thead><tr><th>Projeto</th><th>Status</th><th>Prioridade</th><th>Setor</th><th>Responsável</th><th>Valor</th><th>Save</th><th>Progresso</th><th>Prazo</th><th style="text-align:center">Acomp. EO?</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 // ─── CARDS ───
@@ -2389,12 +3486,34 @@ function pjEditProject(id){
   const sEl=document.getElementById('pjf-save');sEl.value=p.save?'R$ '+Number(p.save).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
   document.getElementById('pjf-resp').value=p.resp;document.getElementById('pjf-setor').value=p.setor;
   document.getElementById('pjf-inicio').value=p.inicio;document.getElementById('pjf-fim').value=p.fim;
+  document.getElementById('pjf-acomp-eo').value=p.acomp_eo||'Não';
   document.getElementById('pjf-status').value=p.status;document.getElementById('pjf-prior').value=p.prior;document.getElementById('pjf-desc').value=p.desc||'';
   document.getElementById('pj-form-overlay').classList.add('open');
 }
 async function pjSaveProject(){
+  // Validação — todos obrigatórios exceto descrição
+  const campos=[
+    {id:'pjf-nome',  label:'Nome'},
+    {id:'pjf-resp',  label:'Responsável'},
+    {id:'pjf-setor', label:'Setor'},
+    {id:'pjf-inicio',label:'Data de Início'},
+    {id:'pjf-fim',   label:'Data de Fim'},
+    {id:'pjf-status',label:'Status'},
+    {id:'pjf-prior', label:'Prioridade'},
+    {id:'pjf-acomp-eo', label:'Acomp. por EO'},
+  ];
+  let ok=true;
+  campos.forEach(({id})=>{
+    const el=document.getElementById(id);if(!el)return;
+    const vazio=!el.value.trim();
+    el.style.borderColor=vazio?'var(--danger)':'';
+    if(vazio)ok=false;
+  });
+  if(!ok){toast('Preencha todos os campos obrigatórios','error');return;}
+  campos.forEach(({id})=>{const el=document.getElementById(id);if(el)el.style.borderColor='';});
+
   const nome=document.getElementById('pjf-nome').value.trim();if(!nome){alert('Nome obrigatório');return;}
-  const obj={nome,valor:pjUnmaskMoney(document.getElementById('pjf-valor').value),save:pjUnmaskMoney(document.getElementById('pjf-save').value),resp:document.getElementById('pjf-resp').value.trim()||'Não atribuído',setor:document.getElementById('pjf-setor').value||'Geral',inicio:document.getElementById('pjf-inicio').value||null,fim:document.getElementById('pjf-fim').value||null,status:document.getElementById('pjf-status').value,prior:document.getElementById('pjf-prior').value,descricao:document.getElementById('pjf-desc').value.trim()};
+  const obj={nome,valor:pjUnmaskMoney(document.getElementById('pjf-valor').value),save:pjUnmaskMoney(document.getElementById('pjf-save').value),resp:document.getElementById('pjf-resp').value.trim()||'Não atribuído',setor:document.getElementById('pjf-setor').value||'Geral',acomp_eo:document.getElementById('pjf-acomp-eo').value||'Não',inicio:document.getElementById('pjf-inicio').value||null,fim:document.getElementById('pjf-fim').value||null,status:document.getElementById('pjf-status').value,prior:document.getElementById('pjf-prior').value,descricao:document.getElementById('pjf-desc').value.trim()};
   const eid=document.getElementById('pjf-id').value;
   showLoading('Salvando projeto...');
   try{
