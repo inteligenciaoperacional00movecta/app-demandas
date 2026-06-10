@@ -1257,7 +1257,7 @@ async function carregarTudo() {
     state.documentos=docs||[];
     toast('Dados carregados!');
     // Atualiza calendário se estiver ativo
-    if(state.currentPage==='calendario') calRender();
+    if(state.currentPage==='calendario') setTimeout(()=>calRender(),50);
   } catch(e){toast('Erro ao carregar: '+e.message,'error');}
   finally{hideLoading();}
 }
@@ -1282,7 +1282,7 @@ function navigate(page) {
   if (p) p.classList.add('active');
   if (page==='demandas') renderDemandas();
   if (page==='projetos') pjRenderInner();
-  if (page==='calendario') { if(state.demandas.length) calRender(); else carregarTudo().then(()=>calRender()); }
+  if (page==='calendario') { setTimeout(()=>{ if(state.demandas.length) calRender(); else carregarTudo().then(()=>calRender()); },50); }
   if (page==='fluxogramas') fxRenderLista();
   if (page==='documental') docRender();
   if (page==='query'){setViewQ('lista');renderQueries();}
