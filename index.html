@@ -3237,15 +3237,15 @@ function pjBuildGantt(){
     const [y1,m1]=d1iso.split('-').map(Number);
     const [y2,m2]=d2iso.split('-').map(Number);
     startRef=new Date(y1,m1-1,1);
-    endRef=new Date(y2,m2,1); // mês seguinte ao fim para incluir o mês inteiro
+    endRef=new Date(y2,m2-1,1); // mesmo mês do fim (inclusive)
   } else if(d1iso){
     const [y1,m1]=d1iso.split('-').map(Number);
     startRef=new Date(y1,m1-1,1);
     endRef=new Date(y1,m1+4,1);
   } else if(d2iso){
     const [y2,m2]=d2iso.split('-').map(Number);
-    endRef=new Date(y2,m2,1);
-    startRef=new Date(y2,m2-6,1);
+    endRef=new Date(y2,m2-1,1);
+    startRef=new Date(y2,m2-7,1);
   } else {
     startRef=new Date(today.getFullYear(),today.getMonth()-1,1);
     endRef=new Date(today.getFullYear(),today.getMonth()+4,1);
