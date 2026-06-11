@@ -3572,7 +3572,8 @@ function calFecharDia(){
 window.calAbrirDia=calAbrirDia;
 window.calFecharDia=calFecharDia;
 
-function calMudarMes(d){
+function calMudarMes(delta){
+  CAL.mes+=delta;
   if(CAL.mes>11){CAL.mes=0;CAL.ano++;}
   if(CAL.mes<0){CAL.mes=11;CAL.ano--;}
   calRenderCore();
