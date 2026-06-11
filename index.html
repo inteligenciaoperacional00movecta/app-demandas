@@ -3260,7 +3260,9 @@ function docAbrirDetalhe(id){
 }
 
 // ─── FORM ───
-function docAbrirForm(){
+async function docAbrirForm(){
+  // Garante que usuários estão carregados
+  if(!state.usuarios||!state.usuarios.length) await carregarUsuarios();
   document.getElementById('doc-edit-id').value='';
   document.getElementById('doc-edit-tipo').value=_docTipo;
   const label=_docTipo==='procedimento'?'Novo Procedimento':'Nova Instrução de Trabalho';
@@ -3273,7 +3275,6 @@ function docAbrirForm(){
   document.getElementById('doc-anexo-file').value='';
   document.getElementById('doc-anexo-preview').style.display='none';
   document.getElementById('upload-area-doc').style.display='block';
-  // Popular select responsável
   docPopularRespSelect('');
   document.getElementById('modal-doc-form').classList.add('open');
 }
