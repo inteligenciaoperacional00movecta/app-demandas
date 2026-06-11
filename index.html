@@ -566,11 +566,16 @@
         <select class="filter-select" id="cal-fil-resp" onchange="calRender()" style="min-width:180px">
           <option value="">Todos os responsáveis</option>
         </select>
-        <select class="filter-select" id="cal-fil-mod" onchange="calRender()" style="min-width:160px">
+        <select class="filter-select" id="cal-fil-mod" onchange="calRenderCore()" style="min-width:160px">
           <option value="">Todos os módulos</option>
           <option value="demanda">Demandas</option>
           <option value="projeto">Projetos</option>
           <option value="documental">Documental</option>
+        </select>
+        <select class="filter-select" id="cal-fil-status" onchange="calRenderCore()" style="min-width:160px">
+          <option value="">Todos os Status</option>
+          <option value="pendente">⏳ Pendentes</option>
+          <option value="finalizada">✅ Finalizadas</option>
         </select>
         <div style="display:flex;gap:12px;align-items:center;margin-left:8px">
           <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;border-radius:3px;background:#3b82f6"></div>Demandas</div>
@@ -1137,6 +1142,18 @@
       <button class="btn-secondary" onclick="document.getElementById('modal-edit-fluxo').classList.remove('open')">Cancelar</button>
       <button class="btn-primary" onclick="fxSalvarInfo()">Salvar</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL DIA CALENDÁRIO -->
+<div class="modal-overlay" id="cal-dia-modal" onclick="if(event.target===this)calFecharDia()">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title" id="cal-dia-title"></div>
+      <div class="modal-close" onclick="calFecharDia()">✕</div>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:0" id="cal-dia-body"></div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="calFecharDia()">Fechar</button></div>
   </div>
 </div>
 
@@ -3382,17 +3399,21 @@ const CAL_MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','
 function calGetEventos(){
   const resp=document.getElementById('cal-fil-resp')?.value||'';
   const mod=document.getElementById('cal-fil-mod')?.value||'';
+  const stf=document.getElementById('cal-fil-status')?.value||'';
   const eventos=[];
   const today=new Date();today.setHours(0,0,0,0);
 
-  // Demandas
+  // Demandas - mostra todas independente do status
   if(!mod||mod==='demanda'){
     state.demandas.forEach(d=>{
       if(!d.prazo)return;
       if(resp&&d.responsavel!==resp)return;
       const prazoDate=new Date(d.prazo+'T12:00:00');
       const atrasado=prazoDate<today&&d.status!=='finalizada'&&d.status!=='cancelada';
-      eventos.push({id:'d'+d.id,tipo:'demanda',nome:d.nome,responsavel:d.responsavel||'—',prazo:d.prazo,status:d.status,prioridade:d.prioridade,atrasado});
+      const isFinalizada=d.status==='finalizada'||d.status==='cancelada';
+      if(stf==='finalizada'&&!isFinalizada)return;
+      if(stf==='pendente'&&isFinalizada)return;
+      eventos.push({id:'d'+d.id,tipo:'demanda',nome:d.demanda||d.nome||'—',responsavel:d.responsavel||'—',prazo:d.prazo,status:d.status,prioridade:d.prioridade,atrasado});
     });
   }
   // Projetos
@@ -3402,6 +3423,9 @@ function calGetEventos(){
       if(resp&&p.resp!==resp)return;
       const prazoDate=new Date(p.fim+'T12:00:00');
       const atrasado=prazoDate<today&&p.status!=='finalizado'&&p.status!=='cancelado';
+      const isFinalizado=p.status==='finalizado'||p.status==='cancelado';
+      if(stf==='finalizada'&&!isFinalizado)return;
+      if(stf==='pendente'&&isFinalizado)return;
       eventos.push({id:'p'+p.id,tipo:'projeto',nome:p.nome,responsavel:p.resp||'—',prazo:p.fim,status:p.status,prioridade:p.prior,atrasado});
     });
   }
@@ -3412,6 +3436,9 @@ function calGetEventos(){
       if(resp&&d.responsavel!==resp)return;
       const prazoDate=new Date(d.proxima_revisao+'T12:00:00');
       const atrasado=prazoDate<today&&d.status!=='Obsoleto';
+      const isFinalizado=d.status==='Obsoleto';
+      if(stf==='finalizada'&&!isFinalizado)return;
+      if(stf==='pendente'&&isFinalizado)return;
       eventos.push({id:'doc'+d.id,tipo:'documental',nome:d.codigo?d.codigo+' '+d.titulo:d.titulo,responsavel:d.responsavel||'—',prazo:d.proxima_revisao,status:d.status,prioridade:d.criticidade,atrasado});
     });
   }
@@ -3481,7 +3508,7 @@ function calRenderCore(){
     const todayCss=isToday?'background:rgba(59,130,246,0.05);':'';
     const numColor=isWeekend?'rgba(239,68,68,.6)':'var(--text2)';
     const numStyle=isToday?'background:var(--accent);color:#fff;border-radius:50%':'color:'+numColor;
-    cells+=`<div style="min-height:100px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;${todayCss}"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;margin-bottom:3px;${numStyle}">${d}</span><div>${evHtml}</div></div>`;
+    cells+=`<div style="min-height:100px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;${todayCss}" ondblclick="calAbrirDia('${dateStr}')"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;margin-bottom:3px;${numStyle}">${d}</span><div>${evHtml}</div></div>`;
   }
 
   const total=startDow+ultimo.getDate();
@@ -3512,8 +3539,40 @@ function calRenderCore(){
   if(!document.getElementById('cal-tooltip')){const tt=document.createElement('div');tt.id='cal-tooltip';tt.className='cal-tooltip';document.body.appendChild(tt);}
 }
 
+function calAbrirDia(dateStr){
+  const eventos=calGetEventos();
+  const evsDia=eventos.filter(e=>e.prazo===dateStr);
+  if(!evsDia.length)return;
+  const[yy,mm,dd]=dateStr.split('-');
+  const semana=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const dow=new Date(dateStr+'T12:00:00').getDay();
+  const modal=document.getElementById('cal-dia-modal');
+  const body=document.getElementById('cal-dia-body');
+  document.getElementById('cal-dia-title').textContent=`${semana[dow]}, ${dd}/${mm}/${yy}`;
+  body.innerHTML=evsDia.map(ev=>{
+    const cor=ev.atrasado?'#ef4444':ev.tipo==='demanda'?'#3b82f6':ev.tipo==='projeto'?'#a855f7':'#f59e0b';
+    const tipoLabel=ev.tipo==='demanda'?'Demanda':ev.tipo==='projeto'?'Projeto':'Documental';
+    const bg=ev.atrasado?'rgba(239,68,68,.1)':ev.tipo==='demanda'?'rgba(59,130,246,.1)':ev.tipo==='projeto'?'rgba(168,85,247,.1)':'rgba(245,158,11,.1)';
+    return `<div style="background:${bg};border:1px solid ${cor}33;border-left:3px solid ${cor};border-radius:8px;padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${cor}">${tipoLabel}${ev.atrasado?' · ATRASADO':''}</span>
+        <span style="font-size:10px;color:var(--text3)">${ev.status}</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.3">${ev.nome}</div>
+      <div style="font-size:11px;color:var(--text3)">👤 ${ev.responsavel}${ev.prioridade?' · '+ev.prioridade:''}</div>
+    </div>`;
+  }).join('');
+  modal.classList.add('open');
+}
+
+function calFecharDia(){
+  document.getElementById('cal-dia-modal').classList.remove('open');
+}
+
+window.calAbrirDia=calAbrirDia;
+window.calFecharDia=calFecharDia;
+
 function calMudarMes(d){
-  CAL.mes+=d;
   if(CAL.mes>11){CAL.mes=0;CAL.ano++;}
   if(CAL.mes<0){CAL.mes=11;CAL.ano--;}
   calRenderCore();
