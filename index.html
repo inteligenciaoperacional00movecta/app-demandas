@@ -3431,6 +3431,17 @@ function calPopularFiltros(){
 }
 
 function calRender(){
+  // Se dados não carregaram ainda, aguarda
+  if(!state.demandas||!state.demandas.length){
+    const grid=document.getElementById('cal-grid');
+    if(grid)grid.innerHTML='<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text3);font-size:13px">Carregando dados...</div>';
+    carregarTudo().then(()=>calRenderCore());
+    return;
+  }
+  calRenderCore();
+}
+
+function calRenderCore(){
   calPopularFiltros();
   const label=document.getElementById('cal-month-label');
   if(label)label.textContent=`${CAL_MESES[CAL.mes]} ${CAL.ano}`;
@@ -3440,19 +3451,14 @@ function calRender(){
   const today=new Date();today.setHours(0,0,0,0);
   const todayStr=today.toISOString().substring(0,10);
 
-  // Agrupar por data
   const byDate={};
-  eventos.forEach(e=>{
-    if(!byDate[e.prazo])byDate[e.prazo]=[];
-    byDate[e.prazo].push(e);
-  });
+  eventos.forEach(e=>{if(!byDate[e.prazo])byDate[e.prazo]=[];byDate[e.prazo].push(e);});
 
   const primeiro=new Date(CAL.ano,CAL.mes,1);
   const ultimo=new Date(CAL.ano,CAL.mes+1,0);
   const startDow=primeiro.getDay();
   let cells='';
 
-  // Dias do mês anterior
   for(let i=0;i<startDow;i++){
     const dd=new Date(CAL.ano,CAL.mes,1-startDow+i);
     cells+=`<div style="min-height:100px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;opacity:.3"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:3px">${dd.getDate()}</span></div>`;
@@ -3469,62 +3475,50 @@ function calRender(){
     evs.slice(0,MAX).forEach(ev=>{
       const cls=ev.atrasado?'atrasado':ev.tipo;
       const nome=ev.nome.length>22?ev.nome.slice(0,20)+'…':ev.nome;
-      evHtml+=`<div class="cal-event ${cls}" onmouseenter="calShowTooltip(event,'${ev.id}')" onmouseleave="calHideTooltip()">
-        <span style="width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;display:inline-block"></span>${nome}
-      </div>`;
+      evHtml+=`<div class="cal-event ${cls}" onmouseenter="calShowTooltip(event,'${ev.id}')" onmouseleave="calHideTooltip()"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;display:inline-block"></span>${nome}</div>`;
     });
     if(evs.length>MAX)evHtml+=`<div style="font-size:10px;color:var(--text3);padding:1px 4px">+${evs.length-MAX} mais</div>`;
     const todayCss=isToday?'background:rgba(59,130,246,0.05);':'';
-    const dnumCss=isToday?'style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;background:var(--accent);color:#fff;border-radius:50%;margin-bottom:3px"':'style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;color:'+(isWeekend?'rgba(239,68,68,.6)':'var(--text2)')+';margin-bottom:3px"';
-    cells+=`<div style="min-height:100px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;${todayCss}">
-      <span ${dnumCss}>${d}</span>
-      <div>${evHtml}</div>
-    </div>`;
+    const numColor=isWeekend?'rgba(239,68,68,.6)':'var(--text2)';
+    const numStyle=isToday?'background:var(--accent);color:#fff;border-radius:50%':'color:'+numColor;
+    cells+=`<div style="min-height:100px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;${todayCss}"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;margin-bottom:3px;${numStyle}">${d}</span><div>${evHtml}</div></div>`;
   }
 
-  // Preencher restante
   const total=startDow+ultimo.getDate();
   const rem=(7-total%7)%7;
   for(let i=1;i<=rem;i++)cells+=`<div style="min-height:100px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;opacity:.3"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:3px">${i}</span></div>`;
+
   grid.innerHTML=cells;
 
-  // KPIs do mês
+  // KPIs
   const mesEvs=eventos.filter(e=>e.prazo?.startsWith(`${CAL.ano}-${String(CAL.mes+1).padStart(2,'0')}`));
   const atrasados=eventos.filter(e=>e.atrasado);
-  document.getElementById('cal-kpis').innerHTML=`
+  const kpis=document.getElementById('cal-kpis');
+  if(kpis)kpis.innerHTML=`
     <div style="background:var(--surface2);border-radius:8px;padding:10px 12px"><div style="font-size:22px;font-weight:700;letter-spacing:-0.02em">${mesEvs.length}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Vencimentos</div></div>
     <div style="background:var(--surface2);border-radius:8px;padding:10px 12px"><div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--danger)">${atrasados.length}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Atrasados</div></div>
     <div style="background:var(--surface2);border-radius:8px;padding:10px 12px"><div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;color:#3b82f6">${mesEvs.filter(e=>e.tipo==='demanda').length}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Demandas</div></div>
-    <div style="background:var(--surface2);border-radius:8px;padding:10px 12px"><div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;color:#a855f7">${mesEvs.filter(e=>e.tipo==='projeto').length}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Projetos</div></div>
-  `;
+    <div style="background:var(--surface2);border-radius:8px;padding:10px 12px"><div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;color:#a855f7">${mesEvs.filter(e=>e.tipo==='projeto').length}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Projetos</div></div>`;
 
   // Próximos vencimentos
-  const proximos=eventos
-    .filter(e=>{const p=new Date(e.prazo+'T12:00:00');return p>=today&&e.prazo?.startsWith(`${CAL.ano}-${String(CAL.mes+1).padStart(2,'0')}`);})
-    .sort((a,b)=>a.prazo.localeCompare(b.prazo)).slice(0,6);
-  document.getElementById('cal-proximos').innerHTML=proximos.length?proximos.map(e=>{
+  const proximos=eventos.filter(e=>{const p=new Date(e.prazo+'T12:00:00');return p>=today&&e.prazo?.startsWith(`${CAL.ano}-${String(CAL.mes+1).padStart(2,'0')}`);}).sort((a,b)=>a.prazo.localeCompare(b.prazo)).slice(0,6);
+  const prox=document.getElementById('cal-proximos');
+  if(prox)prox.innerHTML=proximos.length?proximos.map(e=>{
     const cor=e.tipo==='demanda'?'#3b82f6':e.tipo==='projeto'?'#a855f7':'#f59e0b';
     const[yy,mm,dd]=e.prazo.split('-');
-    return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
-      <div style="width:3px;min-height:36px;border-radius:2px;background:${cor};flex-shrink:0"></div>
-      <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;color:var(--text);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nome}</div><div style="font-size:10px;color:var(--text3)">${e.responsavel}</div></div>
-      <div style="font-size:11px;font-weight:600;color:${cor};flex-shrink:0;padding-left:6px">${dd}/${mm}</div>
-    </div>`;
+    return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="width:3px;min-height:36px;border-radius:2px;background:${cor};flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;color:var(--text);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.nome}</div><div style="font-size:10px;color:var(--text3)">${e.responsavel}</div></div><div style="font-size:11px;font-weight:600;color:${cor};flex-shrink:0;padding-left:6px">${dd}/${mm}</div></div>`;
   }).join(''):'<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px">Sem vencimentos pendentes</div>';
 
-  // Criar tooltip se não existir
-  if(!document.getElementById('cal-tooltip')){
-    const tt=document.createElement('div');tt.id='cal-tooltip';tt.className='cal-tooltip';document.body.appendChild(tt);
-  }
+  if(!document.getElementById('cal-tooltip')){const tt=document.createElement('div');tt.id='cal-tooltip';tt.className='cal-tooltip';document.body.appendChild(tt);}
 }
 
 function calMudarMes(d){
   CAL.mes+=d;
   if(CAL.mes>11){CAL.mes=0;CAL.ano++;}
   if(CAL.mes<0){CAL.mes=11;CAL.ano--;}
-  calRender();
+  calRenderCore();
 }
-function calIrHoje(){CAL.mes=new Date().getMonth();CAL.ano=new Date().getFullYear();calRender();}
+function calIrHoje(){CAL.mes=new Date().getMonth();CAL.ano=new Date().getFullYear();calRenderCore();}
 
 // Tooltip
 let _calEvCache={};
