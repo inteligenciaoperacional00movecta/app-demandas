@@ -1258,13 +1258,14 @@ function doLogout() {
 async function carregarTudo() {
   showLoading('Carregando dados...');
   try {
-    const [{data:d},{data:q},{data:m},{data:pj},{data:fx},{data:docs}]=await Promise.all([
+    const [{data:d},{data:q},{data:m},{data:pj},{data:fx},{data:docs},{data:us}]=await Promise.all([
       sb.from('demandas').select('*').order('prazo',{ascending:true,nullsFirst:false}),
       sb.from('queries').select('*').order('id',{ascending:false}),
       sb.from('mapas_mentais').select('*').order('atualizado_em',{ascending:false}),
       sb.from('projetos').select('*, projeto_tasks(*), projeto_comments(*), projeto_attachments(*)').order('fim',{ascending:true,nullsFirst:false}),
       sb.from('fluxogramas').select('*').order('atualizado_em',{ascending:false}),
-      sb.from('documentos').select('*').order('created_at',{ascending:false})
+      sb.from('documentos').select('*').order('created_at',{ascending:false}),
+      sb.from('usuarios').select('*').order('id')
     ]);
     state.demandas=d||[];
     state.queries=q||[];
@@ -1272,6 +1273,7 @@ async function carregarTudo() {
     state.projetos=pjNormalize(pj||[]);
     state.fluxogramas=fx||[];
     state.documentos=docs||[];
+    state.usuarios=us||[];
     toast('Dados carregados!');
     // Atualiza calendário se estiver ativo
     if(state.currentPage==='calendario') setTimeout(()=>calRender(),50);
