@@ -486,16 +486,15 @@
           <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
           <input type="text" id="search-demanda" placeholder="Buscar demanda..." oninput="renderDemandas()">
         </div>
-        <div class="search-box" style="min-width:160px;max-width:200px">
-          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-          <input type="text" id="search-responsavel" placeholder="Responsável..." oninput="renderDemandas()">
-        </div>
+        <select class="filter-select" id="sel-responsavel-d" onchange="renderDemandas()">
+          <option value="">👤 Todos os Responsáveis</option>
+        </select>
         <select class="filter-select" id="sel-status-d" onchange="renderDemandas()">
           <option value="">Todos os Status</option>
           <option value="pendente">⏳ Pendentes</option>
           <option value="finalizada">✅ Finalizadas</option>
           <option>em detalhamento</option><option>a iniciar</option><option>em andamento</option>
-          <option>homologação</option><option>finalizada</option><option>cancelada</option><option>Em atraso</option>
+          <option>homologação</option><option>finalizada</option><option>cancelada</option>
         </select>
         <select class="filter-select" id="sel-tipo-d" onchange="renderDemandas()">
           <option value="">Todos os Tipos</option>
@@ -1265,7 +1264,7 @@ async function carregarTudo() {
       sb.from('projetos').select('*, projeto_tasks(*), projeto_comments(*), projeto_attachments(*)').order('fim',{ascending:true,nullsFirst:false}),
       sb.from('fluxogramas').select('*').order('atualizado_em',{ascending:false}),
       sb.from('documentos').select('*').order('created_at',{ascending:false}),
-      sb.from('usuarios').select('*').order('id')
+      sb.from('usuarios').select('*').order('nome')
     ]);
     state.demandas=d||[];
     state.queries=q||[];
@@ -1274,6 +1273,7 @@ async function carregarTudo() {
     state.fluxogramas=fx||[];
     state.documentos=docs||[];
     state.usuarios=us||[];
+    popularFiltroResponsavel();
     toast('Dados carregados!');
     // Atualiza calendário se estiver ativo
     if(state.currentPage==='calendario') setTimeout(()=>calRender(),50);
@@ -1299,7 +1299,7 @@ function navigate(page) {
   });
   const p=document.getElementById('page-'+page);
   if (p) p.classList.add('active');
-  if (page==='demandas') renderDemandas();
+  if (page==='demandas') { popularFiltroResponsavel(); renderDemandas(); }
   if (page==='projetos') pjRenderInner();
   if (page==='calendario') { setTimeout(()=>{ if(state.demandas.length) calRender(); else carregarTudo().then(()=>calRender()); },50); }
   if (page==='fluxogramas') fxRenderLista();
@@ -1329,9 +1329,13 @@ function setView(ctx,mode) {
 // ══════════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════════
-function statusBadge(s) {
-  const m={'em detalhamento':'detalhamento','a iniciar':'iniciar','em andamento':'andamento','homologação':'homologacao','finalizada':'finalizada','cancelada':'cancelada','Em atraso':'atraso','Ativa':'ativa','Inativa':'inativa'};
-  return `<span class="badge badge-${m[s]||'detalhamento'}">${s}</span>`;
+function statusBadge(s, atrasada) {
+  const m={'em detalhamento':'detalhamento','a iniciar':'iniciar','em andamento':'andamento','homologação':'homologacao','finalizada':'finalizada','cancelada':'cancelada','Ativa':'ativa','Inativa':'inativa'};
+  const isLiteralAtraso = s==='Em atraso';
+  const late = atrasada || isLiteralAtraso;
+  const label = isLiteralAtraso ? 'Pendente' : s;
+  const cls = late?'atraso':(m[s]||'detalhamento');
+  return `<span class="badge badge-${cls}">${label}</span>`;
 }
 function prioBadge(p) {
   if (!p) return '—';
@@ -1359,7 +1363,7 @@ function prazoCls(prazo,status) {
 
 function limparFiltros() {
   document.getElementById('search-demanda').value='';
-  document.getElementById('search-responsavel').value='';
+  document.getElementById('sel-responsavel-d').value='';
   document.getElementById('sel-status-d').value='';
   document.getElementById('sel-tipo-d').value='';
   document.getElementById('filter-prazo-ini').value='';
@@ -1531,7 +1535,7 @@ async function saveDemanda() {
 
 function getFiltDemandas() {
   const s=(document.getElementById('search-demanda')?.value||'').toLowerCase();
-  const sr=(document.getElementById('search-responsavel')?.value||'').toLowerCase();
+  const sr=document.getElementById('sel-responsavel-d')?.value||'';
   const fs=document.getElementById('sel-status-d')?.value||'';
   const ft=document.getElementById('sel-tipo-d')?.value||'';
   const pIni=document.getElementById('filter-prazo-ini')?.value||'';
@@ -1543,7 +1547,7 @@ function getFiltDemandas() {
     if (fs && fs!=='pendente' && fs!=='finalizada' && d.status!==fs) return false;
     if (ft && d.tipo!==ft) return false;
     if (s && !d.demanda.toLowerCase().includes(s) && !(d.solicitante||'').toLowerCase().includes(s)) return false;
-    if (sr && !(d.responsavel||'').toLowerCase().includes(sr)) return false;
+    if (sr && d.responsavel!==sr) return false;
     if (pIni && d.prazo && d.prazo<pIni) return false;
     if (pFim && d.prazo && d.prazo>pFim) return false;
     return true;
@@ -1559,10 +1563,10 @@ function renderDemandas() {
       const cls=prazoCls(d.prazo,d.status);
       const prazoHtml=d.prazo?`<span class="${cls}">${fmtDate(d.prazo)}</span>`:'—';
       const anexoHtml=d.anexo_url?`<a href="${d.anexo_url}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);font-size:12px;text-decoration:none" title="Abrir anexo">📎</a>`:'—';
-      return`<tr ondblclick="openView('demanda',${d.id})"><td>${d.area||'—'}</td><td>${d.tipo||'—'}</td><td title="${d.demanda}">${d.demanda}</td><td>${d.terminal||'—'}</td><td>${d.solicitante||'—'}</td><td>${d.responsavel||'—'}</td><td>${prioBadge(d.prioridade)}</td><td>${prazoHtml}</td><td>${statusBadge(d.status)}</td><td style="text-align:center">${anexoHtml}</td></tr>`;
+      return`<tr ondblclick="openView('demanda',${d.id})"><td>${d.area||'—'}</td><td>${d.tipo||'—'}</td><td title="${d.demanda}">${d.demanda}</td><td>${d.terminal||'—'}</td><td>${d.solicitante||'—'}</td><td>${d.responsavel||'—'}</td><td>${prioBadge(d.prioridade)}</td><td>${prazoHtml}</td><td>${statusBadge(d.status,cls==='prazo-late')}</td><td style="text-align:center">${anexoHtml}</td></tr>`;
     }).join('');
   } else {
-    const cols=['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada','Em atraso'];
+    const cols=['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada'];
     document.getElementById('kb-demandas').innerHTML=cols.map(st=>{
       const items=f.filter(d=>d.status===st);
       const cards=items.length?items.map(d=>{
@@ -1672,7 +1676,7 @@ function renderViewModal(){
     document.getElementById('view-title').textContent=isEdit?'✏️ Editando Demanda':d.demanda;
     document.getElementById('btn-save-edit').onclick=saveViewEdit;
     const anexoHtml=d.anexo_url?`<a href="${d.anexo_url}" target="_blank" style="color:var(--accent)">📎 Abrir anexo</a>`:'—';
-    document.getElementById('view-body').innerHTML=isEdit?buildDeditForm(d):`<div class="detail-grid">${field('Área',d.area)}${field('Tipo',d.tipo)}${fieldFull('Demanda',d.demanda)}${field('Terminal',d.terminal)}${field('Status',statusBadge(d.status))}${field('Solicitante',d.solicitante)}${field('Responsável',d.responsavel)}${field('Prioridade',prioBadge(d.prioridade))}${field('Prazo de Entrega',fmtDate(d.prazo))}${field('Data de Início',fmtDate(d.inicio))}${field('Data de Conclusão',fmtDate(d.conclusao))}${field('Anexo',anexoHtml)}${fieldFull('Observação / Etapas',d.observacao||'—')}</div>`;
+    document.getElementById('view-body').innerHTML=isEdit?buildDeditForm(d):`<div class="detail-grid">${field('Área',d.area)}${field('Tipo',d.tipo)}${fieldFull('Demanda',d.demanda)}${field('Terminal',d.terminal)}${field('Status',statusBadge(d.status,prazoCls(d.prazo,d.status)==='prazo-late'))}${field('Solicitante',d.solicitante)}${field('Responsável',d.responsavel)}${field('Prioridade',prioBadge(d.prioridade))}${field('Prazo de Entrega',fmtDate(d.prazo))}${field('Data de Início',fmtDate(d.inicio))}${field('Data de Conclusão',fmtDate(d.conclusao))}${field('Anexo',anexoHtml)}${fieldFull('Observação / Etapas',d.observacao||'—')}</div>`;
   }
   if (state.viewMode==='query'){
     const q=state.queries.find(x=>x.id===state.viewId);if(!q)return;
@@ -1731,8 +1735,10 @@ async function saveViewEdit(){
   showLoading('Salvando alterações...');
   try {
     if (state.viewMode==='demanda'){
+      const dAtual=state.demandas.find(x=>x.id===state.viewId);
       const conclusao=document.getElementById('ve-conclusao').value;
-      const status=conclusao?'finalizada':document.getElementById('ve-status').value;
+      const statusSel=document.getElementById('ve-status').value;
+      const status=conclusao?'finalizada':(statusSel||(dAtual?dAtual.status:statusSel));
       let anexo_url = (document.getElementById('ve-anexo-url-atual')?.value) || state._editAnexoUrl || null;
       if (_pendingFileEdit) {
         anexo_url = await uploadArquivo(_pendingFileEdit);
@@ -1765,7 +1771,7 @@ function renderDashboard(){
   const hom=ds.filter(d=>d.status==='homologação').length;
   const fin=ds.filter(d=>d.status==='finalizada').length;
   const can=ds.filter(d=>d.status==='cancelada').length;
-  const atr=ds.filter(d=>d.status==='Em atraso').length;
+  const atr=ds.filter(d=>prazoCls(d.prazo,d.status)==='prazo-late').length;
   document.getElementById('dash-stats').innerHTML=
     statCard('Total',tot,'cadastradas')+
     statCard('Em Detalhamento',det,'demandas')+
@@ -1775,7 +1781,7 @@ function renderDashboard(){
     statCard('Finalizadas',fin,'concluídas')+
     statCard('Canceladas',can,'demandas')+
     statCard('Em Atraso',atr,'prazo vencido');
-  renderBarChart('chart-status',countBy(ds,'status'),['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada','Em atraso']);
+  renderBarChart('chart-status',countBy(ds,'status'),['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada']);
   renderBarChart('chart-area',countBy(ds,'area'),['Eficiência de Processos','Eficiência de Dados']);
   renderBarChart('chart-terminal',countBy(ds,'terminal'),['Corporativo','ADM Central','Guarujá','Anhanguera','Itajaí','Suape']);
   renderBarChart('chart-tipo',countBy(ds,'tipo'),['Criação de Dashboard','Melhoria','Análise','Outros']);
@@ -3668,6 +3674,18 @@ function exportDemandaCSV(){
 }
 
 // Popula o select de responsável com os usuários cadastrados
+function popularFiltroResponsavel(){
+  const el=document.getElementById('sel-responsavel-d');
+  if(!el)return;
+  const atual=el.value||'';
+  el.innerHTML='<option value="">👤 Todos os Responsáveis</option>';
+  state.usuarios.slice().sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR')).forEach(u=>{
+    const opt=document.createElement('option');
+    opt.value=u.nome;opt.textContent=u.nome;
+    if(u.nome===atual)opt.selected=true;
+    el.appendChild(opt);
+  });
+}
 function popularResponsavelSelect(selectId, valorAtual){
   const el=document.getElementById(selectId);
   if(!el)return;
