@@ -538,7 +538,7 @@
           <div id="dash-stats-aside" style="flex:0 0 auto;display:flex;gap:8px;padding-left:12px;border-left:1px solid var(--border)"></div>
         </div>
         <div class="charts-grid"><div class="chart-card"><div class="chart-title">Demandas por Tipo</div><div id="chart-tipo"></div></div><div class="chart-card"><div class="chart-title">Demandas por Área</div><div id="chart-area"></div></div><div class="chart-card"><div class="chart-title">Demandas por Terminal</div><div id="chart-terminal"></div></div><div class="chart-card"><div class="chart-title">Demandas por Status</div><div id="chart-status"></div></div><div class="chart-card"><div class="chart-title">Tarefas das Demandas</div><div id="chart-tarefas"></div></div></div>
-        <div class="table-wrap" style="margin-top:20px;max-height:480px;overflow-y:auto"><table style="font-size:12px"><thead><tr><th>ID</th><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th>Prazo</th><th>Status</th><th>Progresso</th><th>Anexo</th></tr></thead><tbody id="tbody-demandas-dash"></tbody></table></div>
+        <div class="table-wrap" style="margin-top:20px;max-height:480px;overflow-y:auto"><table style="font-size:12px"><thead><tr><th>ID</th><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th onclick="toggleSortPrazoDemandas()" style="cursor:pointer;user-select:none">Prazo <span id="prazo-sort-icon-dash">↑</span></th><th>Status</th><th>Progresso</th><th>Anexo</th></tr></thead><tbody id="tbody-demandas-dash"></tbody></table></div>
       </div>
     </div>
 
@@ -1396,8 +1396,11 @@ function prazoCls(prazo,status) {
 
 function toggleSortPrazoDemandas(){
   state.prazoSort = state.prazoSort==='asc'?'desc':'asc';
+  const seta = state.prazoSort==='asc'?'↑':'↓';
   const icon=document.getElementById('prazo-sort-icon');
-  if(icon) icon.textContent = state.prazoSort==='asc'?'↑':'↓';
+  if(icon) icon.textContent = seta;
+  const iconDash=document.getElementById('prazo-sort-icon-dash');
+  if(iconDash) iconDash.textContent = seta;
   renderDemandas();
 }
 function limparFiltros() {
@@ -1579,6 +1582,8 @@ async function saveDemanda() {
 }
 
 function getFiltDemandas(exclude) {
+  const ex = Array.isArray(exclude) ? exclude : [exclude];
+  const skip = k => ex.includes(k);
   const s=(document.getElementById('search-demanda')?.value||'').toLowerCase();
   const sr=document.getElementById('sel-responsavel-d')?.value||'';
   const fs=document.getElementById('sel-status-d')?.value||'';
@@ -1589,16 +1594,16 @@ function getFiltDemandas(exclude) {
     if (fs==='pendente' && (d.status==='finalizada'||d.status==='cancelada')) return false;
     if (fs==='finalizada' && d.status!=='finalizada') return false;
     if (fs && fs!=='pendente' && fs!=='finalizada' && d.status!==fs) return false;
-    if (exclude!=='tipo' && state.filtroTipo.length && !state.filtroTipo.includes(d.tipo)) return false;
+    if (!skip('tipo') && state.filtroTipo.length && !state.filtroTipo.includes(d.tipo)) return false;
     if (s && !d.demanda.toLowerCase().includes(s) && !(d.solicitante||'').toLowerCase().includes(s)) return false;
     if (sr && d.responsavel!==sr) return false;
-    if (pIni && d.prazo && d.prazo<pIni) return false;
-    if (pFim && d.prazo && d.prazo>pFim) return false;
-    if (exclude!=='area' && state.filtroArea.length && !state.filtroArea.includes(d.area)) return false;
-    if (exclude!=='terminal' && state.filtroTerminal.length && !state.filtroTerminal.includes(d.terminal)) return false;
-    if (exclude!=='tarefaStatus' && state.filtroTarefaStatus.length && !(d.tasks||[]).some(t=>state.filtroTarefaStatus.includes(taskStatusLabel(t)))) return false;
-    if (exclude!=='statusChart' && state.filtroStatus.length && !state.filtroStatus.includes(d.status)) return false;
-    if (exclude!=='cards' && state.filtroCards.length && !state.filtroCards.some(tag=>dmCardTagMatch(d,tag))) return false;
+    if (!skip('data') && pIni && d.prazo && d.prazo<pIni) return false;
+    if (!skip('data') && pFim && d.prazo && d.prazo>pFim) return false;
+    if (!skip('area') && state.filtroArea.length && !state.filtroArea.includes(d.area)) return false;
+    if (!skip('terminal') && state.filtroTerminal.length && !state.filtroTerminal.includes(d.terminal)) return false;
+    if (!skip('tarefaStatus') && state.filtroTarefaStatus.length && !(d.tasks||[]).some(t=>state.filtroTarefaStatus.includes(taskStatusLabel(t)))) return false;
+    if (!skip('statusChart') && state.filtroStatus.length && !state.filtroStatus.includes(d.status)) return false;
+    if (!skip('cards') && state.filtroCards.length && !state.filtroCards.some(tag=>dmCardTagMatch(d,tag))) return false;
     return true;
   });
 }
@@ -2065,35 +2070,40 @@ function renderDashboard(){
   const and=dsc.filter(d=>d.status==='em andamento').length;
   const hom=dsc.filter(d=>d.status==='homologação').length;
   const fin=dsc.filter(d=>d.status==='finalizada').length;
-  const can=dsc.filter(d=>d.status==='cancelada').length;
-  const con=dsc.filter(d=>d.status==='congelada').length;
-  const atr=dsc.filter(d=>prazoCls(d.prazo,d.status)==='prazo-late').length;
   const pend=dsc.filter(d=>d.status!=='finalizada'&&d.status!=='cancelada').length;
   document.getElementById('dash-stats').innerHTML=
     statCardClick('Total',tot,'cadastradas','#001f3f','#ffffff','__total__')+
-    statCardClick('Em Detalhamento',det,'demandas','rgba(99,102,241,0.12)','#818cf8','em detalhamento')+
-    statCardClick('A Iniciar',ini,'demandas','rgba(245,158,11,0.12)','#fbbf24','a iniciar')+
-    statCardClick('Em Andamento',and,'ativas','rgba(59,130,246,0.12)','#60a5fa','em andamento')+
-    statCardClick('Homologação',hom,'demandas','rgba(168,85,247,0.12)','#c084fc','homologação')+
-    statCardClick('Finalizadas',fin,'concluídas','rgba(34,197,94,0.12)','#4ade80','finalizada')+
-    statCardClick('Canceladas',can,'demandas','rgba(239,68,68,0.12)','#f87171','cancelada')+
-    statCardClick('Congeladas',con,'demandas','#001f3f','#ffffff','congelada')+
-    statCardClick('Em Atraso',atr,'prazo vencido','rgba(239,68,68,0.2)','#fca5a5','__atraso__');
-  document.getElementById('dash-stats-aside').innerHTML=
-    statCardClick('⏳ Pendentes',pend,'em aberto','rgba(245,158,11,0.1)','#fbbf24','__pendente__','min-width:96px')+
-    statCardClick('✅ Finalizadas',fin,'concluídas','rgba(34,197,94,0.1)','#4ade80','finalizada','min-width:96px');
+    statCardClick('⏳ Pendentes',pend,'em aberto','rgba(245,158,11,0.12)','#fbbf24','__pendente__')+
+    statCardClick('✅ Finalizadas',fin,'concluídas','rgba(34,197,94,0.12)','#4ade80','finalizada');
+  document.getElementById('dash-stats-aside').innerHTML='';
   renderBarChart('chart-status',countBy(getFiltDemandas('statusChart'),'status'),['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada','congelada'],'statusChart',state.filtroStatus);
   renderBarChart('chart-area',countBy(getFiltDemandas('area'),'area'),['Eficiência de Processos','Eficiência de Dados'],'area',state.filtroArea);
   renderBarChart('chart-terminal',countBy(getFiltDemandas('terminal'),'terminal'),['Corporativo','ADM Central','Guarujá','Anhanguera','Itajaí','Suape'],'terminal',state.filtroTerminal);
   renderBarChart('chart-tipo',countBy(getFiltDemandas('tipo'),'tipo'),['Criação de Dashboard','Melhoria','Análise','Outros'],'tipo',state.filtroTipo);
-  renderBarChart('chart-tarefas',countTaskStatus(getFiltDemandas('tarefaStatus')),['No prazo','Atrasado','Concluída'],'tarefaStatus',state.filtroTarefaStatus);
+  renderBarChart('chart-tarefas',countTaskStatus(getFiltDemandas(['data','tarefaStatus'])),['No prazo','Atrasado','Concluída'],'tarefaStatus',state.filtroTarefaStatus);
   const tbDash=document.getElementById('tbody-demandas-dash');
-  if(tbDash) tbDash.innerHTML = ds.length ? ds.map(d=>dmRowHtml(d)).join('') : `<tr><td colspan="12"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Nenhuma demanda encontrada</p></div></td></tr>`;
+  if(tbDash){
+    const dsSorted=ds.slice().sort((a,b)=>{
+      if(!a.prazo && !b.prazo) return 0;
+      if(!a.prazo) return 1;
+      if(!b.prazo) return -1;
+      const cmp=a.prazo.localeCompare(b.prazo);
+      return state.prazoSort==='desc'?-cmp:cmp;
+    });
+    tbDash.innerHTML = dsSorted.length ? dsSorted.map(d=>dmRowHtml(d)).join('') : `<tr><td colspan="12"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Nenhuma demanda encontrada</p></div></td></tr>`;
+  }
 }
 function countTaskStatus(ds){
   const r={'No prazo':0,'Atrasado':0,'Concluída':0};
+  const pIni=document.getElementById('filter-prazo-ini')?.value||'';
+  const pFim=document.getElementById('filter-prazo-fim')?.value||'';
   ds.forEach(d=>{
     (d.tasks||[]).forEach(t=>{
+      // filtra pela data da tarefa: usa data de conclusão se concluída, senão o prazo
+      const dataRef = t.done ? (t.concluido_em||t.due) : t.due;
+      if(pIni && dataRef && dataRef<pIni) return;
+      if(pFim && dataRef && dataRef>pFim) return;
+      if((pIni||pFim) && !dataRef) return;
       r[taskStatusLabel(t)]++;
     });
   });
