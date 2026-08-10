@@ -506,7 +506,7 @@
         <input type="date" class="filter-date" id="filter-prazo-fim" onchange="renderDemandas()" title="Data fim do filtro de prazo">
         <button class="btn-secondary" style="padding:8px 12px;font-size:12px" onclick="limparFiltros()">✕ Limpar</button>
       </div>
-      <div id="d-tabela"><div class="table-wrap"><table><thead><tr><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th>Prazo ↑</th><th>Status</th><th>Anexo</th></tr></thead><tbody id="tbody-demandas"></tbody></table></div></div>
+      <div id="d-tabela"><div class="table-wrap"><table><thead><tr><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th onclick="toggleSortPrazoDemandas()" style="cursor:pointer;user-select:none">Prazo <span id="prazo-sort-icon">↑</span></th><th>Status</th><th>Progresso</th><th>Anexo</th></tr></thead><tbody id="tbody-demandas"></tbody></table></div></div>
       <div id="d-kanban" style="display:none"><div class="kanban-board" id="kb-demandas"></div></div>
       <div id="d-dashboard" style="display:none"><div class="stats-grid" id="dash-stats"></div><div class="charts-grid"><div class="chart-card"><div class="chart-title">Demandas por Status</div><div id="chart-status"></div></div><div class="chart-card"><div class="chart-title">Demandas por Área</div><div id="chart-area"></div></div><div class="chart-card"><div class="chart-title">Demandas por Terminal</div><div id="chart-terminal"></div></div><div class="chart-card"><div class="chart-title">Demandas por Tipo</div><div id="chart-tipo"></div></div></div></div>
     </div>
@@ -1208,7 +1208,7 @@ const STORAGE_BUCKET = 'anexos';
 // ══════════════════════════════════════════
 const state = {
   demandas:[], queries:[], usuarios:[], mapas:[], projetos:[], fluxogramas:[], documentos:[],
-  currentPage:'', viewD:'tabela', viewQ:'tabela',
+  currentPage:'', viewD:'tabela', viewQ:'tabela', prazoSort:'asc',
   viewMode:null, viewId:null, viewEditing:false,
   user:null,
   // mapa mental editor
@@ -1258,7 +1258,7 @@ async function carregarTudo() {
   showLoading('Carregando dados...');
   try {
     const [{data:d,error:eDem},{data:q},{data:m},{data:pj},{data:fx},{data:docs},{data:us}]=await Promise.all([
-      sb.from('demandas').select('*, demanda_tasks(*), demanda_comments(*)').order('prazo',{ascending:true,nullsFirst:false}),
+      sb.from('demandas').select('*, demanda_tasks(*), demanda_comments(*), demanda_attachments(*)').order('prazo',{ascending:true,nullsFirst:false}),
       sb.from('queries').select('*').order('id',{ascending:false}),
       sb.from('mapas_mentais').select('*').order('atualizado_em',{ascending:false}),
       sb.from('projetos').select('*, projeto_tasks(*), projeto_comments(*), projeto_attachments(*)').order('fim',{ascending:true,nullsFirst:false}),
@@ -1363,6 +1363,12 @@ function prazoCls(prazo,status) {
   return '';
 }
 
+function toggleSortPrazoDemandas(){
+  state.prazoSort = state.prazoSort==='asc'?'desc':'asc';
+  const icon=document.getElementById('prazo-sort-icon');
+  if(icon) icon.textContent = state.prazoSort==='asc'?'↑':'↓';
+  renderDemandas();
+}
 function limparFiltros() {
   document.getElementById('search-demanda').value='';
   document.getElementById('sel-responsavel-d').value='';
@@ -1559,13 +1565,23 @@ function getFiltDemandas() {
 function renderDemandas() {
   const f=getFiltDemandas();
   if (state.viewD==='tabela') {
+    f.sort((a,b)=>{
+      if(!a.prazo && !b.prazo) return 0;
+      if(!a.prazo) return 1;
+      if(!b.prazo) return -1;
+      const cmp=a.prazo.localeCompare(b.prazo);
+      return state.prazoSort==='desc'?-cmp:cmp;
+    });
     const tb=document.getElementById('tbody-demandas');
-    if (!f.length){tb.innerHTML=`<tr><td colspan="10"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Nenhuma demanda encontrada</p></div></td></tr>`;return;}
+    if (!f.length){tb.innerHTML=`<tr><td colspan="11"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Nenhuma demanda encontrada</p></div></td></tr>`;return;}
     tb.innerHTML=f.map(d=>{
       const cls=prazoCls(d.prazo,d.status);
       const prazoHtml=d.prazo?`<span class="${cls}">${fmtDate(d.prazo)}</span>`:'—';
-      const anexoHtml=d.anexo_url?`<a href="${d.anexo_url}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);font-size:12px;text-decoration:none" title="Abrir anexo">📎</a>`:'—';
-      return`<tr ondblclick="openView('demanda',${d.id})"><td>${d.area||'—'}</td><td>${d.tipo||'—'}</td><td title="${d.demanda}">${d.demanda}</td><td>${d.terminal||'—'}</td><td>${d.solicitante||'—'}</td><td>${d.responsavel||'—'}</td><td>${prioBadge(d.prioridade)}</td><td>${prazoHtml}</td><td>${statusBadge(d.status,cls==='prazo-late')}</td><td style="text-align:center">${anexoHtml}</td></tr>`;
+      const numAnexos=(d.anexo_url?1:0)+(d.attachments?d.attachments.length:0);
+      const anexoHtml=numAnexos?`<a href="#" onclick="event.stopPropagation();event.preventDefault();openView('demanda',${d.id})" style="color:var(--accent);font-size:12px;text-decoration:none" title="${numAnexos} anexo(s)">📎${numAnexos>1?' '+numAnexos:''}</a>`:'—';
+      const pct=dmPct(d.tasks,d.status);
+      const progHtml=`<div style="display:flex;align-items:center;gap:7px;min-width:90px"><div class="prog-bar" style="flex:1;margin:0"><div class="prog-fill" style="width:${pct}%;background:${pjPColor(pct)}"></div></div><span style="font-size:10px;color:${pjPColor(pct)}">${pct}%</span></div>`;
+      return`<tr ondblclick="openView('demanda',${d.id})"><td>${d.area||'—'}</td><td>${d.tipo||'—'}</td><td title="${d.demanda}">${d.demanda}</td><td>${d.terminal||'—'}</td><td>${d.solicitante||'—'}</td><td>${d.responsavel||'—'}</td><td>${prioBadge(d.prioridade)}</td><td>${prazoHtml}</td><td>${statusBadge(d.status,cls==='prazo-late')}</td><td>${progHtml}</td><td style="text-align:center">${anexoHtml}</td></tr>`;
     }).join('');
   } else {
     const cols=['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada'];
@@ -1677,11 +1693,14 @@ function renderViewModal(){
     const d=state.demandas.find(x=>x.id===state.viewId);if(!d)return;
     document.getElementById('view-title').textContent=isEdit?'✏️ Editando Demanda':d.demanda;
     document.getElementById('btn-save-edit').onclick=saveViewEdit;
-    const anexoHtml=d.anexo_url?`<a href="${d.anexo_url}" target="_blank" style="color:var(--accent)">📎 Abrir anexo</a>`:'—';
+    const anexoParts=[];
+    if(d.anexo_url) anexoParts.push(`<a href="${d.anexo_url}" target="_blank" style="color:var(--accent)">📎 Anexo (versão anterior)</a>`);
+    if(d.attachments&&d.attachments.length) d.attachments.forEach(a=>anexoParts.push(`<a href="${a.url}" target="_blank" style="color:var(--accent)">📎 ${a.name}</a>`));
+    const anexoHtml=anexoParts.length?anexoParts.join('<br>'):'—';
     const tarefasLogHtml = d.status==='finalizada' ? '' : `
       <div class="msec" style="margin-top:22px">
-        <div class="msec-title">Tarefas — ${d.tasks.filter(t=>t.done).length}/${d.tasks.length} · ${pjTPct(d.tasks)}%</div>
-        <div class="prog-bar" style="height:7px;margin-bottom:14px"><div class="prog-fill" style="width:${pjTPct(d.tasks)}%;background:${pjPColor(pjTPct(d.tasks))}"></div></div>
+        <div class="msec-title" id="dmtitle-${d.id}">Tarefas — ${d.tasks.filter(t=>t.done).length}/${d.tasks.length} · ${dmPct(d.tasks,d.status)}%</div>
+        <div class="prog-bar" style="height:7px;margin-bottom:14px"><div class="prog-fill" id="dmprog-${d.id}" style="width:${dmPct(d.tasks,d.status)}%;background:${pjPColor(dmPct(d.tasks,d.status))}"></div></div>
         <div class="task-input-row">
           <input id="dmnt-name-${d.id}" placeholder="Nova tarefa..." style="flex:1" onkeydown="if(event.key==='Enter')dmAddTask(${d.id})">
           <input id="dmnt-resp-${d.id}" placeholder="Responsável" style="max-width:130px">
@@ -1698,7 +1717,7 @@ function renderViewModal(){
         </div>
         <div id="dmcomments-${d.id}">${dmRenderComments(d)}</div>
       </div>`;
-    document.getElementById('view-body').innerHTML=isEdit?buildDeditForm(d):`<div class="detail-grid">${field('Área',d.area)}${field('Tipo',d.tipo)}${fieldFull('Demanda',d.demanda)}${field('Terminal',d.terminal)}${field('Status',statusBadge(d.status,prazoCls(d.prazo,d.status)==='prazo-late'))}${field('Solicitante',d.solicitante)}${field('Responsável',d.responsavel)}${field('Prioridade',prioBadge(d.prioridade))}${field('Prazo de Entrega',fmtDate(d.prazo))}${field('Data de Início',fmtDate(d.inicio))}${field('Data de Conclusão',fmtDate(d.conclusao))}${field('Anexo',anexoHtml)}${fieldFull('Observação / Etapas',d.observacao||'—')}</div>${tarefasLogHtml}`;
+    document.getElementById('view-body').innerHTML=isEdit?buildDeditForm(d):`<div class="detail-grid">${field('Área',d.area)}${field('Tipo',d.tipo)}${fieldFull('Demanda',d.demanda)}${field('Terminal',d.terminal)}${field('Status',statusBadge(d.status,prazoCls(d.prazo,d.status)==='prazo-late'))}${field('Solicitante',d.solicitante)}${field('Responsável',d.responsavel)}${field('Prioridade',prioBadge(d.prioridade))}${field('Prazo de Entrega',fmtDate(d.prazo))}${field('Data de Início',fmtDate(d.inicio))}${field('Data de Conclusão',fmtDate(d.conclusao))}${fieldFull('Anexos',anexoHtml)}${fieldFull('Observação / Etapas',d.observacao||'—')}</div>${tarefasLogHtml}`;
   }
   if (state.viewMode==='query'){
     const q=state.queries.find(x=>x.id===state.viewId);if(!q)return;
@@ -1726,18 +1745,11 @@ function buildDeditForm(d){
     <div class="field-group"><label class="field-label">Data de Conclusão</label><input class="field-input" type="date" id="ve-conclusao" value="${d.conclusao||''}" onchange="if(this.value)document.getElementById('ve-status').value='finalizada'"></div>
     <div class="field-group full"><label class="field-label">Observação</label><textarea class="field-textarea" id="ve-obs" style="min-height:120px">${esc(d.observacao)}</textarea></div>
     <div class="field-group full">
-      <label class="field-label">Anexo</label>
-      <input type="hidden" id="ve-anexo-url-atual" value="${d.anexo_url||''}">
-      ${d.anexo_url?`<div class="file-preview" id="ve-anexo-preview"><a href="${d.anexo_url}" target="_blank">📎 Anexo atual</a><button onclick="removerAnexo('edit')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;margin-left:auto">✕ Remover</button></div>`:''}
-      <div class="file-upload-area" id="upload-area-edit" style="${d.anexo_url?'margin-top:8px':''}">
-        <input type="file" id="ve-anexo-file" onchange="previewAnexo('edit')">
-        <div class="upload-icon">📎</div>
-        <p>${d.anexo_url?'Substituir anexo':'Clique ou arraste um arquivo'}</p>
-      </div>
-      <div id="ve-anexo-preview-new" style="display:none" class="file-preview">
-        <span id="ve-anexo-nome">—</span>
-        <button onclick="removerAnexo('edit')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;margin-left:auto">✕</button>
-      </div>
+      <label class="field-label">Anexos</label>
+      ${d.anexo_url?`<div class="file-preview" style="margin-bottom:8px"><a href="${d.anexo_url}" target="_blank">📎 Anexo (versão anterior)</a></div>`:''}
+      <div id="dmattach-list-${d.id}">${dmRenderAttachments(d)}</div>
+      <div class="attach-drop" id="dmdrop-${d.id}" onclick="document.getElementById('dmfile-inp-${d.id}').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dmHandleDrop(event,${d.id})">📎 Clique ou arraste arquivos aqui para anexar</div>
+      <input type="file" id="dmfile-inp-${d.id}" style="display:none" multiple onchange="dmHandleFileInput(event,${d.id})">
     </div>
   </div>`;
 }
@@ -1771,6 +1783,13 @@ function dmRenderComments(d){
     <div class="comment-bubble"><div style="display:flex;justify-content:space-between"><span class="comment-author">${c.autor}</span><span class="comment-time">${pjTimeAgo(c.created_at)}</span></div><div class="comment-text">${c.texto}</div></div>
   </div>`).join('');
 }
+function dmRefreshProgress(d){
+  const pct=dmPct(d.tasks,d.status);
+  const title=document.getElementById(`dmtitle-${d.id}`);
+  if(title) title.textContent=`Tarefas — ${d.tasks.filter(t=>t.done).length}/${d.tasks.length} · ${pct}%`;
+  const prog=document.getElementById(`dmprog-${d.id}`);
+  if(prog){prog.style.width=pct+'%';prog.style.background=pjPColor(pct);}
+}
 async function dmAddTask(id){
   const d=state.demandas.find(x=>x.id===id);
   const nome=document.getElementById(`dmnt-name-${id}`).value.trim();
@@ -1787,15 +1806,17 @@ async function dmAddTask(id){
     d.tasks.push({id:data.id,nome:data.nome,done:data.done,resp:data.resp,due:data.due});
     document.getElementById(`dmnt-name-${id}`).value='';document.getElementById(`dmnt-resp-${id}`).value='';document.getElementById(`dmnt-due-${id}`).value='';
     document.getElementById(`dmtlist-${id}`).innerHTML=dmRenderTasks(d);
+    dmRefreshProgress(d);
+    renderDemandas();
   }catch(e){toast('Erro: '+e.message,'error');}
 }
 async function dmToggleTask(did,tid){
   const d=state.demandas.find(x=>x.id===did);const t=d.tasks.find(t=>t.id===tid);
-  try{await sb.from('demanda_tasks').update({done:!t.done}).eq('id',tid);t.done=!t.done;document.getElementById(`dmtlist-${did}`).innerHTML=dmRenderTasks(d);}catch(e){toast('Erro: '+e.message,'error');}
+  try{await sb.from('demanda_tasks').update({done:!t.done}).eq('id',tid);t.done=!t.done;document.getElementById(`dmtlist-${did}`).innerHTML=dmRenderTasks(d);dmRefreshProgress(d);renderDemandas();}catch(e){toast('Erro: '+e.message,'error');}
 }
 async function dmDeleteTask(did,tid){
   const d=state.demandas.find(x=>x.id===did);
-  try{await sb.from('demanda_tasks').delete().eq('id',tid);d.tasks=d.tasks.filter(t=>t.id!==tid);document.getElementById(`dmtlist-${did}`).innerHTML=dmRenderTasks(d);}catch(e){toast('Erro: '+e.message,'error');}
+  try{await sb.from('demanda_tasks').delete().eq('id',tid);d.tasks=d.tasks.filter(t=>t.id!==tid);document.getElementById(`dmtlist-${did}`).innerHTML=dmRenderTasks(d);dmRefreshProgress(d);renderDemandas();}catch(e){toast('Erro: '+e.message,'error');}
 }
 async function dmAddComment(id){
   const d=state.demandas.find(x=>x.id===id);
@@ -1809,6 +1830,38 @@ async function dmAddComment(id){
   }catch(e){toast('Erro: '+e.message,'error');}
 }
 
+// ─── ANEXOS (múltiplos, Supabase Storage) ───
+function dmRenderAttachments(d){
+  if(!d.attachments||!d.attachments.length)return '<div style="font-size:12px;color:var(--text3);margin-bottom:8px">Nenhum anexo</div>';
+  return '<div class="attach-list">'+d.attachments.map(a=>`<div class="attach-item">
+    <span class="attach-icon">${pjFileIcon(a.name)}</span><span class="attach-name">${a.name}</span><span class="attach-size">${pjFmtBytes(a.size)}</span>
+    <a href="${a.url}" target="_blank" style="color:var(--accent);font-size:13px;text-decoration:none">↓</a>
+    <button class="attach-del" onclick="dmDeleteAttach(${d.id},${a.id})">×</button>
+  </div>`).join('')+'</div>';
+}
+async function dmUploadFiles(did,files){
+  const d=state.demandas.find(x=>x.id===did);
+  for(const f of files){
+    try{
+      const ext=f.name.split('.').pop();
+      const path=`demandas/${did}_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const {error:upErr}=await sb.storage.from(STORAGE_BUCKET).upload(path,f);
+      if(upErr)throw upErr;
+      const {data:urlData}=sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+      const {data,error}=await sb.from('demanda_attachments').insert({demanda_id:did,nome:f.name,url:urlData.publicUrl,tamanho:f.size}).select().single();
+      if(error)throw error;
+      d.attachments.push({id:data.id,name:data.nome,url:data.url,size:data.tamanho});
+    }catch(e){toast('Erro no anexo: '+e.message,'error');}
+  }
+  document.getElementById(`dmattach-list-${did}`).innerHTML=dmRenderAttachments(d);
+}
+function dmHandleFileInput(event,did){dmUploadFiles(did,Array.from(event.target.files));event.target.value='';}
+function dmHandleDrop(event,did){event.preventDefault();document.getElementById(`dmdrop-${did}`).classList.remove('drag-over');dmUploadFiles(did,Array.from(event.dataTransfer.files));}
+async function dmDeleteAttach(did,aid){
+  const d=state.demandas.find(x=>x.id===did);
+  try{await sb.from('demanda_attachments').delete().eq('id',aid);d.attachments=d.attachments.filter(a=>a.id!==aid);document.getElementById(`dmattach-list-${did}`).innerHTML=dmRenderAttachments(d);}catch(e){toast('Erro: '+e.message,'error');}
+}
+
 async function saveViewEdit(){
   showLoading('Salvando alterações...');
   try {
@@ -1817,12 +1870,7 @@ async function saveViewEdit(){
       const conclusao=document.getElementById('ve-conclusao').value;
       const statusSel=document.getElementById('ve-status').value;
       const status=conclusao?'finalizada':(statusSel||(dAtual?dAtual.status:statusSel));
-      let anexo_url = (document.getElementById('ve-anexo-url-atual')?.value) || state._editAnexoUrl || null;
-      if (_pendingFileEdit) {
-        anexo_url = await uploadArquivo(_pendingFileEdit);
-        _pendingFileEdit = null;
-        state._editAnexoUrl = null;
-      }
+      const anexo_url = dAtual?dAtual.anexo_url:null;
       const obj={area:document.getElementById('ve-area').value,tipo:document.getElementById('ve-tipo').value,demanda:document.getElementById('ve-demanda').value,terminal:document.getElementById('ve-terminal').value,status,solicitante:document.getElementById('ve-solicitante').value,responsavel:document.getElementById('ve-responsavel').value,prioridade:document.getElementById('ve-prioridade').value,prazo:document.getElementById('ve-prazo').value||null,inicio:document.getElementById('ve-inicio').value||null,conclusao:conclusao||null,observacao:document.getElementById('ve-obs').value,anexo_url};
       const {error}=await sb.from('demandas').update(obj).eq('id',Number(state.viewId));
       if (error) throw error;
@@ -3808,11 +3856,13 @@ let pjChartStatus=null,pjChartSave=null,pjChartSetor=null;
 let pjFilters={s:'',r:'',st:'',se:'',p:'',d1:'',d2:'',ac:''};
 
 // Normaliza dados vindos do supabase (relations -> arrays nomeados)
+function dmPct(tasks,status){return status==='finalizada'?100:pjTPct(tasks);}
 function dmNormalize(rows){
   return (rows||[]).map(d=>({
     ...d,
     tasks:(d.demanda_tasks||[]).map(t=>({id:t.id,nome:t.nome,done:t.done,resp:t.resp,due:t.due})).sort((a,b)=>a.id-b.id),
-    comments:(d.demanda_comments||[]).map(c=>({id:c.id,autor:c.autor,texto:c.texto,created_at:c.created_at})).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
+    comments:(d.demanda_comments||[]).map(c=>({id:c.id,autor:c.autor,texto:c.texto,created_at:c.created_at})).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),
+    attachments:(d.demanda_attachments||[]).map(a=>({id:a.id,name:a.nome,url:a.url,size:a.tamanho}))
   }));
 }
 function pjNormalize(rows){
