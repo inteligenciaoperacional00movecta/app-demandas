@@ -370,8 +370,8 @@
   .info-box .iv.money{color:var(--accent);font-weight:600;}
   .info-box .iv.save{color:var(--success);font-weight:600;}
   .task-input-row{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;}
-  .task-input-row input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;}
-  .task-input-row input:focus{border-color:var(--accent);}
+  .task-input-row input,.task-input-row select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;}
+  .task-input-row input:focus,.task-input-row select:focus{border-color:var(--accent);}
   .task-table-cols{grid-template-columns:22px minmax(120px,1.6fr) 100px 92px 88px 100px 50px;}
   .task-table-header{display:grid;gap:9px;padding:0 12px 7px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);}
   .task-item{display:grid;gap:9px;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:5px;}
@@ -537,7 +537,7 @@
           <div class="stats-grid" id="dash-stats" style="flex:1;min-width:280px;margin-bottom:0"></div>
           <div id="dash-stats-aside" style="flex:0 0 auto;display:flex;gap:8px;padding-left:12px;border-left:1px solid var(--border)"></div>
         </div>
-        <div class="charts-grid"><div class="chart-card"><div class="chart-title">Demandas por Área</div><div id="chart-area"></div></div><div class="chart-card"><div class="chart-title">Demandas por Terminal</div><div id="chart-terminal"></div></div><div class="chart-card"><div class="chart-title">Demandas por Tipo</div><div id="chart-tipo"></div></div><div class="chart-card"><div class="chart-title">Tarefas das Demandas</div><div id="chart-tarefas"></div></div></div>
+        <div class="charts-grid"><div class="chart-card"><div class="chart-title">Demandas por Tipo</div><div id="chart-tipo"></div></div><div class="chart-card"><div class="chart-title">Demandas por Área</div><div id="chart-area"></div></div><div class="chart-card"><div class="chart-title">Demandas por Terminal</div><div id="chart-terminal"></div></div><div class="chart-card"><div class="chart-title">Demandas por Status</div><div id="chart-status"></div></div><div class="chart-card"><div class="chart-title">Tarefas das Demandas</div><div id="chart-tarefas"></div></div></div>
         <div class="table-wrap" style="margin-top:20px;max-height:480px;overflow-y:auto"><table style="font-size:12px"><thead><tr><th>ID</th><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th>Prazo</th><th>Status</th><th>Progresso</th><th>Anexo</th></tr></thead><tbody id="tbody-demandas-dash"></tbody></table></div>
       </div>
     </div>
@@ -1239,7 +1239,7 @@ const STORAGE_BUCKET = 'anexos';
 // ══════════════════════════════════════════
 const state = {
   demandas:[], queries:[], usuarios:[], mapas:[], projetos:[], fluxogramas:[], documentos:[],
-  currentPage:'', viewD:'tabela', viewQ:'tabela', prazoSort:'asc', filtroArea:[], filtroTerminal:[], filtroTipo:[], filtroTarefaStatus:[], filtroCards:[],
+  currentPage:'', viewD:'tabela', viewQ:'tabela', prazoSort:'asc', filtroArea:[], filtroTerminal:[], filtroTipo:[], filtroTarefaStatus:[], filtroStatus:[], filtroCards:[],
   viewMode:null, viewId:null, viewEditing:false,
   user:null,
   // mapa mental editor
@@ -1411,6 +1411,7 @@ function limparFiltros() {
   state.filtroTerminal=[];
   state.filtroTipo=[];
   state.filtroTarefaStatus=[];
+  state.filtroStatus=[];
   state.filtroCards=[];
   renderDemandas();
 }
@@ -1596,6 +1597,7 @@ function getFiltDemandas(exclude) {
     if (exclude!=='area' && state.filtroArea.length && !state.filtroArea.includes(d.area)) return false;
     if (exclude!=='terminal' && state.filtroTerminal.length && !state.filtroTerminal.includes(d.terminal)) return false;
     if (exclude!=='tarefaStatus' && state.filtroTarefaStatus.length && !(d.tasks||[]).some(t=>state.filtroTarefaStatus.includes(taskStatusLabel(t)))) return false;
+    if (exclude!=='statusChart' && state.filtroStatus.length && !state.filtroStatus.includes(d.status)) return false;
     if (exclude!=='cards' && state.filtroCards.length && !state.filtroCards.some(tag=>dmCardTagMatch(d,tag))) return false;
     return true;
   });
@@ -1750,7 +1752,7 @@ function renderViewModal(){
         <div class="prog-bar" style="height:7px;margin-bottom:14px"><div class="prog-fill" id="dmprog-${d.id}" style="width:${dmPct(d.tasks,d.status)}%;background:${pjPColor(dmPct(d.tasks,d.status))}"></div></div>
         <div class="task-input-row">
           <input id="dmnt-name-${d.id}" placeholder="Nova tarefa..." style="flex:1" onkeydown="if(event.key==='Enter')dmAddTask(${d.id})">
-          <input id="dmnt-resp-${d.id}" placeholder="Responsável" style="max-width:130px">
+          <select id="dmnt-resp-${d.id}" style="max-width:150px">${buildUsuariosOptions('')}</select>
           <input id="dmnt-due-${d.id}" type="date" style="max-width:140px">
           <button class="btn-primary" style="padding:7px 12px;font-size:12px" onclick="dmAddTask(${d.id})">+ Add</button>
         </div>
@@ -1836,7 +1838,7 @@ function dmRenderTasks(d){
       return`<div class="task-item task-table-cols editing">
         <span></span>
         <input class="task-edit-input" id="dmet-name-${t.id}" value="${esc(t.nome)}" onkeydown="if(event.key==='Enter')dmSaveTaskEdit(${d.id},${t.id});if(event.key==='Escape')dmCancelTaskEdit(${d.id})">
-        <input class="task-edit-input" id="dmet-resp-${t.id}" value="${esc(t.resp)}" onkeydown="if(event.key==='Enter')dmSaveTaskEdit(${d.id},${t.id});if(event.key==='Escape')dmCancelTaskEdit(${d.id})">
+        <select class="task-edit-input" id="dmet-resp-${t.id}" onkeydown="if(event.key==='Enter')dmSaveTaskEdit(${d.id},${t.id});if(event.key==='Escape')dmCancelTaskEdit(${d.id})">${buildUsuariosOptions(t.resp)}</select>
         <input class="task-edit-input" type="date" id="dmet-due-${t.id}" value="${t.due||''}" onkeydown="if(event.key==='Enter')dmSaveTaskEdit(${d.id},${t.id});if(event.key==='Escape')dmCancelTaskEdit(${d.id})">
         <span class="task-cell">—</span>
         <span class="task-cell">${t.concluido_em?pjFmtD(t.concluido_em):'—'}</span>
@@ -2080,6 +2082,7 @@ function renderDashboard(){
   document.getElementById('dash-stats-aside').innerHTML=
     statCardClick('⏳ Pendentes',pend,'em aberto','rgba(245,158,11,0.1)','#fbbf24','__pendente__','min-width:96px')+
     statCardClick('✅ Finalizadas',fin,'concluídas','rgba(34,197,94,0.1)','#4ade80','finalizada','min-width:96px');
+  renderBarChart('chart-status',countBy(getFiltDemandas('statusChart'),'status'),['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada','congelada'],'statusChart',state.filtroStatus);
   renderBarChart('chart-area',countBy(getFiltDemandas('area'),'area'),['Eficiência de Processos','Eficiência de Dados'],'area',state.filtroArea);
   renderBarChart('chart-terminal',countBy(getFiltDemandas('terminal'),'terminal'),['Corporativo','ADM Central','Guarujá','Anhanguera','Itajaí','Suape'],'terminal',state.filtroTerminal);
   renderBarChart('chart-tipo',countBy(getFiltDemandas('tipo'),'tipo'),['Criação de Dashboard','Melhoria','Análise','Outros'],'tipo',state.filtroTipo);
@@ -2132,7 +2135,7 @@ function renderBarChart(cid,counts,order,field,activeValues){
   }).join('');
 }
 function dmChartFilter(field,value,multi){
-  const key=field==='tipo'?'filtroTipo':field==='area'?'filtroArea':field==='terminal'?'filtroTerminal':'filtroTarefaStatus';
+  const key=field==='tipo'?'filtroTipo':field==='area'?'filtroArea':field==='terminal'?'filtroTerminal':field==='statusChart'?'filtroStatus':'filtroTarefaStatus';
   let arr=state[key];
   if(multi){
     arr = arr.includes(value) ? arr.filter(v=>v!==value) : [...arr,value];
@@ -4437,7 +4440,7 @@ function pjOpenDetail(id){
         <div class="prog-bar" style="height:7px;margin-bottom:14px"><div class="prog-fill" style="width:${pct}%;background:${pjPColor(pct)}"></div></div>
         <div class="task-input-row">
           <input id="pjnt-name-${p.id}" placeholder="Nova tarefa..." style="flex:1" onkeydown="if(event.key==='Enter')pjAddTask(${p.id})">
-          <input id="pjnt-resp-${p.id}" placeholder="Responsável" style="max-width:130px">
+          <select id="pjnt-resp-${p.id}" style="max-width:150px">${buildUsuariosOptions('')}</select>
           <input id="pjnt-due-${p.id}" type="date" style="max-width:140px">
           <button class="btn-primary" style="padding:7px 12px;font-size:12px" onclick="pjAddTask(${p.id})">+ Add</button>
         </div>
@@ -4475,7 +4478,7 @@ function pjRenderTasks(p){
       return`<div class="task-item task-table-cols editing">
         <span></span>
         <input class="task-edit-input" id="pjet-name-${t.id}" value="${esc(t.nome)}" onkeydown="if(event.key==='Enter')pjSaveTaskEdit(${p.id},${t.id});if(event.key==='Escape')pjCancelTaskEdit(${p.id})">
-        <input class="task-edit-input" id="pjet-resp-${t.id}" value="${esc(t.resp)}" onkeydown="if(event.key==='Enter')pjSaveTaskEdit(${p.id},${t.id});if(event.key==='Escape')pjCancelTaskEdit(${p.id})">
+        <select class="task-edit-input" id="pjet-resp-${t.id}" onkeydown="if(event.key==='Enter')pjSaveTaskEdit(${p.id},${t.id});if(event.key==='Escape')pjCancelTaskEdit(${p.id})">${buildUsuariosOptions(t.resp)}</select>
         <input class="task-edit-input" type="date" id="pjet-due-${t.id}" value="${t.due||''}" onkeydown="if(event.key==='Enter')pjSaveTaskEdit(${p.id},${t.id});if(event.key==='Escape')pjCancelTaskEdit(${p.id})">
         <span class="task-cell">—</span>
         <span class="task-cell">${t.concluido_em?pjFmtD(t.concluido_em):'—'}</span>
