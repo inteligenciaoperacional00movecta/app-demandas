@@ -1257,8 +1257,8 @@ function doLogout() {
 async function carregarTudo() {
   showLoading('Carregando dados...');
   try {
-    const [{data:d},{data:q},{data:m},{data:pj},{data:fx},{data:docs},{data:us}]=await Promise.all([
-      sb.from('demandas').select('*').order('prazo',{ascending:true,nullsFirst:false}),
+    const [{data:d,error:eDem},{data:q},{data:m},{data:pj},{data:fx},{data:docs},{data:us}]=await Promise.all([
+      sb.from('demandas').select('*, demanda_tasks(*), demanda_comments(*)').order('prazo',{ascending:true,nullsFirst:false}),
       sb.from('queries').select('*').order('id',{ascending:false}),
       sb.from('mapas_mentais').select('*').order('atualizado_em',{ascending:false}),
       sb.from('projetos').select('*, projeto_tasks(*), projeto_comments(*), projeto_attachments(*)').order('fim',{ascending:true,nullsFirst:false}),
@@ -1266,7 +1266,8 @@ async function carregarTudo() {
       sb.from('documentos').select('*').order('created_at',{ascending:false}),
       sb.from('usuarios').select('*').order('nome')
     ]);
-    state.demandas=d||[];
+    if (eDem) console.error('Erro ao carregar demandas:', eDem);
+    state.demandas=dmNormalize(d||[]);
     state.queries=q||[];
     state.mapas=m||[];
     state.projetos=pjNormalize(pj||[]);
@@ -1274,7 +1275,8 @@ async function carregarTudo() {
     state.documentos=docs||[];
     state.usuarios=us||[];
     popularFiltroResponsavel();
-    toast('Dados carregados!');
+    if (eDem) toast('Erro ao carregar Demandas: '+eDem.message,'error');
+    else toast('Dados carregados!');
     // Atualiza calendário se estiver ativo
     if(state.currentPage==='calendario') setTimeout(()=>calRender(),50);
   } catch(e){toast('Erro ao carregar: '+e.message,'error');}
@@ -1301,7 +1303,7 @@ function navigate(page) {
   if (p) p.classList.add('active');
   if (page==='demandas') { popularFiltroResponsavel(); renderDemandas(); }
   if (page==='projetos') pjRenderInner();
-  if (page==='calendario') { setTimeout(()=>{ if(state.demandas.length) calRender(); else carregarTudo().then(()=>calRender()); },50); }
+  if (page==='calendario') { _calRetried=false; setTimeout(()=>{ if(state.demandas.length) calRender(); else carregarTudo().then(()=>calRender()); },50); }
   if (page==='fluxogramas') fxRenderLista();
   if (page==='documental') docRender();
   if (page==='query'){setViewQ('lista');renderQueries();}
@@ -1676,7 +1678,26 @@ function renderViewModal(){
     document.getElementById('view-title').textContent=isEdit?'✏️ Editando Demanda':d.demanda;
     document.getElementById('btn-save-edit').onclick=saveViewEdit;
     const anexoHtml=d.anexo_url?`<a href="${d.anexo_url}" target="_blank" style="color:var(--accent)">📎 Abrir anexo</a>`:'—';
-    document.getElementById('view-body').innerHTML=isEdit?buildDeditForm(d):`<div class="detail-grid">${field('Área',d.area)}${field('Tipo',d.tipo)}${fieldFull('Demanda',d.demanda)}${field('Terminal',d.terminal)}${field('Status',statusBadge(d.status,prazoCls(d.prazo,d.status)==='prazo-late'))}${field('Solicitante',d.solicitante)}${field('Responsável',d.responsavel)}${field('Prioridade',prioBadge(d.prioridade))}${field('Prazo de Entrega',fmtDate(d.prazo))}${field('Data de Início',fmtDate(d.inicio))}${field('Data de Conclusão',fmtDate(d.conclusao))}${field('Anexo',anexoHtml)}${fieldFull('Observação / Etapas',d.observacao||'—')}</div>`;
+    document.getElementById('view-body').innerHTML=isEdit?buildDeditForm(d):`<div class="detail-grid">${field('Área',d.area)}${field('Tipo',d.tipo)}${fieldFull('Demanda',d.demanda)}${field('Terminal',d.terminal)}${field('Status',statusBadge(d.status,prazoCls(d.prazo,d.status)==='prazo-late'))}${field('Solicitante',d.solicitante)}${field('Responsável',d.responsavel)}${field('Prioridade',prioBadge(d.prioridade))}${field('Prazo de Entrega',fmtDate(d.prazo))}${field('Data de Início',fmtDate(d.inicio))}${field('Data de Conclusão',fmtDate(d.conclusao))}${field('Anexo',anexoHtml)}${fieldFull('Observação / Etapas',d.observacao||'—')}</div>
+      <div class="msec" style="margin-top:22px">
+        <div class="msec-title">Tarefas — ${d.tasks.filter(t=>t.done).length}/${d.tasks.length} · ${pjTPct(d.tasks)}%</div>
+        <div class="prog-bar" style="height:7px;margin-bottom:14px"><div class="prog-fill" style="width:${pjTPct(d.tasks)}%;background:${pjPColor(pjTPct(d.tasks))}"></div></div>
+        <div class="task-input-row">
+          <input id="dmnt-name-${d.id}" placeholder="Nova tarefa..." style="flex:1" onkeydown="if(event.key==='Enter')dmAddTask(${d.id})">
+          <input id="dmnt-resp-${d.id}" placeholder="Responsável" style="max-width:130px">
+          <input id="dmnt-due-${d.id}" type="date" style="max-width:140px">
+          <button class="btn-primary" style="padding:7px 12px;font-size:12px" onclick="dmAddTask(${d.id})">+ Add</button>
+        </div>
+        <div id="dmtlist-${d.id}">${dmRenderTasks(d)}</div>
+      </div>
+      <div class="msec">
+        <div class="msec-title">Log de Atividade</div>
+        <div style="display:flex;gap:7px;margin-bottom:12px">
+          <input id="dmci-${d.id}" placeholder="Adicionar comentário..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none" onkeydown="if(event.key==='Enter')dmAddComment(${d.id})">
+          <button class="btn-secondary" style="padding:8px 14px;font-size:12px" onclick="dmAddComment(${d.id})">Enviar</button>
+        </div>
+        <div id="dmcomments-${d.id}">${dmRenderComments(d)}</div>
+      </div>`;
   }
   if (state.viewMode==='query'){
     const q=state.queries.find(x=>x.id===state.viewId);if(!q)return;
@@ -1730,6 +1751,62 @@ function buildQeditForm(q){
 
 function opts(arr,sel){return arr.map(v=>`<option value="${v}"${v===sel?' selected':''}>${v||'Selecione...'}</option>`).join('');}
 function esc(s){return(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+// ─── TAREFAS E LOG DE ATIVIDADE (Demandas) ───
+function dmRenderTasks(d){
+  if(!d.tasks.length)return '<div style="text-align:center;color:var(--text3);padding:16px;font-size:12px">Nenhuma tarefa</div>';
+  return d.tasks.map(t=>`<div class="task-item${t.done?' done':''}">
+    <button class="task-check${t.done?' checked':''}" onclick="dmToggleTask(${d.id},${t.id})"></button>
+    <span class="task-name">${t.nome}</span>
+    ${t.resp?`<span style="font-size:11px;color:var(--text3)">${t.resp}</span>`:''}
+    ${t.due?`<span style="font-size:10px;color:var(--text3)">${pjFmtD(t.due)}</span>`:''}
+    <button class="task-del" onclick="dmDeleteTask(${d.id},${t.id})">×</button>
+  </div>`).join('');
+}
+function dmRenderComments(d){
+  if(!d.comments||!d.comments.length)return '<div style="text-align:center;color:var(--text3);padding:12px;font-size:12px">Nenhum registro</div>';
+  return d.comments.map(c=>`<div class="comment-item">
+    <div class="comment-avatar" style="background:${pjAC(c.autor)}">${pjIni(c.autor)}</div>
+    <div class="comment-bubble"><div style="display:flex;justify-content:space-between"><span class="comment-author">${c.autor}</span><span class="comment-time">${pjTimeAgo(c.created_at)}</span></div><div class="comment-text">${c.texto}</div></div>
+  </div>`).join('');
+}
+async function dmAddTask(id){
+  const d=state.demandas.find(x=>x.id===id);
+  const nome=document.getElementById(`dmnt-name-${id}`).value.trim();
+  const resp=document.getElementById(`dmnt-resp-${id}`).value.trim();
+  const due=document.getElementById(`dmnt-due-${id}`).value;
+  let ok=true;
+  if(!nome){document.getElementById(`dmnt-name-${id}`).style.borderColor='var(--danger)';ok=false;}else{document.getElementById(`dmnt-name-${id}`).style.borderColor='';}
+  if(!resp){document.getElementById(`dmnt-resp-${id}`).style.borderColor='var(--danger)';ok=false;}else{document.getElementById(`dmnt-resp-${id}`).style.borderColor='';}
+  if(!due){document.getElementById(`dmnt-due-${id}`).style.borderColor='var(--danger)';ok=false;}else{document.getElementById(`dmnt-due-${id}`).style.borderColor='';}
+  if(!ok)return;
+  try{
+    const {data,error}=await sb.from('demanda_tasks').insert({demanda_id:id,nome,resp,due,done:false}).select().single();
+    if(error)throw error;
+    d.tasks.push({id:data.id,nome:data.nome,done:data.done,resp:data.resp,due:data.due});
+    document.getElementById(`dmnt-name-${id}`).value='';document.getElementById(`dmnt-resp-${id}`).value='';document.getElementById(`dmnt-due-${id}`).value='';
+    document.getElementById(`dmtlist-${id}`).innerHTML=dmRenderTasks(d);
+  }catch(e){toast('Erro: '+e.message,'error');}
+}
+async function dmToggleTask(did,tid){
+  const d=state.demandas.find(x=>x.id===did);const t=d.tasks.find(t=>t.id===tid);
+  try{await sb.from('demanda_tasks').update({done:!t.done}).eq('id',tid);t.done=!t.done;document.getElementById(`dmtlist-${did}`).innerHTML=dmRenderTasks(d);}catch(e){toast('Erro: '+e.message,'error');}
+}
+async function dmDeleteTask(did,tid){
+  const d=state.demandas.find(x=>x.id===did);
+  try{await sb.from('demanda_tasks').delete().eq('id',tid);d.tasks=d.tasks.filter(t=>t.id!==tid);document.getElementById(`dmtlist-${did}`).innerHTML=dmRenderTasks(d);}catch(e){toast('Erro: '+e.message,'error');}
+}
+async function dmAddComment(id){
+  const d=state.demandas.find(x=>x.id===id);
+  const inp=document.getElementById(`dmci-${id}`);const texto=inp.value.trim();if(!texto)return;
+  const autor=state.user?state.user.nome:'Usuário';
+  try{
+    const {data,error}=await sb.from('demanda_comments').insert({demanda_id:id,autor,texto}).select().single();
+    if(error)throw error;
+    d.comments.unshift({id:data.id,autor:data.autor,texto:data.texto,created_at:data.created_at});
+    inp.value='';document.getElementById(`dmcomments-${id}`).innerHTML=dmRenderComments(d);
+  }catch(e){toast('Erro: '+e.message,'error');}
+}
 
 async function saveViewEdit(){
   showLoading('Salvando alterações...');
@@ -3466,9 +3543,11 @@ function calPopularFiltros(){
   resps.forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;if(r===cur)o.selected=true;sel.appendChild(o);});
 }
 
+let _calRetried=false;
 function calRender(){
-  // Se dados não carregaram ainda, aguarda
-  if(!state.demandas||!state.demandas.length){
+  // Se dados não carregaram ainda, tenta recarregar uma única vez (evita loop)
+  if((!state.demandas||!state.demandas.length) && !_calRetried){
+    _calRetried=true;
     const grid=document.getElementById('cal-grid');
     if(grid)grid.innerHTML='<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text3);font-size:13px">Carregando dados...</div>';
     carregarTudo().then(()=>calRenderCore());
@@ -3728,6 +3807,13 @@ let pjChartStatus=null,pjChartSave=null,pjChartSetor=null;
 let pjFilters={s:'',r:'',st:'',se:'',p:'',d1:'',d2:'',ac:''};
 
 // Normaliza dados vindos do supabase (relations -> arrays nomeados)
+function dmNormalize(rows){
+  return (rows||[]).map(d=>({
+    ...d,
+    tasks:(d.demanda_tasks||[]).map(t=>({id:t.id,nome:t.nome,done:t.done,resp:t.resp,due:t.due})).sort((a,b)=>a.id-b.id),
+    comments:(d.demanda_comments||[]).map(c=>({id:c.id,autor:c.autor,texto:c.texto,created_at:c.created_at})).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
+  }));
+}
 function pjNormalize(rows){
   return rows.map(p=>({
     id:p.id, nome:p.nome, valor:Number(p.valor)||0, save:Number(p.save)||0,
