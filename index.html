@@ -1678,7 +1678,7 @@ function renderViewModal(){
     document.getElementById('view-title').textContent=isEdit?'✏️ Editando Demanda':d.demanda;
     document.getElementById('btn-save-edit').onclick=saveViewEdit;
     const anexoHtml=d.anexo_url?`<a href="${d.anexo_url}" target="_blank" style="color:var(--accent)">📎 Abrir anexo</a>`:'—';
-    document.getElementById('view-body').innerHTML=isEdit?buildDeditForm(d):`<div class="detail-grid">${field('Área',d.area)}${field('Tipo',d.tipo)}${fieldFull('Demanda',d.demanda)}${field('Terminal',d.terminal)}${field('Status',statusBadge(d.status,prazoCls(d.prazo,d.status)==='prazo-late'))}${field('Solicitante',d.solicitante)}${field('Responsável',d.responsavel)}${field('Prioridade',prioBadge(d.prioridade))}${field('Prazo de Entrega',fmtDate(d.prazo))}${field('Data de Início',fmtDate(d.inicio))}${field('Data de Conclusão',fmtDate(d.conclusao))}${field('Anexo',anexoHtml)}${fieldFull('Observação / Etapas',d.observacao||'—')}</div>
+    const tarefasLogHtml = d.status==='finalizada' ? '' : `
       <div class="msec" style="margin-top:22px">
         <div class="msec-title">Tarefas — ${d.tasks.filter(t=>t.done).length}/${d.tasks.length} · ${pjTPct(d.tasks)}%</div>
         <div class="prog-bar" style="height:7px;margin-bottom:14px"><div class="prog-fill" style="width:${pjTPct(d.tasks)}%;background:${pjPColor(pjTPct(d.tasks))}"></div></div>
@@ -1698,6 +1698,7 @@ function renderViewModal(){
         </div>
         <div id="dmcomments-${d.id}">${dmRenderComments(d)}</div>
       </div>`;
+    document.getElementById('view-body').innerHTML=isEdit?buildDeditForm(d):`<div class="detail-grid">${field('Área',d.area)}${field('Tipo',d.tipo)}${fieldFull('Demanda',d.demanda)}${field('Terminal',d.terminal)}${field('Status',statusBadge(d.status,prazoCls(d.prazo,d.status)==='prazo-late'))}${field('Solicitante',d.solicitante)}${field('Responsável',d.responsavel)}${field('Prioridade',prioBadge(d.prioridade))}${field('Prazo de Entrega',fmtDate(d.prazo))}${field('Data de Início',fmtDate(d.inicio))}${field('Data de Conclusão',fmtDate(d.conclusao))}${field('Anexo',anexoHtml)}${fieldFull('Observação / Etapas',d.observacao||'—')}</div>${tarefasLogHtml}`;
   }
   if (state.viewMode==='query'){
     const q=state.queries.find(x=>x.id===state.viewId);if(!q)return;
