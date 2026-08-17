@@ -1984,7 +1984,7 @@ async function dmToggleTask(did,tid){
   const d=state.demandas.find(x=>x.id===did);const t=d.tasks.find(t=>t.id===tid);
   const novoDone=!t.done;
   const concluido_em=novoDone?new Date().toISOString().slice(0,10):null;
-  try{await sb.from('demanda_tasks').update({done:novoDone,concluido_em}).eq('id',tid);t.done=novoDone;t.concluido_em=concluido_em;document.getElementById(`dmtlist-${did}`).innerHTML=dmRenderTasks(d);dmRefreshProgress(d);renderDemandas();}catch(e){toast('Erro: '+e.message,'error');}
+  try{const {error}=await sb.from('demanda_tasks').update({done:novoDone,concluido_em}).eq('id',tid);if(error)throw error;t.done=novoDone;t.concluido_em=concluido_em;document.getElementById(`dmtlist-${did}`).innerHTML=dmRenderTasks(d);dmRefreshProgress(d);renderDemandas();}catch(e){toast('Erro ao salvar tarefa: '+e.message,'error');}
 }
 async function dmDeleteTask(did,tid){
   if(!confirm('Excluir esta tarefa?'))return;
@@ -4630,7 +4630,7 @@ async function pjToggleTask(pid,tid){
   const p=state.projetos.find(x=>x.id===pid);const t=p.tasks.find(t=>t.id===tid);
   const novoDone=!t.done;
   const concluido_em=novoDone?new Date().toISOString().slice(0,10):null;
-  try{await sb.from('projeto_tasks').update({done:novoDone,concluido_em}).eq('id',tid);t.done=novoDone;t.concluido_em=concluido_em;document.getElementById(`pjtlist-${pid}`).innerHTML=pjRenderTasks(p);}catch(e){toast('Erro: '+e.message,'error');}
+  try{const {error}=await sb.from('projeto_tasks').update({done:novoDone,concluido_em}).eq('id',tid);if(error)throw error;t.done=novoDone;t.concluido_em=concluido_em;document.getElementById(`pjtlist-${pid}`).innerHTML=pjRenderTasks(p);}catch(e){toast('Erro ao salvar tarefa: '+e.message,'error');}
 }
 async function pjDeleteTask(pid,tid){
   if(!confirm('Excluir esta tarefa?'))return;
