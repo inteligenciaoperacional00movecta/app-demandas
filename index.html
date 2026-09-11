@@ -1012,6 +1012,19 @@
         <input class="field-input" id="bi-qualsistema" placeholder="Ex: Novvs, SAG-WMS..."></div>
       <div class="field-group"><label class="field-label">Base de dados</label>
         <input class="field-input" id="bi-basedados" placeholder="Ex: PostgreSQL novvs, Excel..."></div>
+      <div class="field-group"><label class="field-label">Está em algum aplicativo?</label>
+        <select class="field-select" id="bi-emapp" onchange="biToggleCondicionais()">
+          <option value="">Selecione...</option>
+          <option>Sim</option><option>Não</option>
+        </select>
+      </div>
+      <div class="field-group" id="bi-wrap-qualapp" style="display:none"><label class="field-label">Qual Aplicativo</label>
+        <select class="field-select" id="bi-qualapp">
+          <option value="">Selecione...</option>
+          <option>Segurança patrimonial</option><option>Aduaneiro</option><option>Gente e Gestão</option>
+          <option>Operacional</option><option>Manutenção</option><option>Transportes</option>
+        </select>
+      </div>
       <div class="field-group"><label class="field-label">Ficha de Indicador</label>
         <select class="field-select" id="bi-ficha">
           <option value="">Selecione...</option>
@@ -3688,12 +3701,14 @@ function biToggleCondicionais(){
   const auto=document.getElementById('bi-atualizacao').value==='Sim';
   document.getElementById('bi-wrap-qtd').style.display=auto?'':'none';
   document.getElementById('bi-wrap-horarios').style.display=auto?'':'none';
+  const emapp=document.getElementById('bi-emapp').value==='Sim';
+  document.getElementById('bi-wrap-qualapp').style.display=emapp?'':'none';
 }
 
 // ─── FORM ───
 let _pendingFilesBi = [];
 function biClearForm(){
-  ['bi-nome','bi-unidade','bi-situacao','bi-setor','bi-fonte','bi-qualsistema','bi-basedados','bi-ficha','bi-atualizacao','bi-qtd','bi-horarios','bi-observacao'].forEach(id=>{
+  ['bi-nome','bi-unidade','bi-situacao','bi-setor','bi-fonte','bi-qualsistema','bi-basedados','bi-emapp','bi-qualapp','bi-ficha','bi-atualizacao','bi-qtd','bi-horarios','bi-observacao'].forEach(id=>{
     const el=document.getElementById(id);if(el){el.value='';el.style.borderColor='';}
   });
   document.querySelectorAll('.bi-ritual-chk').forEach(c=>c.checked=false);
@@ -3716,6 +3731,8 @@ function biEditar(id){
   document.getElementById('bi-fonte').value=b.fonte||'';
   document.getElementById('bi-qualsistema').value=b.qual_sistema||'';
   document.getElementById('bi-basedados').value=b.base_dados||'';
+  document.getElementById('bi-emapp').value=b.em_aplicativo||'';
+  document.getElementById('bi-qualapp').value=b.qual_aplicativo||'';
   document.getElementById('bi-ficha').value=b.ficha_indicador||'';
   document.getElementById('bi-atualizacao').value=b.atualizacao_automatica||'';
   document.getElementById('bi-qtd').value=b.atualizacao_qtd??'';
@@ -3814,6 +3831,8 @@ async function saveBiCatalogo(){
     fonte:document.getElementById('bi-fonte').value,
     qual_sistema:document.getElementById('bi-qualsistema').value.trim(),
     base_dados:document.getElementById('bi-basedados').value.trim(),
+    em_aplicativo:document.getElementById('bi-emapp').value,
+    qual_aplicativo:document.getElementById('bi-emapp').value==='Sim'?document.getElementById('bi-qualapp').value:null,
     ficha_indicador:document.getElementById('bi-ficha').value,
     observacao:document.getElementById('bi-observacao').value.trim(),
     atualizacao_automatica,
@@ -3857,8 +3876,8 @@ async function biDelete(id){
 
 // ─── EXPORT CSV ───
 function biExportCSV(){
-  const rows=[['ID','Indicador','Unidade','Situação','Setor','Ritual','Fonte','Qual sistema','Base de dados','Ficha de Indicador','Atualização Automática','Quantas','Quais horários','Observação']];
-  state.biCatalogo.forEach(b=>rows.push([b.id,b.nome||'',b.unidade||'',b.situacao||'',b.setor||'',b.ritual||'',b.fonte||'',b.qual_sistema||'',b.base_dados||'',b.ficha_indicador||'',b.atualizacao_automatica||'',b.atualizacao_qtd??'',b.atualizacao_horarios||'',b.observacao||'']));
+  const rows=[['ID','Indicador','Unidade','Situação','Setor','Ritual','Fonte','Qual sistema','Base de dados','Está em aplicativo','Qual Aplicativo','Ficha de Indicador','Atualização Automática','Quantas','Quais horários','Observação']];
+  state.biCatalogo.forEach(b=>rows.push([b.id,b.nome||'',b.unidade||'',b.situacao||'',b.setor||'',b.ritual||'',b.fonte||'',b.qual_sistema||'',b.base_dados||'',b.em_aplicativo||'',b.qual_aplicativo||'',b.ficha_indicador||'',b.atualizacao_automatica||'',b.atualizacao_qtd??'',b.atualizacao_horarios||'',b.observacao||'']));
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);a.download='catalogo_bi_moveprime.csv';a.click();
 }
