@@ -469,6 +469,10 @@
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         Documental
       </div>
+      <div class="nav-item" onclick="navigate('bicatalogo')">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l7-3v13M9 19l-6 2V9l6-3m0 13l7-3M9 6l7 3v10"/></svg>
+        Catálogo de BI
+      </div>
       <div class="nav-item" onclick="navigate('query')">
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 12c0 2.21 3.582 4 8 4s8-1.79 8-4"/></svg>
         API / Query / View
@@ -804,6 +808,41 @@
       <div id="q-kanban" style="display:none"></div>
     </div>
 
+    <!-- CATALOGO DE BI -->
+    <div id="page-bicatalogo" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Catálogo de BI</div><div class="page-subtitle">Indicadores, dashboards e relatórios da Excelência Operacional</div></div>
+        <div class="page-header-right">
+          <button class="btn-secondary" onclick="biExportCSV()">↓ Exportar CSV</button>
+          <button class="btn-primary" onclick="biNovo()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>Novo Indicador
+          </button>
+        </div>
+      </div>
+      <div class="pj-filter-bar">
+        <input class="fw" type="text" id="bifi-nome" placeholder="🔍 Buscar indicador..." oninput="renderBiCatalogo()">
+        <select id="bifi-unidade" onchange="renderBiCatalogo()">
+          <option value="">Todas as Unidades</option>
+          <option>Corporativo</option><option>ADM Central</option><option>Guarujá</option><option>Anhanguera</option><option>Itajaí</option><option>Suape</option>
+        </select>
+        <select id="bifi-situacao" onchange="renderBiCatalogo()">
+          <option value="">Todas as Situações</option>
+          <option>Em criação</option><option>Ativo</option><option>Congelado</option><option>Inativo</option>
+        </select>
+        <input type="text" id="bifi-setor" style="min-width:150px" placeholder="🔍 Buscar setor..." oninput="renderBiCatalogo()">
+        <select id="bifi-ritual" onchange="renderBiCatalogo()">
+          <option value="">Todos os Rituais</option>
+          <option>Não</option><option>RDO</option><option>S&OE</option><option>RGS</option>
+        </select>
+        <select id="bifi-fonte" onchange="renderBiCatalogo()">
+          <option value="">Todas as Fontes</option>
+          <option>Sistema</option><option>Manual</option>
+        </select>
+        <button class="btn-secondary" style="padding:8px 12px;font-size:12px" onclick="biClearFilters()">✕ Limpar</button>
+      </div>
+      <div id="bi-lista"></div>
+    </div>
+
     <!-- USUARIOS -->
     <div id="page-usuarios" class="page">
       <div class="page-header">
@@ -932,6 +971,73 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('add-query')">Cancelar</button>
       <button class="btn-primary" onclick="saveQuery(event)">Salvar Registro</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATALOGO DE BI -->
+<div class="modal-overlay" id="modal-add-bi">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-bi-title">Novo Indicador</div>
+      <div class="modal-close" onclick="closeModal('add-bi')">✕</div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="bi-edit-id">
+      <div class="field-group full"><label class="field-label">Nome do Indicador *</label>
+        <input class="field-input" id="bi-nome" placeholder="Ex: Produtividade de Pátio, OTIF..."></div>
+      <div class="field-group"><label class="field-label">Unidade *</label>
+        <select class="field-select" id="bi-unidade">
+          <option value="">Selecione...</option>
+          <option>Corporativo</option><option>ADM Central</option><option>Guarujá</option><option>Anhanguera</option><option>Itajaí</option><option>Suape</option>
+        </select>
+      </div>
+      <div class="field-group"><label class="field-label">Situação *</label>
+        <select class="field-select" id="bi-situacao">
+          <option value="">Selecione...</option>
+          <option>Em criação</option><option>Ativo</option><option>Congelado</option><option>Inativo</option>
+        </select>
+      </div>
+      <div class="field-group"><label class="field-label">Setor</label>
+        <input class="field-input" id="bi-setor" placeholder="Ex: Operações, Comercial..."></div>
+      <div class="field-group"><label class="field-label">Ritual</label>
+        <select class="field-select" id="bi-ritual">
+          <option value="">Selecione...</option>
+          <option>Não</option><option>RDO</option><option>S&OE</option><option>RGS</option>
+        </select>
+      </div>
+      <div class="field-group"><label class="field-label">Fonte</label>
+        <select class="field-select" id="bi-fonte" onchange="biToggleCondicionais()">
+          <option value="">Selecione...</option>
+          <option>Sistema</option><option>Manual</option>
+        </select>
+      </div>
+      <div class="field-group" id="bi-wrap-sistema" style="display:none"><label class="field-label">Qual sistema</label>
+        <input class="field-input" id="bi-qualsistema" placeholder="Ex: Novvs, SAG-WMS..."></div>
+      <div class="field-group"><label class="field-label">Base de dados</label>
+        <input class="field-input" id="bi-basedados" placeholder="Ex: PostgreSQL novvs, Excel..."></div>
+      <div class="field-group"><label class="field-label">Ficha de Indicador</label>
+        <select class="field-select" id="bi-ficha">
+          <option value="">Selecione...</option>
+          <option>Sim</option><option>Não</option>
+        </select>
+      </div>
+      <div class="field-group"><label class="field-label">Atualização Automática</label>
+        <select class="field-select" id="bi-atualizacao" onchange="biToggleCondicionais()">
+          <option value="">Selecione...</option>
+          <option>Sim</option><option>Não</option>
+        </select>
+      </div>
+      <div class="field-group" id="bi-wrap-qtd" style="display:none"><label class="field-label">Quantas?</label>
+        <input class="field-input" type="number" min="0" id="bi-qtd" placeholder="Ex: 3"></div>
+      <div class="field-group full" id="bi-wrap-horarios" style="display:none"><label class="field-label">Quais horários</label>
+        <input class="field-input" id="bi-horarios" placeholder="Ex: 08:00, 14:00, 20:00"></div>
+      <div class="field-group full"><label class="field-label">Observação</label>
+        <textarea class="field-textarea" id="bi-observacao" placeholder="Observações sobre o indicador..." style="min-height:100px"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('add-bi')">Cancelar</button>
+      <button class="btn-primary" onclick="saveBiCatalogo(event)">Salvar Indicador</button>
     </div>
   </div>
 </div>
@@ -1238,7 +1344,7 @@ const STORAGE_BUCKET = 'anexos';
 // STATE
 // ══════════════════════════════════════════
 const state = {
-  demandas:[], queries:[], usuarios:[], mapas:[], projetos:[], fluxogramas:[], documentos:[],
+  demandas:[], queries:[], usuarios:[], mapas:[], projetos:[], fluxogramas:[], documentos:[], biCatalogo:[],
   currentPage:'', viewD:'tabela', viewQ:'tabela', prazoSort:'asc', filtroArea:[], filtroTerminal:[], filtroTipo:[], filtroTarefaStatus:[], filtroStatus:[], filtroCards:[],
   viewMode:null, viewId:null, viewEditing:false,
   user:null,
@@ -1271,7 +1377,7 @@ async function doLogin() {
 }
 
 function doLogout() {
-  state.user=null; state.demandas=[]; state.queries=[];
+  state.user=null; state.demandas=[]; state.queries=[]; state.biCatalogo=[];
   document.getElementById('inp-login').value='';
   document.getElementById('inp-senha').value='';
   document.getElementById('login-error').textContent='';
@@ -1288,14 +1394,15 @@ function doLogout() {
 async function carregarTudo() {
   showLoading('Carregando dados...');
   try {
-    const [{data:d,error:eDem},{data:q},{data:m},{data:pj},{data:fx},{data:docs},{data:us}]=await Promise.all([
+    const [{data:d,error:eDem},{data:q},{data:m},{data:pj},{data:fx},{data:docs},{data:us},{data:bi}]=await Promise.all([
       sb.from('demandas').select('*, demanda_tasks(*), demanda_comments(*), demanda_attachments(*)').order('prazo',{ascending:true,nullsFirst:false}),
       sb.from('queries').select('*').order('id',{ascending:false}),
       sb.from('mapas_mentais').select('*').order('atualizado_em',{ascending:false}),
       sb.from('projetos').select('*, projeto_tasks(*), projeto_comments(*), projeto_attachments(*)').order('fim',{ascending:true,nullsFirst:false}),
       sb.from('fluxogramas').select('*').order('atualizado_em',{ascending:false}),
       sb.from('documentos').select('*').order('created_at',{ascending:false}),
-      sb.from('usuarios').select('*').order('nome')
+      sb.from('usuarios').select('*').order('nome'),
+      sb.from('bi_catalogo').select('*').order('nome')
     ]);
     if (eDem) console.error('Erro ao carregar demandas:', eDem);
     state.demandas=dmNormalize(d||[]);
@@ -1305,6 +1412,7 @@ async function carregarTudo() {
     state.fluxogramas=fx||[];
     state.documentos=docs||[];
     state.usuarios=us||[];
+    state.biCatalogo=bi||[];
     popularFiltroResponsavel();
     if (eDem) toast('Erro ao carregar Demandas: '+eDem.message,'error');
     else toast('Dados carregados!');
@@ -1338,6 +1446,7 @@ function navigate(page) {
   if (page==='fluxogramas') fxRenderLista();
   if (page==='documental') docRender();
   if (page==='query'){setViewQ('lista');renderQueries();}
+  if (page==='bicatalogo') renderBiCatalogo();
   if (page==='usuarios') carregarUsuarios();
   if (page==='mapas') renderListaMapas();
 }
@@ -1427,6 +1536,7 @@ function openModal(type) {
   if (type==='add-query'){qClearForm();document.getElementById('modal-query-title').textContent='Novo Registro';document.getElementById('modal-add-query').classList.add('open');}
   if (type==='add-usuario'){clearUsuarioForm();document.getElementById('modal-usuario-title').textContent='Novo Usuário';document.getElementById('modal-add-usuario').classList.add('open');}
   if (type==='add-mapa'){document.getElementById('mm-nome').value='';document.getElementById('mm-desc').value='';document.getElementById('modal-add-mapa').classList.add('open');}
+  if (type==='add-bi'){biClearForm();document.getElementById('modal-bi-title').textContent='Novo Indicador';document.getElementById('modal-add-bi').classList.add('open');}
 }
 function closeModal(type) {
   if (type==='add-demanda') {
@@ -1438,6 +1548,7 @@ function closeModal(type) {
   if (type==='add-mapa') document.getElementById('modal-add-mapa').classList.remove('open');
   if (type==='edit-mapa') document.getElementById('modal-edit-mapa').classList.remove('open');
   if (type==='view'){document.getElementById('modal-view').classList.remove('open');state.viewMode=null;state.viewId=null;state.viewEditing=false;_pendingFileEdit=null;state._editAnexoUrl=null;}
+  if (type==='add-bi') document.getElementById('modal-add-bi').classList.remove('open');
 }
 
 // ══════════════════════════════════════════
@@ -3486,6 +3597,188 @@ function exportQueryCSV(){
   state.queries.forEach(q=>rows.push([q.nome||'',q.sistema||'',q.tipo||'',q.descricao||'',q.status||'',q.anexo_url||'']));
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='queries_moveprime.csv';a.click();
+}
+
+
+// ════════════════════════════════════════════
+// MÓDULO CATÁLOGO DE BI
+// ════════════════════════════════════════════
+const BI_SITUACAO_COLORS = {
+  'Em criação': {bg:'rgba(245,158,11,0.12)', color:'#fbbf24'},
+  'Ativo':      {bg:'rgba(34,197,94,0.12)',  color:'#4ade80'},
+  'Congelado':  {bg:'rgba(99,102,241,0.15)', color:'#a5b4fc'},
+  'Inativo':    {bg:'rgba(239,68,68,0.12)',  color:'#f87171'},
+};
+function biSituacaoBadge(s){
+  const c=BI_SITUACAO_COLORS[s]||{bg:'rgba(139,145,168,.15)',color:'var(--text2)'};
+  return `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${c.bg};color:${c.color}"><span style="width:5px;height:5px;border-radius:50%;background:${c.color};flex-shrink:0;display:inline-block"></span>${s||'—'}</span>`;
+}
+function biSimNao(v){
+  if(v==='Sim')return `<span style="color:#4ade80;font-weight:600">Sim</span>`;
+  if(v==='Não')return `<span style="color:var(--text3)">Não</span>`;
+  return '<span style="color:var(--text3)">—</span>';
+}
+
+// ─── FILTROS ───
+function biGetFiltered(){
+  const nome=(document.getElementById('bifi-nome')?.value||'').toLowerCase();
+  const unidade=document.getElementById('bifi-unidade')?.value||'';
+  const situacao=document.getElementById('bifi-situacao')?.value||'';
+  const setor=(document.getElementById('bifi-setor')?.value||'').toLowerCase();
+  const ritual=document.getElementById('bifi-ritual')?.value||'';
+  const fonte=document.getElementById('bifi-fonte')?.value||'';
+  return state.biCatalogo.filter(b=>{
+    if(nome&&!(b.nome||'').toLowerCase().includes(nome))return false;
+    if(unidade&&b.unidade!==unidade)return false;
+    if(situacao&&b.situacao!==situacao)return false;
+    if(setor&&!(b.setor||'').toLowerCase().includes(setor))return false;
+    if(ritual&&b.ritual!==ritual)return false;
+    if(fonte&&b.fonte!==fonte)return false;
+    return true;
+  }).sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
+}
+function biClearFilters(){
+  ['bifi-nome','bifi-unidade','bifi-situacao','bifi-setor','bifi-ritual','bifi-fonte'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  renderBiCatalogo();
+}
+
+// ─── RENDER ───
+function renderBiCatalogo(){
+  const f=biGetFiltered();
+  const el=document.getElementById('bi-lista');if(!el)return;
+  if(!f.length){el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📊</div><p>Nenhum indicador cadastrado</p></div>`;return;}
+  const th=(label,extra='')=>`<th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border)${extra}">${label}</th>`;
+  el.innerHTML=`<div class="table-wrap"><table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr>
+      ${th('Indicador')}${th('Unidade')}${th('Setor')}${th('Situação')}${th('Ritual')}${th('Fonte')}${th('Ficha')}${th('Atualiz. Automática')}${th('Ações',';text-align:center')}
+    </tr></thead>
+    <tbody>${f.map(b=>`<tr style="border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''" ondblclick="biEditar(${b.id})">
+      <td style="padding:13px 16px;color:var(--text);font-weight:500;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(b.nome||'').replace(/"/g,'&quot;')}">${b.nome||'—'}</td>
+      <td style="padding:13px 16px;color:var(--text2)">${b.unidade||'—'}</td>
+      <td style="padding:13px 16px;color:var(--text2)">${b.setor||'—'}</td>
+      <td style="padding:13px 16px">${biSituacaoBadge(b.situacao)}</td>
+      <td style="padding:13px 16px;color:var(--text2)">${b.ritual||'—'}</td>
+      <td style="padding:13px 16px;color:var(--text2)">${b.fonte||'—'}</td>
+      <td style="padding:13px 16px">${biSimNao(b.ficha_indicador)}</td>
+      <td style="padding:13px 16px">${biSimNao(b.atualizacao_automatica)}</td>
+      <td style="padding:13px 16px;text-align:center;white-space:nowrap">
+        <button class="task-edit-btn" title="Editar" onclick="event.stopPropagation();biEditar(${b.id})">✏️</button>
+        <button class="task-edit-btn" title="Excluir" onclick="event.stopPropagation();biDelete(${b.id})">✕</button>
+      </td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ─── CAMPOS CONDICIONAIS ───
+function biToggleCondicionais(){
+  const fonte=document.getElementById('bi-fonte').value;
+  document.getElementById('bi-wrap-sistema').style.display=fonte==='Sistema'?'':'none';
+  const auto=document.getElementById('bi-atualizacao').value==='Sim';
+  document.getElementById('bi-wrap-qtd').style.display=auto?'':'none';
+  document.getElementById('bi-wrap-horarios').style.display=auto?'':'none';
+}
+
+// ─── FORM ───
+function biClearForm(){
+  ['bi-nome','bi-unidade','bi-situacao','bi-setor','bi-ritual','bi-fonte','bi-qualsistema','bi-basedados','bi-ficha','bi-atualizacao','bi-qtd','bi-horarios','bi-observacao'].forEach(id=>{
+    const el=document.getElementById(id);if(el){el.value='';el.style.borderColor='';}
+  });
+  document.getElementById('bi-edit-id').value='';
+  biToggleCondicionais();
+}
+function biNovo(){ openModal('add-bi'); }
+function biEditar(id){
+  const b=state.biCatalogo.find(x=>x.id===id);if(!b)return;
+  document.getElementById('bi-edit-id').value=id;
+  document.getElementById('modal-bi-title').textContent='Editar Indicador';
+  document.getElementById('bi-nome').value=b.nome||'';
+  document.getElementById('bi-unidade').value=b.unidade||'';
+  document.getElementById('bi-situacao').value=b.situacao||'';
+  document.getElementById('bi-setor').value=b.setor||'';
+  document.getElementById('bi-ritual').value=b.ritual||'';
+  document.getElementById('bi-fonte').value=b.fonte||'';
+  document.getElementById('bi-qualsistema').value=b.qual_sistema||'';
+  document.getElementById('bi-basedados').value=b.base_dados||'';
+  document.getElementById('bi-ficha').value=b.ficha_indicador||'';
+  document.getElementById('bi-atualizacao').value=b.atualizacao_automatica||'';
+  document.getElementById('bi-qtd').value=b.atualizacao_qtd??'';
+  document.getElementById('bi-horarios').value=b.atualizacao_horarios||'';
+  document.getElementById('bi-observacao').value=b.observacao||'';
+  biToggleCondicionais();
+  document.getElementById('modal-add-bi').classList.add('open');
+}
+
+async function saveBiCatalogo(){
+  const btn=event?.target;
+  if(btn&&btn.disabled)return;
+  if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  const nome=document.getElementById('bi-nome').value.trim();
+  const unidade=document.getElementById('bi-unidade').value;
+  const situacao=document.getElementById('bi-situacao').value;
+  let ok=true;
+  [{id:'bi-nome',v:nome},{id:'bi-unidade',v:unidade},{id:'bi-situacao',v:situacao}].forEach(({id,v})=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.style.borderColor=v?'':'var(--danger)';if(!v)ok=false;
+  });
+  if(!ok){
+    toast('Preencha os campos obrigatórios','error');
+    if(btn){btn.disabled=false;btn.textContent='Salvar Indicador';}
+    return;
+  }
+  ['bi-nome','bi-unidade','bi-situacao'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.borderColor='';});
+  const atualizacao_automatica=document.getElementById('bi-atualizacao').value;
+  const qtdRaw=document.getElementById('bi-qtd').value;
+  const obj={
+    nome,unidade,situacao,
+    setor:document.getElementById('bi-setor').value.trim(),
+    ritual:document.getElementById('bi-ritual').value,
+    fonte:document.getElementById('bi-fonte').value,
+    qual_sistema:document.getElementById('bi-qualsistema').value.trim(),
+    base_dados:document.getElementById('bi-basedados').value.trim(),
+    ficha_indicador:document.getElementById('bi-ficha').value,
+    observacao:document.getElementById('bi-observacao').value.trim(),
+    atualizacao_automatica,
+    atualizacao_qtd:(atualizacao_automatica==='Sim'&&qtdRaw!=='')?Number(qtdRaw):null,
+    atualizacao_horarios:atualizacao_automatica==='Sim'?document.getElementById('bi-horarios').value.trim():null,
+  };
+  showLoading('Salvando...');
+  try{
+    const editId=document.getElementById('bi-edit-id').value;
+    if(editId){
+      const{error}=await sb.from('bi_catalogo').update(obj).eq('id',Number(editId));
+      if(error)throw error;toast('Indicador atualizado!');
+    }else{
+      const{error}=await sb.from('bi_catalogo').insert(obj);
+      if(error)throw error;toast('Indicador criado!');
+    }
+    await carregarTudo();closeModal('add-bi');renderBiCatalogo();
+  }catch(e){toast('Erro: '+e.message,'error');}
+  finally{
+    hideLoading();
+    if(btn){btn.disabled=false;btn.textContent='Salvar Indicador';}
+  }
+}
+
+async function biDelete(id){
+  if(!confirm('Excluir este indicador do catálogo?'))return;
+  showLoading('Excluindo...');
+  try{
+    const{error}=await sb.from('bi_catalogo').delete().eq('id',id);
+    if(error)throw error;
+    toast('Indicador excluído!');
+    await carregarTudo();renderBiCatalogo();
+  }catch(e){toast('Erro: '+e.message,'error');}
+  finally{hideLoading();}
+}
+
+// ─── EXPORT CSV ───
+function biExportCSV(){
+  const rows=[['ID','Indicador','Unidade','Situação','Setor','Ritual','Fonte','Qual sistema','Base de dados','Ficha de Indicador','Atualização Automática','Quantas','Quais horários','Observação']];
+  state.biCatalogo.forEach(b=>rows.push([b.id,b.nome||'',b.unidade||'',b.situacao||'',b.setor||'',b.ritual||'',b.fonte||'',b.qual_sistema||'',b.base_dados||'',b.ficha_indicador||'',b.atualizacao_automatica||'',b.atualizacao_qtd??'',b.atualizacao_horarios||'',b.observacao||'']));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);a.download='catalogo_bi_moveprime.csv';a.click();
 }
 
 
