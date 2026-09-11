@@ -836,7 +836,7 @@
         </select>
         <select id="bifi-fonte" onchange="renderBiCatalogo()">
           <option value="">Todas as Fontes</option>
-          <option>Sistema</option><option>Manual</option>
+          <option>Sistema</option><option>Manual</option><option>Sistema + Manual</option>
         </select>
         <button class="btn-secondary" style="padding:8px 12px;font-size:12px" onclick="biClearFilters()">✕ Limpar</button>
       </div>
@@ -1001,15 +1001,17 @@
       <div class="field-group"><label class="field-label">Setor</label>
         <input class="field-input" id="bi-setor" placeholder="Ex: Operações, Comercial..."></div>
       <div class="field-group"><label class="field-label">Ritual</label>
-        <select class="field-select" id="bi-ritual">
-          <option value="">Selecione...</option>
-          <option>Não</option><option>RDO</option><option>S&OE</option><option>RGS</option>
-        </select>
+        <div style="display:flex;flex-wrap:wrap;gap:5px 14px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text2);cursor:pointer"><input type="checkbox" class="bi-ritual-chk" value="Não">Não</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text2);cursor:pointer"><input type="checkbox" class="bi-ritual-chk" value="RDO">RDO</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text2);cursor:pointer"><input type="checkbox" class="bi-ritual-chk" value="S&OE">S&OE</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text2);cursor:pointer"><input type="checkbox" class="bi-ritual-chk" value="RGS">RGS</label>
+        </div>
       </div>
       <div class="field-group"><label class="field-label">Fonte</label>
         <select class="field-select" id="bi-fonte" onchange="biToggleCondicionais()">
           <option value="">Selecione...</option>
-          <option>Sistema</option><option>Manual</option>
+          <option>Sistema</option><option>Manual</option><option>Sistema + Manual</option>
         </select>
       </div>
       <div class="field-group" id="bi-wrap-sistema" style="display:none"><label class="field-label">Qual sistema</label>
@@ -1032,6 +1034,12 @@
         <input class="field-input" type="number" min="0" id="bi-qtd" placeholder="Ex: 3"></div>
       <div class="field-group full" id="bi-wrap-horarios" style="display:none"><label class="field-label">Quais horários</label>
         <input class="field-input" id="bi-horarios" placeholder="Ex: 08:00, 14:00, 20:00"></div>
+      <div class="field-group full">
+        <label class="field-label">Anexos</label>
+        <div id="bi-attach-list"></div>
+        <div class="attach-drop" id="bi-drop" onclick="document.getElementById('bi-file-inp').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="biHandleDrop(event)">📎 Clique ou arraste arquivos aqui para anexar</div>
+        <input type="file" id="bi-file-inp" style="display:none" multiple onchange="biHandleFileInput(event)">
+      </div>
       <div class="field-group full"><label class="field-label">Observação</label>
         <textarea class="field-textarea" id="bi-observacao" placeholder="Observações sobre o indicador..." style="min-height:100px"></textarea></div>
     </div>
@@ -1402,7 +1410,7 @@ async function carregarTudo() {
       sb.from('fluxogramas').select('*').order('atualizado_em',{ascending:false}),
       sb.from('documentos').select('*').order('created_at',{ascending:false}),
       sb.from('usuarios').select('*').order('nome'),
-      sb.from('bi_catalogo').select('*').order('nome')
+      sb.from('bi_catalogo').select('*, bi_catalogo_attachments(*)').order('nome')
     ]);
     if (eDem) console.error('Erro ao carregar demandas:', eDem);
     state.demandas=dmNormalize(d||[]);
@@ -1412,7 +1420,7 @@ async function carregarTudo() {
     state.fluxogramas=fx||[];
     state.documentos=docs||[];
     state.usuarios=us||[];
-    state.biCatalogo=bi||[];
+    state.biCatalogo=biNormalize(bi||[]);
     popularFiltroResponsavel();
     if (eDem) toast('Erro ao carregar Demandas: '+eDem.message,'error');
     else toast('Dados carregados!');
@@ -3632,7 +3640,7 @@ function biGetFiltered(){
     if(unidade&&b.unidade!==unidade)return false;
     if(situacao&&b.situacao!==situacao)return false;
     if(setor&&!(b.setor||'').toLowerCase().includes(setor))return false;
-    if(ritual&&b.ritual!==ritual)return false;
+    if(ritual&&!(b.ritual||'').split(',').map(s=>s.trim()).includes(ritual))return false;
     if(fonte&&b.fonte!==fonte)return false;
     return true;
   }).sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
@@ -3652,9 +3660,10 @@ function renderBiCatalogo(){
   const th=(label,extra='')=>`<th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border)${extra}">${label}</th>`;
   el.innerHTML=`<div class="table-wrap"><table style="width:100%;border-collapse:collapse;font-size:13px">
     <thead><tr>
-      ${th('Indicador')}${th('Unidade')}${th('Setor')}${th('Situação')}${th('Ritual')}${th('Fonte')}${th('Ficha')}${th('Atualiz. Automática')}${th('Ações',';text-align:center')}
+      ${th('ID')}${th('Indicador')}${th('Unidade')}${th('Setor')}${th('Situação')}${th('Ritual')}${th('Fonte')}${th('Ficha')}${th('Atualiz. Automática')}${th('Anexo',';text-align:center')}${th('Ações',';text-align:center')}
     </tr></thead>
     <tbody>${f.map(b=>`<tr style="border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''" ondblclick="biEditar(${b.id})">
+      <td style="padding:13px 16px;color:var(--text3);font-size:11px">#${b.id}</td>
       <td style="padding:13px 16px;color:var(--text);font-weight:500;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(b.nome||'').replace(/"/g,'&quot;')}">${b.nome||'—'}</td>
       <td style="padding:13px 16px;color:var(--text2)">${b.unidade||'—'}</td>
       <td style="padding:13px 16px;color:var(--text2)">${b.setor||'—'}</td>
@@ -3663,6 +3672,7 @@ function renderBiCatalogo(){
       <td style="padding:13px 16px;color:var(--text2)">${b.fonte||'—'}</td>
       <td style="padding:13px 16px">${biSimNao(b.ficha_indicador)}</td>
       <td style="padding:13px 16px">${biSimNao(b.atualizacao_automatica)}</td>
+      <td style="padding:13px 16px;text-align:center">${b.attachments&&b.attachments.length?`📎 ${b.attachments.length}`:'—'}</td>
       <td style="padding:13px 16px;text-align:center;white-space:nowrap">
         <button class="task-edit-btn" title="Editar" onclick="event.stopPropagation();biEditar(${b.id})">✏️</button>
         <button class="task-edit-btn" title="Excluir" onclick="event.stopPropagation();biDelete(${b.id})">✕</button>
@@ -3674,19 +3684,23 @@ function renderBiCatalogo(){
 // ─── CAMPOS CONDICIONAIS ───
 function biToggleCondicionais(){
   const fonte=document.getElementById('bi-fonte').value;
-  document.getElementById('bi-wrap-sistema').style.display=fonte==='Sistema'?'':'none';
+  document.getElementById('bi-wrap-sistema').style.display=(fonte==='Sistema'||fonte==='Sistema + Manual')?'':'none';
   const auto=document.getElementById('bi-atualizacao').value==='Sim';
   document.getElementById('bi-wrap-qtd').style.display=auto?'':'none';
   document.getElementById('bi-wrap-horarios').style.display=auto?'':'none';
 }
 
 // ─── FORM ───
+let _pendingFilesBi = [];
 function biClearForm(){
-  ['bi-nome','bi-unidade','bi-situacao','bi-setor','bi-ritual','bi-fonte','bi-qualsistema','bi-basedados','bi-ficha','bi-atualizacao','bi-qtd','bi-horarios','bi-observacao'].forEach(id=>{
+  ['bi-nome','bi-unidade','bi-situacao','bi-setor','bi-fonte','bi-qualsistema','bi-basedados','bi-ficha','bi-atualizacao','bi-qtd','bi-horarios','bi-observacao'].forEach(id=>{
     const el=document.getElementById(id);if(el){el.value='';el.style.borderColor='';}
   });
+  document.querySelectorAll('.bi-ritual-chk').forEach(c=>c.checked=false);
   document.getElementById('bi-edit-id').value='';
+  _pendingFilesBi=[];
   biToggleCondicionais();
+  biRenderAttachList();
 }
 function biNovo(){ openModal('add-bi'); }
 function biEditar(id){
@@ -3697,7 +3711,8 @@ function biEditar(id){
   document.getElementById('bi-unidade').value=b.unidade||'';
   document.getElementById('bi-situacao').value=b.situacao||'';
   document.getElementById('bi-setor').value=b.setor||'';
-  document.getElementById('bi-ritual').value=b.ritual||'';
+  const ritualVals=(b.ritual||'').split(',').map(s=>s.trim()).filter(Boolean);
+  document.querySelectorAll('.bi-ritual-chk').forEach(c=>c.checked=ritualVals.includes(c.value));
   document.getElementById('bi-fonte').value=b.fonte||'';
   document.getElementById('bi-qualsistema').value=b.qual_sistema||'';
   document.getElementById('bi-basedados').value=b.base_dados||'';
@@ -3706,8 +3721,69 @@ function biEditar(id){
   document.getElementById('bi-qtd').value=b.atualizacao_qtd??'';
   document.getElementById('bi-horarios').value=b.atualizacao_horarios||'';
   document.getElementById('bi-observacao').value=b.observacao||'';
+  _pendingFilesBi=[];
   biToggleCondicionais();
+  biRenderAttachList();
   document.getElementById('modal-add-bi').classList.add('open');
+}
+
+// ─── ANEXOS (múltiplos, Supabase Storage) ───
+function biRenderAttachList(){
+  const el=document.getElementById('bi-attach-list');if(!el)return;
+  const editId=document.getElementById('bi-edit-id').value;
+  if(editId){
+    const b=state.biCatalogo.find(x=>x.id===Number(editId));
+    const atts=(b&&b.attachments)||[];
+    el.innerHTML=atts.length?'<div class="attach-list">'+atts.map(a=>`<div class="attach-item">
+      <span class="attach-icon">${pjFileIcon(a.name)}</span><span class="attach-name">${a.name}</span><span class="attach-size">${pjFmtBytes(a.size)}</span>
+      <a href="${a.url}" target="_blank" style="color:var(--accent);font-size:13px;text-decoration:none">↓</a>
+      <button class="attach-del" onclick="biDeleteAttach(${a.id})">×</button>
+    </div>`).join('')+'</div>':'<div style="font-size:12px;color:var(--text3);margin-bottom:8px">Nenhum anexo</div>';
+  }else{
+    el.innerHTML=_pendingFilesBi.length?'<div class="attach-list">'+_pendingFilesBi.map((f,i)=>`<div class="attach-item">
+      <span class="attach-icon">${pjFileIcon(f.name)}</span><span class="attach-name">${f.name}</span><span class="attach-size">${pjFmtBytes(f.size)}</span>
+      <button class="attach-del" onclick="biRemovePendingFile(${i})">×</button>
+    </div>`).join('')+'</div>':'<div style="font-size:12px;color:var(--text3);margin-bottom:8px">Nenhum anexo</div>';
+  }
+}
+async function biUploadOneFile(biId,f){
+  const ext=f.name.split('.').pop();
+  const path=`bi_catalogo/${biId}_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const {error:upErr}=await sb.storage.from(STORAGE_BUCKET).upload(path,f);
+  if(upErr)throw upErr;
+  const {data:urlData}=sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+  const {data,error}=await sb.from('bi_catalogo_attachments').insert({bi_catalogo_id:biId,nome:f.name,url:urlData.publicUrl,tamanho:f.size}).select().single();
+  if(error)throw error;
+  return {id:data.id,name:data.nome,url:data.url,size:data.tamanho};
+}
+async function biUploadFiles(files){
+  const editId=document.getElementById('bi-edit-id').value;
+  if(editId){
+    const b=state.biCatalogo.find(x=>x.id===Number(editId));
+    for(const f of files){
+      try{
+        const att=await biUploadOneFile(Number(editId),f);
+        if(b){b.attachments=b.attachments||[];b.attachments.push(att);}
+      }catch(e){toast('Erro no anexo: '+e.message,'error');}
+    }
+  }else{
+    _pendingFilesBi.push(...files);
+  }
+  biRenderAttachList();
+}
+function biHandleFileInput(event){biUploadFiles(Array.from(event.target.files));event.target.value='';}
+function biHandleDrop(event){event.preventDefault();document.getElementById('bi-drop').classList.remove('drag-over');biUploadFiles(Array.from(event.dataTransfer.files));}
+function biRemovePendingFile(i){_pendingFilesBi.splice(i,1);biRenderAttachList();}
+async function biDeleteAttach(aid){
+  const editId=document.getElementById('bi-edit-id').value;
+  const b=state.biCatalogo.find(x=>x.id===Number(editId));
+  try{
+    const{error}=await sb.from('bi_catalogo_attachments').delete().eq('id',aid);
+    if(error)throw error;
+    if(b)b.attachments=(b.attachments||[]).filter(a=>a.id!==aid);
+    biRenderAttachList();
+    renderBiCatalogo();
+  }catch(e){toast('Erro: '+e.message,'error');}
 }
 
 async function saveBiCatalogo(){
@@ -3730,10 +3806,11 @@ async function saveBiCatalogo(){
   ['bi-nome','bi-unidade','bi-situacao'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.borderColor='';});
   const atualizacao_automatica=document.getElementById('bi-atualizacao').value;
   const qtdRaw=document.getElementById('bi-qtd').value;
+  const ritual=Array.from(document.querySelectorAll('.bi-ritual-chk:checked')).map(c=>c.value).join(', ');
   const obj={
     nome,unidade,situacao,
     setor:document.getElementById('bi-setor').value.trim(),
-    ritual:document.getElementById('bi-ritual').value,
+    ritual,
     fonte:document.getElementById('bi-fonte').value,
     qual_sistema:document.getElementById('bi-qualsistema').value.trim(),
     base_dados:document.getElementById('bi-basedados').value.trim(),
@@ -3750,8 +3827,13 @@ async function saveBiCatalogo(){
       const{error}=await sb.from('bi_catalogo').update(obj).eq('id',Number(editId));
       if(error)throw error;toast('Indicador atualizado!');
     }else{
-      const{error}=await sb.from('bi_catalogo').insert(obj);
-      if(error)throw error;toast('Indicador criado!');
+      const{data,error}=await sb.from('bi_catalogo').insert(obj).select().single();
+      if(error)throw error;
+      for(const f of _pendingFilesBi){
+        try{await biUploadOneFile(data.id,f);}catch(e){toast('Erro no anexo: '+e.message,'error');}
+      }
+      _pendingFilesBi=[];
+      toast('Indicador criado!');
     }
     await carregarTudo();closeModal('add-bi');renderBiCatalogo();
   }catch(e){toast('Erro: '+e.message,'error');}
@@ -4394,6 +4476,12 @@ function dmNormalize(rows){
     tasks:(d.demanda_tasks||[]).map(t=>({id:t.id,nome:t.nome,done:t.done,resp:t.resp,due:t.due,concluido_em:t.concluido_em})).sort((a,b)=>a.id-b.id),
     comments:(d.demanda_comments||[]).map(c=>({id:c.id,autor:c.autor,texto:c.texto,created_at:c.created_at})).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),
     attachments:(d.demanda_attachments||[]).map(a=>({id:a.id,name:a.nome,url:a.url,size:a.tamanho}))
+  }));
+}
+function biNormalize(rows){
+  return (rows||[]).map(b=>({
+    ...b,
+    attachments:(b.bi_catalogo_attachments||[]).map(a=>({id:a.id,name:a.nome,url:a.url,size:a.tamanho}))
   }));
 }
 function pjNormalize(rows){
