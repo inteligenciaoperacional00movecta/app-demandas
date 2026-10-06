@@ -169,31 +169,105 @@
   .file-preview a:hover{text-decoration:underline;}
   .modal-footer{padding:16px 28px 24px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);}
 
-  /* DASHBOARD */
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px;margin-bottom:28px;}
-  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 10px;transition:opacity .15s,box-shadow .15s,transform .1s;}
-  .stat-card-clickable{cursor:pointer;}
-  .stat-card-clickable:hover{transform:translateY(-1px);}
-  .stat-card-active{box-shadow:0 0 0 2px #fff inset;}
-  .stat-card-dim{opacity:.4;}
-  .stat-label{font-size:9px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .stat-value{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:700;letter-spacing:-0.02em;color:var(--text);line-height:1;}
-  .stat-sub{font-size:9px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
-  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
-  .chart-title{font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);margin-bottom:16px;}
-  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-  .bar-label{width:120px;color:var(--text2);flex-shrink:0;font-size:11px;}
-  .bar-track{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
-  .bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.6s ease;}
-  .bar-count{width:24px;text-align:right;color:var(--text2);font-size:11px;}
-  .bar-row-clickable{cursor:pointer;border-radius:6px;padding:3px 4px;margin:-3px -4px 7px -4px;transition:background .15s;}
-  .bar-row-clickable:hover{background:var(--surface2);}
-  .bar-row-clickable:hover .bar-label{color:var(--text);}
-  .bar-row-active .bar-label{color:var(--text);font-weight:700;}
-  .bar-row-active .bar-fill{filter:brightness(1.35);box-shadow:0 0 0 1px rgba(255,255,255,0.3) inset;}
-  .bar-row-dim .bar-fill{opacity:.3;}
-  .bar-row-dim .bar-label,.bar-row-dim .bar-count{opacity:.5;}
+  /* DASHBOARD (Demandas / Tarefas) */
+  .dsh-sub{display:flex;gap:10px;margin-bottom:16px;}
+  .dsh-sub-btn{display:flex;align-items:center;gap:9px;padding:9px 20px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+  .dsh-sub-btn:hover{border-color:#006EFF;color:var(--text);}
+  .dsh-sub-btn.active{border-color:#006EFF;color:#8fbaff;background:rgba(0,110,255,.14);box-shadow:0 0 0 1px rgba(0,110,255,.25) inset;}
+  .dsh{--d-s2:#10153a;--d-bd:#1a2150;--d-t:#eef2ff;--d-t2:#9aa3c7;--d-t3:#5d6699;--d-red:#ff4d6d;--d-warn:#ffb020;--d-g:#22c55e;--d-g2:#4ade80;--d-b3:#8fbaff;}
+  .dsh-panel{background:linear-gradient(180deg,rgba(16,21,58,.55),rgba(10,14,38,.85));border:1px solid var(--d-bd);border-radius:14px;padding:20px 22px;min-width:0;}
+  .dsh-ph{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+  .dsh-pt{font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--d-t);}
+  .dsh-pm{font-size:11px;color:var(--d-t3);}
+  .dsh-hero{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
+  .dsh-eyebrow{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#3d8bff;margin-bottom:8px;}
+  .dsh-eyebrow i{width:7px;height:7px;border-radius:50%;background:#3d8bff;box-shadow:0 0 10px #006EFF;}
+  .dsh-htitle{font-size:24px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--d-t);}
+  .dsh-hsub{font-size:13px;color:var(--d-t2);margin-top:4px;}
+  .dsh-hact{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .dsh-pill{padding:9px 16px;border-radius:10px;border:1px solid var(--d-bd);background:var(--surface);color:var(--d-t2);font-size:12px;font-weight:600;letter-spacing:.04em;}
+  .dsh-pill.green{border-color:rgba(34,197,94,.5);color:var(--d-g2);background:rgba(34,197,94,.1);}
+  .dsh-pillbtn{cursor:pointer;font-family:inherit;}
+  .dsh-pillbtn:hover{border-color:#006EFF;color:var(--d-b3);}
+  .dsh-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px;}
+  .dsh-kpi{background:linear-gradient(180deg,rgba(16,21,58,.55),rgba(10,14,38,.85));border:1px solid var(--d-bd);border-radius:14px;padding:16px 18px;transition:opacity .15s,box-shadow .15s,transform .12s,border-color .15s;}
+  .dsh-kpi.click{cursor:pointer;}
+  .dsh-kpi.click:hover{transform:translateY(-2px);border-color:rgba(0,110,255,.55);}
+  .dsh-kpi.on{border-color:#006EFF;box-shadow:0 0 0 1px #006EFF inset,0 0 24px rgba(0,110,255,.25);}
+  .dsh-kpi.dim{opacity:.42;}
+  .dsh-kt{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .dsh-chip{width:26px;height:26px;border-radius:7px;border:1px solid var(--d-bd);background:var(--d-s2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--d-t2);flex-shrink:0;}
+  .dsh-kl{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--d-t2);}
+  .dsh-kv{font-size:27px;font-weight:800;letter-spacing:-0.02em;line-height:1.1;margin-bottom:8px;}
+  .dsh-kf{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--d-t3);}
+  .dsh-tag{padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;border:1px solid var(--d-bd);background:var(--d-s2);color:var(--d-t2);}
+  .dsh-tag.green{color:var(--d-g2);border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.1);}
+  .dsh-tag.red{color:var(--d-red);border-color:rgba(255,77,109,.5);background:rgba(255,77,109,.08);}
+  .dsh-tag.warn{color:var(--d-warn);border-color:rgba(255,176,32,.45);background:rgba(255,176,32,.08);}
+  .dsh-mt{flex:1;height:6px;border-radius:3px;background:var(--d-s2);overflow:hidden;}
+  .dsh-mf{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--d-g),var(--d-g2));}
+  .dsh-row2{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:12px;margin-bottom:12px;}
+  .dsh-row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:12px;}
+  .dsh-vb{display:flex;align-items:flex-end;gap:14px;padding-top:6px;}
+  .dsh-vcol{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px;cursor:pointer;transition:opacity .15s;}
+  .dsh-vcol.zero{cursor:default;}
+  .dsh-vcol.dim{opacity:.28;}
+  .dsh-vlab{min-height:34px;font-size:12px;color:var(--d-t2);text-align:center;line-height:1.25;padding-top:8px;border-top:1px solid var(--d-bd);width:100%;overflow:hidden;text-overflow:ellipsis;}
+  .dsh-vcol.on .dsh-vlab{color:var(--d-t);font-weight:700;}
+  .dsh-gb{display:flex;align-items:flex-end;justify-content:center;gap:5px;width:100%;}
+  .dsh-gcell{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;width:20px;}
+  .dsh-gval{font-size:11px;font-weight:800;color:var(--d-t);}
+  .dsh-gbar{width:100%;border-radius:5px 5px 2px 2px;transition:filter .15s;}
+  .dsh-gbar.pend{background:linear-gradient(180deg,#ffc65c,var(--d-warn));}
+  .dsh-gbar.late{background:linear-gradient(180deg,#ff7f95,var(--d-red));}
+  .dsh-gbar.fin{background:linear-gradient(180deg,var(--d-g2),var(--d-g));}
+  .dsh-gbar.other{background:#3a4170;}
+  .dsh-vcol:not(.zero):hover .dsh-gbar{filter:brightness(1.15);}
+  .dsh-vcol.on .dsh-gbar{filter:brightness(1.3);}
+  .dsh-li{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:var(--d-t3);}
+  .dsh-li span::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--c);}
+  .dsh-donutwrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
+  .dsh-donut{position:relative;width:180px;height:180px;flex-shrink:0;}
+  .dsh-donut svg{width:100%;height:100%;transform:rotate(-90deg);}
+  .dsh-donut circle{transition:opacity .15s;}
+  .dsh-dcenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .dsh-dbig{font-size:28px;font-weight:800;letter-spacing:-0.02em;color:var(--d-t);}
+  .dsh-dsub{font-size:11px;color:var(--d-t3);margin-top:2px;}
+  .dsh-legend{flex:1;min-width:140px;display:flex;flex-direction:column;gap:3px;}
+  .dsh-lg{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--d-t);padding:5px 6px;border-radius:6px;cursor:pointer;}
+  .dsh-lg:hover{background:var(--d-s2);}
+  .dsh-lg.dim{opacity:.35;}
+  .dsh-lg.on{background:var(--d-s2);font-weight:700;}
+  .dsh-ldot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .dsh-lname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .dsh-lpct{color:var(--d-t2);font-size:12px;}
+  .dsh-prow{padding:9px 6px;border-radius:8px;cursor:pointer;margin:0 -6px 4px;transition:opacity .15s;}
+  .dsh-prow:hover{background:rgba(16,21,58,.7);}
+  .dsh-prow.dim{opacity:.3;}
+  .dsh-prow.static{cursor:default;}
+  .dsh-prow.static:hover{background:none;}
+  .dsh-ptop{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:7px;}
+  .dsh-plab{font-size:14px;color:var(--d-t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dsh-prow.on .dsh-plab{color:var(--d-t);font-weight:700;}
+  .dsh-pval{font-size:14px;font-weight:800;color:var(--d-t);}
+  .dsh-ptrack{height:7px;border-radius:4px;background:var(--d-s2);overflow:hidden;}
+  .dsh-pfill{height:100%;border-radius:4px;background:linear-gradient(90deg,#006EFF,#8fbaff);}
+  .dsh-pfill.red{background:linear-gradient(90deg,#c2304d,var(--d-red));}
+  .dsh-prow.on .dsh-pfill{box-shadow:0 0 12px rgba(0,110,255,.7);}
+  .dsh-ins{border-left:2px solid var(--d-bd);padding:3px 0 3px 16px;margin-bottom:18px;font-size:15px;line-height:1.5;color:var(--d-t);}
+  .hl-bad{color:var(--d-red);font-weight:700;}
+  .hl-ok{color:var(--d-g2);font-weight:700;}
+  .hl-warn{color:var(--d-warn);font-weight:700;}
+  .dsh-nxt{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--d-bd);}
+  .dsh-nxt:last-child{border-bottom:none;}
+  .dsh-nmain{flex:1;min-width:0;}
+  .dsh-nname{font-size:13px;font-weight:600;color:var(--d-t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dsh-nsub{font-size:11px;color:var(--d-t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dsh-ndate{font-size:11px;font-weight:700;color:var(--d-b3);text-align:right;white-space:nowrap;}
+  .dsh-ndate small{display:block;color:var(--d-t3);font-weight:500;}
+  .dsh-empty{padding:30px 10px;text-align:center;color:var(--d-t3);font-size:13px;}
+  .dsh-tt{font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--d-t);margin:20px 0 10px;}
+  @media(max-width:1100px){.dsh-row2{grid-template-columns:1fr;}}
 
   /* WIP */
   .wip-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px;color:var(--text3);}
@@ -509,6 +583,10 @@
         <button class="inner-tab" id="btn-vk-d" onclick="setView('d','kanban')">Kanban</button>
         <button class="inner-tab" id="btn-vdb-d" onclick="setView('d','dashboard')">Dashboard</button>
       </div>
+      <div class="dsh-sub" id="dsh-sub" style="display:none">
+        <button class="dsh-sub-btn active" id="dsh-sub-dem" onclick="setDashSub('dem')">📋 Demandas</button>
+        <button class="dsh-sub-btn" id="dsh-sub-tas" onclick="setDashSub('tas')">✅ Tarefas</button>
+      </div>
       <div class="toolbar">
         <div class="search-box">
           <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
@@ -536,14 +614,7 @@
       </div>
       <div id="d-tabela"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th onclick="toggleSortPrazoDemandas()" style="cursor:pointer;user-select:none">Prazo <span id="prazo-sort-icon">↑</span></th><th>Status</th><th>Progresso</th><th>Anexo</th></tr></thead><tbody id="tbody-demandas"></tbody></table></div></div>
       <div id="d-kanban" style="display:none"><div class="kanban-board" id="kb-demandas"></div></div>
-      <div id="d-dashboard" style="display:none">
-        <div style="display:flex;gap:10px;align-items:stretch;margin-bottom:28px;flex-wrap:wrap">
-          <div class="stats-grid" id="dash-stats" style="flex:1;min-width:280px;margin-bottom:0"></div>
-          <div id="dash-stats-aside" style="flex:0 0 auto;display:flex;gap:8px;padding-left:12px;border-left:1px solid var(--border)"></div>
-        </div>
-        <div class="charts-grid"><div class="chart-card"><div class="chart-title">Demandas por Tipo</div><div id="chart-tipo"></div></div><div class="chart-card"><div class="chart-title">Demandas por Área</div><div id="chart-area"></div></div><div class="chart-card"><div class="chart-title">Demandas por Terminal</div><div id="chart-terminal"></div></div><div class="chart-card"><div class="chart-title">Demandas por Status</div><div id="chart-status"></div></div><div class="chart-card"><div class="chart-title">Tarefas das Demandas</div><div id="chart-tarefas"></div></div></div>
-        <div class="table-wrap" style="margin-top:20px;max-height:480px;overflow-y:auto"><table style="font-size:12px"><thead><tr><th>ID</th><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th onclick="toggleSortPrazoDemandas()" style="cursor:pointer;user-select:none">Prazo <span id="prazo-sort-icon-dash">↑</span></th><th>Status</th><th>Progresso</th><th>Anexo</th></tr></thead><tbody id="tbody-demandas-dash"></tbody></table></div>
-      </div>
+      <div id="d-dashboard" style="display:none"><div class="dsh" id="dsh-root"></div></div>
     </div>
 
     <!-- MAPAS MENTAIS -->
@@ -1375,7 +1446,7 @@ const STORAGE_BUCKET = 'anexos';
 // ══════════════════════════════════════════
 const state = {
   demandas:[], queries:[], usuarios:[], mapas:[], projetos:[], fluxogramas:[], documentos:[], biCatalogo:[],
-  currentPage:'', viewD:'tabela', viewQ:'tabela', prazoSort:'asc', filtroArea:[], filtroTerminal:[], filtroTipo:[], filtroTarefaStatus:[], filtroStatus:[], filtroCards:[],
+  currentPage:'', viewD:'tabela', viewQ:'tabela', prazoSort:'asc', filtroArea:[], filtroTerminal:[], filtroTipo:[], filtroResp:[], filtroTarefaResp:[], filtroTarefaCards:[], dashSub:'dem', filtroCards:[],
   viewMode:null, viewId:null, viewEditing:false,
   user:null,
   // mapa mental editor
@@ -1490,6 +1561,8 @@ function setView(ctx,mode) {
     ['btn-vt-d','btn-vk-d','btn-vdb-d'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
     const activeBtn={'tabela':'btn-vt-d','kanban':'btn-vk-d','dashboard':'btn-vdb-d'}[mode];
     if(activeBtn){const el=document.getElementById(activeBtn);if(el)el.classList.add('active');}
+    document.getElementById('dsh-sub').style.display=mode==='dashboard'?'flex':'none';
+    dshSyncToolbar();
     if(mode==='dashboard') renderDashboard();
     else renderDemandas();
   } else {
@@ -1552,8 +1625,9 @@ function limparFiltros() {
   state.filtroArea=[];
   state.filtroTerminal=[];
   state.filtroTipo=[];
-  state.filtroTarefaStatus=[];
-  state.filtroStatus=[];
+  state.filtroResp=[];
+  state.filtroTarefaResp=[];
+  state.filtroTarefaCards=[];
   state.filtroCards=[];
   renderDemandas();
 }
@@ -1742,8 +1816,7 @@ function getFiltDemandas(exclude) {
     if (!skip('data') && pFim && d.prazo && d.prazo>pFim) return false;
     if (!skip('area') && state.filtroArea.length && !state.filtroArea.includes(d.area)) return false;
     if (!skip('terminal') && state.filtroTerminal.length && !state.filtroTerminal.includes(d.terminal)) return false;
-    if (!skip('tarefaStatus') && state.filtroTarefaStatus.length && !(d.tasks||[]).some(t=>state.filtroTarefaStatus.includes(taskStatusLabel(t)))) return false;
-    if (!skip('statusChart') && state.filtroStatus.length && !state.filtroStatus.includes(d.status)) return false;
+    if (!skip('resp') && state.filtroResp.length && !state.filtroResp.includes(d.responsavel)) return false;
     if (!skip('cards') && state.filtroCards.length && !state.filtroCards.some(tag=>dmCardTagMatch(d,tag))) return false;
     return true;
   });
@@ -2200,105 +2273,229 @@ async function saveViewEdit(){
 }
 
 // ══════════════════════════════════════════
-// DASHBOARD
+// DASHBOARD (Demandas / Tarefas)
 // ══════════════════════════════════════════
-function renderDashboard(){
-  const ds=getFiltDemandas();
-  const dsc=getFiltDemandas('cards');
-  const tot=dsc.length;
-  const det=dsc.filter(d=>d.status==='em detalhamento').length;
-  const ini=dsc.filter(d=>d.status==='a iniciar').length;
-  const and=dsc.filter(d=>d.status==='em andamento').length;
-  const hom=dsc.filter(d=>d.status==='homologação').length;
-  const fin=dsc.filter(d=>d.status==='finalizada').length;
-  const pend=dsc.filter(d=>d.status!=='finalizada'&&d.status!=='cancelada').length;
-  document.getElementById('dash-stats').innerHTML=
-    statCardClick('Total',tot,'cadastradas','#001f3f','#ffffff','__total__')+
-    statCardClick('⏳ Pendentes',pend,'em aberto','rgba(245,158,11,0.12)','#fbbf24','__pendente__')+
-    statCardClick('✅ Finalizadas',fin,'concluídas','rgba(34,197,94,0.12)','#4ade80','finalizada');
-  document.getElementById('dash-stats-aside').innerHTML='';
-  renderBarChart('chart-status',countBy(getFiltDemandas('statusChart'),'status'),['em detalhamento','a iniciar','em andamento','homologação','finalizada','cancelada','congelada'],'statusChart',state.filtroStatus);
-  renderBarChart('chart-area',countBy(getFiltDemandas('area'),'area'),['Eficiência de Processos','Eficiência de Dados'],'area',state.filtroArea);
-  renderBarChart('chart-terminal',countBy(getFiltDemandas('terminal'),'terminal'),['Corporativo','ADM Central','Guarujá','Anhanguera','Itajaí','Suape'],'terminal',state.filtroTerminal);
-  renderBarChart('chart-tipo',countBy(getFiltDemandas('tipo'),'tipo'),['Criação de Dashboard','Melhoria','Análise','Outros'],'tipo',state.filtroTipo);
-  renderBarChart('chart-tarefas',countTaskStatus(getFiltDemandas(['data','tarefaStatus'])),['No prazo','Atrasado','Concluída'],'tarefaStatus',state.filtroTarefaStatus);
-  const tbDash=document.getElementById('tbody-demandas-dash');
-  if(tbDash){
-    const dsSorted=ds.slice().sort((a,b)=>{
-      if(!a.prazo && !b.prazo) return 0;
-      if(!a.prazo) return 1;
-      if(!b.prazo) return -1;
-      const cmp=a.prazo.localeCompare(b.prazo);
-      return state.prazoSort==='desc'?-cmp:cmp;
-    });
-    tbDash.innerHTML = dsSorted.length ? dsSorted.map(d=>dmRowHtml(d)).join('') : `<tr><td colspan="12"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Nenhuma demanda encontrada</p></div></td></tr>`;
-  }
+const DSH_TIPOS=['Criação de Dashboard','Melhoria','Análise','Outros'];
+const DSH_AREAS=['Eficiência de Processos','Eficiência de Dados'];
+const DSH_TERMS=['Corporativo','ADM Central','Guarujá','Anhanguera','Itajaí','Suape'];
+const DSH_MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DSH_DON=['#006EFF','#5aa6ff','#8b95c9','#3a4170','#2a3163'];
+const DSH_C={late:'#ff4d6d',pend:'#ffb020',fin:'#22c55e',other:'#3a4170'};
+const DSH_FKEY={tipo:'filtroTipo',area:'filtroArea',term:'filtroTerminal',resp:'filtroResp',cards:'filtroCards',tresp:'filtroTarefaResp',tcards:'filtroTarefaCards'};
+
+const dshPct=(a,b)=>b?Math.round(a/b*100):0;
+const dshOpen=d=>d.status!=='finalizada'&&d.status!=='cancelada';
+const dshLate=d=>prazoCls(d.prazo,d.status)==='prazo-late';
+const dshTaskTag=(t,tag)=>({__ok__:'No prazo',__atr__:'Atrasado',__fin__:'Concluída'}[tag]===taskStatusLabel(t));
+const dshToday=()=>{const d=new Date();d.setHours(0,0,0,0);return d;};
+const dshDaysTo=iso=>Math.round((new Date(iso+'T00:00:00')-dshToday())/86400000);
+const dshByPrazo=(a,b)=>{
+  if(!a.prazo&&!b.prazo)return 0;if(!a.prazo)return 1;if(!b.prazo)return -1;
+  const c=a.prazo.localeCompare(b.prazo);return state.prazoSort==='desc'?-c:c;
+};
+const dshSortPt=(a,b)=>a.localeCompare(b,'pt-BR');
+const dshRespDem=()=>[...new Set(state.demandas.map(d=>d.responsavel).filter(Boolean))].sort(dshSortPt);
+const dshRespTas=()=>[...new Set(state.demandas.flatMap(d=>(d.tasks||[]).map(t=>t.resp)).filter(Boolean))].sort(dshSortPt);
+function dshShortNames(names){
+  const cnt={};names.forEach(n=>{const f=n.split(' ')[0];cnt[f]=(cnt[f]||0)+1;});
+  const m={};names.forEach(n=>{const p=n.split(' ');m[n]=cnt[p[0]]>1&&p.length>1?p[0]+' '+p[p.length-1][0]+'.':p[0];});
+  return m;
 }
-function countTaskStatus(ds){
-  const r={'No prazo':0,'Atrasado':0,'Concluída':0};
-  const pIni=document.getElementById('filter-prazo-ini')?.value||'';
-  const pFim=document.getElementById('filter-prazo-fim')?.value||'';
-  ds.forEach(d=>{
-    (d.tasks||[]).forEach(t=>{
-      // filtra pela data da tarefa: usa data de conclusão se concluída, senão o prazo
-      const dataRef = t.done ? (t.concluido_em||t.due) : t.due;
-      if(pIni && dataRef && dataRef<pIni) return;
-      if(pFim && dataRef && dataRef>pFim) return;
-      if((pIni||pFim) && !dataRef) return;
-      r[taskStatusLabel(t)]++;
-    });
-  });
-  return r;
+function dshSeg(a,isFin,isPend,isLt,isOther){
+  const r={fin:a.filter(isFin).length,pend:a.filter(isPend).length,late:a.filter(isLt).length,other:a.filter(isOther).length};
+  r.n=r.fin+r.pend+r.late+r.other;return r;
 }
-function statCard(l,v,s){return`<div class="stat-card"><div class="stat-label">${l}</div><div class="stat-value">${v}</div><div class="stat-sub">${s}</div></div>`;}
-function statCardColor(l,v,s,bg,fg,extra){return`<div class="stat-card" style="background:${bg};border-color:${fg}44;${extra||''}"><div class="stat-label" style="color:${fg}">${l}</div><div class="stat-value" style="color:${fg}">${v}</div><div class="stat-sub" style="color:${fg}aa">${s}</div></div>`;}
-function statCardClick(l,v,s,bg,fg,tag,extra){
-  const isActive=state.filtroCards.includes(tag);
-  const isDim=state.filtroCards.length>0 && !isActive;
-  const cls='stat-card stat-card-clickable'+(isActive?' stat-card-active':'')+(isDim?' stat-card-dim':'');
-  const lSafe=String(tag).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  return`<div class="${cls}" style="background:${bg};border-color:${fg}44;${extra||''}" onclick="dmCardFilter('${lSafe}', event.ctrlKey||event.metaKey)"><div class="stat-label" style="color:${fg}">${l}</div><div class="stat-value" style="color:${fg}">${v}</div><div class="stat-sub" style="color:${fg}aa">${s}</div></div>`;
-}
-function dmCardFilter(tag,multi){
-  if(tag==='__total__'){ state.filtroCards=[]; renderDemandas(); return; }
-  let arr=state.filtroCards;
-  if(multi){ arr = arr.includes(tag) ? arr.filter(v=>v!==tag) : [...arr,tag]; }
-  else { arr = (arr.length===1 && arr[0]===tag) ? [] : [tag]; }
-  state.filtroCards=arr;
+const dshTip=i=>`${i.late} atrasadas · ${i.pend} pendentes no prazo · ${i.fin} finalizadas${i.other?' · '+i.other+' canceladas':''}`;
+const dshLg=cancel=>`<div class="dsh-li"><span style="--c:${DSH_C.pend}">pendente (no prazo)</span><span style="--c:${DSH_C.late}">atrasada</span><span style="--c:${DSH_C.fin}">finalizada</span>${cancel?`<span style="--c:${DSH_C.other}">cancelada</span>`:''}</div>`;
+
+/* ── interação ── */
+function dshToggle(key,val,multi){
+  const sk=DSH_FKEY[key];let arr=state[sk];
+  arr=multi?(arr.includes(val)?arr.filter(v=>v!==val):[...arr,val]):(arr.length===1&&arr[0]===val?[]:[val]);
+  state[sk]=arr;
+  if(key==='tipo'){const sel=document.getElementById('sel-tipo-d');if(sel)sel.value=arr.length===1?arr[0]:'';}
   renderDemandas();
 }
-function countBy(arr,key){const r={};arr.forEach(i=>{const v=i[key]||'—';r[v]=(r[v]||0)+1;});return r;}
-function renderBarChart(cid,counts,order,field,activeValues){
-  const c=document.getElementById(cid);if(!c)return;
-  const max=Math.max(...Object.values(counts),1);
-  const labels=order.filter(l=>counts[l]);
-  if(!labels.length){c.innerHTML='<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Sem dados</div>';return;}
-  const active=activeValues||[];
-  const hasActive=active.length>0;
-  c.innerHTML=labels.map(l=>{
-    const n=counts[l]||0;
-    const isActive=hasActive && active.includes(l);
-    const isDim=hasActive && !isActive;
-    const rowCls='bar-row'+(field?' bar-row-clickable':'')+(isActive?' bar-row-active':'')+(isDim?' bar-row-dim':'');
-    const lSafe=String(l).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    const clickAttr=field?` onclick="dmChartFilter('${field}','${lSafe}', event.ctrlKey||event.metaKey)"`:'';
-    return`<div class="${rowCls}"${clickAttr}><div class="bar-label">${l}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/max*100)}%"></div></div><div class="bar-count">${n}</div></div>`;
+function dshCard(view,tag,multi){
+  const key=view==='tas'?'tcards':'cards';
+  if(tag==='__total__'){state[DSH_FKEY[key]]=[];renderDemandas();return;}
+  dshToggle(key,tag,multi);
+}
+function dshSyncToolbar(){
+  const tas=state.viewD==='dashboard'&&state.dashSub==='tas';
+  ['sel-status-d','sel-tipo-d'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=tas?'none':'';});
+  const s=document.getElementById('search-demanda');if(s)s.placeholder=tas?'Buscar tarefa ou demanda...':'Buscar demanda...';
+}
+function setDashSub(v){
+  state.dashSub=v;
+  document.getElementById('dsh-sub-dem').classList.toggle('active',v==='dem');
+  document.getElementById('dsh-sub-tas').classList.toggle('active',v==='tas');
+  dshSyncToolbar();
+  renderDashboard();
+}
+
+/* ── componentes ── */
+function dshKpi(o){
+  const arr=o.view==='tas'?state.filtroTarefaCards:state.filtroCards;
+  const on=o.tag&&arr.includes(o.tag),dim=o.tag&&arr.length&&!on;
+  return `<div class="dsh-kpi${o.tag?' click':''}${on?' on':''}${dim?' dim':''}" ${o.tag?`data-v="${o.tag}" onclick="dshCard('${o.view}',this.dataset.v,event.ctrlKey||event.metaKey)"`:''}>
+    <div class="dsh-kt"><div class="dsh-chip">${o.icon}</div><div class="dsh-kl">${o.label}</div></div>
+    <div class="dsh-kv" style="color:${o.color||'var(--d-t)'}">${o.value}</div>
+    <div class="dsh-kf">${o.bar!==undefined?`<div class="dsh-mt"><div class="dsh-mf" style="width:${o.bar}%"></div></div>`:`<span class="dsh-tag ${o.tagCls||''}">${o.pill}</span><span>${o.muted}</span>`}</div>
+  </div>`;
+}
+function dshGroupBars(items,key,h=190){
+  if(!items.length)return '<div class="dsh-empty">Sem dados</div>';
+  const act=state[DSH_FKEY[key]],has=act.length>0;
+  const max=Math.max(...items.flatMap(i=>[i.pend,i.late,i.fin,i.other]),1);
+  return `<div class="dsh-vb">`+items.map(i=>{
+    const on=act.includes(i.tag),dim=has&&!on;
+    const cells=[['pend',i.pend],['late',i.late],['fin',i.fin]];
+    if(i.other)cells.push(['other',i.other]);
+    return `<div class="dsh-vcol${on?' on':''}${dim?' dim':''}${i.n?'':' zero'}" data-v="${esc(i.tag)}" ${i.n?`onclick="dshToggle('${key}',this.dataset.v,event.ctrlKey||event.metaKey)"`:''} title="${esc(dshTip(i))}"><div class="dsh-gb">${cells.map(([k,v])=>v?`<div class="dsh-gcell"><div class="dsh-gval">${v}</div><div class="dsh-gbar ${k}" style="height:${Math.max(8,Math.round(v/max*h))}px"></div></div>`:'<div class="dsh-gcell"></div>').join('')}</div><div class="dsh-vlab" title="${esc(i.tag)}">${esc(i.label)}</div></div>`;
+  }).join('')+`</div>`;
+}
+function dshDonut(items,key,big,sub){
+  const tot=items.reduce((a,i)=>a+i.n,0),Rr=44,C=2*Math.PI*Rr;let off=0;
+  const act=state[DSH_FKEY[key]],has=act.length>0;
+  const click=`onclick="dshToggle('${key}',this.dataset.v,event.ctrlKey||event.metaKey)"`;
+  const segs=items.map((i,idx)=>{
+    const len=tot?i.n/tot*C:0,vis=Math.max(len-2.5,0),on=act.includes(i.tag),dim=has&&!on;
+    const s=len>0?`<circle r="${Rr}" cx="60" cy="60" fill="none" stroke="${i.color||DSH_DON[idx%DSH_DON.length]}" stroke-width="13" stroke-dasharray="${vis} ${C-vis}" stroke-dashoffset="${-off}" opacity="${dim?.25:1}" data-v="${esc(i.tag)}" ${click} style="cursor:pointer"/>`:'';
+    off+=len;return s;
+  }).join('');
+  const legend=items.map((i,idx)=>{
+    const on=act.includes(i.tag),dim=has&&!on;
+    return `<div class="dsh-lg${on?' on':''}${dim?' dim':''}" data-v="${esc(i.tag)}" ${click}><span class="dsh-ldot" style="background:${i.color||DSH_DON[idx%DSH_DON.length]}"></span><span class="dsh-lname">${esc(i.label)}</span><span class="dsh-lpct">${dshPct(i.n,tot)}%</span></div>`;
+  }).join('');
+  return `<div class="dsh-donutwrap"><div class="dsh-donut"><svg viewBox="0 0 120 120"><circle r="${Rr}" cx="60" cy="60" fill="none" stroke="#141a3a" stroke-width="13"/>${segs}</svg><div class="dsh-dcenter"><div class="dsh-dbig">${big}</div><div class="dsh-dsub">${sub}</div></div></div><div class="dsh-legend">${legend}</div></div>`;
+}
+function dshProws(items,key,red){
+  if(!items.length)return '<div class="dsh-empty">Sem dados</div>';
+  const act=key?state[DSH_FKEY[key]]:[],has=act.length>0,max=Math.max(...items.map(i=>i.n),1);
+  return items.map(i=>{
+    const on=act.includes(i.tag),dim=has&&!on;
+    return `<div class="dsh-prow${key?'':' static'}${on?' on':''}${dim?' dim':''}" ${key?`data-v="${esc(i.tag)}" onclick="dshToggle('${key}',this.dataset.v,event.ctrlKey||event.metaKey)"`:''}><div class="dsh-ptop"><span class="dsh-plab" title="${esc(i.label)}">${esc(i.label)}</span><span class="dsh-pval">${i.n}</span></div><div class="dsh-ptrack"><div class="dsh-pfill${red?' red':''}" style="width:${Math.round(i.n/max*100)}%"></div></div></div>`;
   }).join('');
 }
-function dmChartFilter(field,value,multi){
-  const key=field==='tipo'?'filtroTipo':field==='area'?'filtroArea':field==='terminal'?'filtroTerminal':field==='statusChart'?'filtroStatus':'filtroTarefaStatus';
-  let arr=state[key];
-  if(multi){
-    arr = arr.includes(value) ? arr.filter(v=>v!==value) : [...arr,value];
-  } else {
-    arr = (arr.length===1 && arr[0]===value) ? [] : [value];
-  }
-  state[key]=arr;
-  if(field==='tipo'){
-    const sel=document.getElementById('sel-tipo-d');
-    if(sel) sel.value = arr.length===1 ? arr[0] : '';
-  }
-  renderDemandas();
+const dshIns=h=>h?`<div class="dsh-ins">${h}</div>`:'';
+function dshHero(title,sub,pills){
+  return `<div class="dsh-panel dsh-hero"><div><div class="dsh-eyebrow"><i></i>Painel operacional</div><div class="dsh-htitle">${title}</div><div class="dsh-hsub">${sub}</div></div><div class="dsh-hact">${pills}<button class="dsh-pill dsh-pillbtn" onclick="limparFiltros()">Limpar filtros</button></div></div>`;
+}
+const dshMes=()=>{const n=new Date();return DSH_MESES[n.getMonth()]+'/'+n.getFullYear();};
+
+/* ── visão: Demandas ── */
+function dshRenderDem(){
+  const base=getFiltDemandas('cards');
+  const tot=base.length,pend=base.filter(dshOpen).length,atr=base.filter(dshLate).length,fin=base.filter(d=>d.status==='finalizada').length;
+  const prog=tot?Math.round(base.reduce((a,d)=>a+dmPct(d.tasks,d.status),0)/tot):0;
+  const all=getFiltDemandas();
+  const rows=all.slice().sort(dshByPrazo).map(d=>dmRowHtml(d)).join('');
+  const seg=a=>dshSeg(a,d=>d.status==='finalizada',d=>dshOpen(d)&&!dshLate(d),dshLate,d=>d.status==='cancelada');
+  const tipoBase=getFiltDemandas('tipo'),areaBase=getFiltDemandas('area'),termBase=getFiltDemandas('terminal'),respBase=getFiltDemandas('resp');
+  const tipoItems=DSH_TIPOS.map(v=>({label:v,tag:v,n:tipoBase.filter(d=>d.tipo===v).length}));
+  const areaItems=DSH_AREAS.map(v=>({label:v,tag:v,n:areaBase.filter(d=>d.area===v).length}));
+  const termItems=DSH_TERMS.map(v=>({label:v,tag:v,n:termBase.filter(d=>d.terminal===v).length})).sort((a,b)=>b.n-a.n);
+  const names=dshRespDem(),short=dshShortNames(names);
+  const respItems=names.map(v=>({label:short[v],tag:v,...seg(respBase.filter(d=>d.responsavel===v))}));
+  const topTipo=[...tipoItems].sort((a,b)=>b.n-a.n)[0],topTerm=termItems[0];
+  const ins=[
+    atr?dshIns(`<span class="hl-bad">${atr} demanda${atr>1?'s':''} atrasada${atr>1?'s':''}</span> — ${dshPct(atr,pend)}% das ${pend} em aberto.`):dshIns(`<span class="hl-ok">Nenhuma demanda atrasada</span> entre as ${pend} em aberto.`),
+    dshIns(`Concluídas: <b>${fin}</b> de ${tot} (<span class="hl-ok">${dshPct(fin,tot)}%</span>); progresso médio de <b>${prog}%</b>.`),
+    topTipo&&topTipo.n?dshIns(`Maior volume por tipo: <b>${topTipo.label}</b> (${topTipo.n}).`):'',
+    topTerm&&topTerm.n?dshIns(`Terminal com mais demandas: <b>${topTerm.label}</b> (${topTerm.n}).`):''
+  ].join('');
+  const tbl=`<div class="dsh-tt">Demandas · ${all.length}</div><div class="table-wrap" style="max-height:480px;overflow-y:auto"><table style="font-size:12px"><thead><tr><th>ID</th><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th onclick="toggleSortPrazoDemandas()" style="cursor:pointer;user-select:none">Prazo <span id="prazo-sort-icon-dash">${state.prazoSort==='asc'?'↑':'↓'}</span></th><th>Status</th><th>Progresso</th><th>Anexo</th></tr></thead><tbody>${rows||`<tr><td colspan="12"><div class="empty-state"><div class="empty-state-icon">📋</div><p>Nenhuma demanda encontrada</p></div></td></tr>`}</tbody></table></div>`;
+  return `
+    ${dshHero('Dashboard de Demandas',`Eficiência Operacional · ${dshMes()} · ${tot} demandas no recorte`,`<span class="dsh-pill">${tot} no recorte</span><span class="dsh-pill green">${dshPct(fin,tot)}% concluídas</span>`)}
+    <div class="dsh-kpis">
+      ${dshKpi({icon:'Σ',label:'Total',value:tot,pill:'recorte',muted:`de ${state.demandas.length} cadastradas`,view:'dem',tag:'__total__'})}
+      ${dshKpi({icon:'◷',label:'Pendentes',value:pend,color:'var(--d-warn)',pill:dshPct(pend,tot)+'%',tagCls:'warn',muted:'em aberto',view:'dem',tag:'__pendente__'})}
+      ${dshKpi({icon:'!',label:'Atrasadas',value:atr,color:'var(--d-red)',pill:dshPct(atr,pend)+'%',tagCls:'red',muted:'das pendentes',view:'dem',tag:'__atraso__'})}
+      ${dshKpi({icon:'✓',label:'Finalizadas',value:fin,color:'var(--d-g2)',pill:dshPct(fin,tot)+'%',tagCls:'green',muted:'do total',view:'dem',tag:'finalizada'})}
+      ${dshKpi({icon:'%',label:'Progresso médio',value:prog+'%',bar:prog})}
+    </div>
+    <div class="dsh-row2">
+      <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Demandas por responsável</div>${dshLg(true)}</div>${dshGroupBars(respItems,'resp')}</div>
+      <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Mix por tipo</div><div class="dsh-pm">% do total</div></div>${dshDonut(tipoItems,'tipo',dshPct(fin,tot)+'%','concluídas')}</div>
+    </div>
+    <div class="dsh-row3">
+      <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Por área</div><div class="dsh-pm">demandas</div></div>${dshProws(areaItems,'area')}</div>
+      <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Por terminal</div><div class="dsh-pm">demandas</div></div>${dshProws(termItems,'term')}</div>
+      <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Leitura gerencial</div></div>${ins}</div>
+    </div>
+    ${tbl}`;
+}
+
+/* ── visão: Tarefas ── */
+function dshFiltTasks(ex){
+  ex=ex||[];
+  const s=(document.getElementById('search-demanda')?.value||'').toLowerCase();
+  const sr=document.getElementById('sel-responsavel-d')?.value||'';
+  const pIni=document.getElementById('filter-prazo-ini')?.value||'';
+  const pFim=document.getElementById('filter-prazo-fim')?.value||'';
+  const out=[];
+  state.demandas.forEach(d=>(d.tasks||[]).forEach(t=>{
+    if(s&&!(t.nome||'').toLowerCase().includes(s)&&!(d.demanda||'').toLowerCase().includes(s))return;
+    if(sr&&t.resp!==sr)return;
+    const ref=t.done?(t.concluido_em||t.due):t.due;
+    if(pIni&&ref&&ref<pIni)return;
+    if(pFim&&ref&&ref>pFim)return;
+    if((pIni||pFim)&&!ref)return;
+    if(!ex.includes('tresp')&&state.filtroTarefaResp.length&&!state.filtroTarefaResp.includes(t.resp))return;
+    if(!ex.includes('tcards')&&state.filtroTarefaCards.length&&!state.filtroTarefaCards.some(tag=>dshTaskTag(t,tag)))return;
+    out.push({t,d});
+  }));
+  return out;
+}
+function dshRenderTas(){
+  const base=dshFiltTasks(['tcards']);
+  const st=x=>taskStatusLabel(x.t);
+  const tot=base.length,ok=base.filter(x=>st(x)==='No prazo').length,atr=base.filter(x=>st(x)==='Atrasado').length,fin=base.filter(x=>x.t.done).length;
+  const all=dshFiltTasks();
+  const sorted=all.slice().sort((a,b)=>(a.t.due||'9999').localeCompare(b.t.due||'9999'));
+  const tr=sorted.map(({t,d})=>`<tr ondblclick="openView('demanda',${d.id})"><td title="${esc(t.nome)}">${esc(t.nome)}</td><td title="${esc(d.demanda)}"><span style="color:var(--text3);font-size:11px">#${d.id}</span> ${esc(d.demanda)}</td><td>${esc(t.resp)||'—'}</td><td class="${taskStatusLabel(t)==='Atrasado'?'prazo-late':''}">${fmtDate(t.due)}</td><td>${taskStatusBadge(t)}</td><td>${fmtDate(t.concluido_em)}</td></tr>`).join('');
+  const names=dshRespTas(),short=dshShortNames(names);
+  const respBase=dshFiltTasks(['tresp']);
+  const respItems=names.map(v=>({label:short[v],tag:v,...dshSeg(respBase.filter(x=>x.t.resp===v),x=>x.t.done,x=>taskStatusLabel(x.t)==='No prazo',x=>taskStatusLabel(x.t)==='Atrasado',()=>false)}));
+  const stItems=[{label:'Concluída',tag:'__fin__',n:fin,color:DSH_C.fin},{label:'No prazo',tag:'__ok__',n:ok,color:DSH_C.pend},{label:'Atrasada',tag:'__atr__',n:atr,color:DSH_C.late}];
+  const lateByDem={};all.filter(x=>st(x)==='Atrasado').forEach(({d})=>{lateByDem[d.id]=(lateByDem[d.id]||{d,n:0});lateByDem[d.id].n++;});
+  const topLate=Object.values(lateByDem).sort((a,b)=>b.n-a.n).slice(0,5).map(({d,n})=>({label:`#${d.id} ${d.demanda}`,n}));
+  const lateByResp={};all.filter(x=>st(x)==='Atrasado').forEach(({t})=>{const k=t.resp||'—';lateByResp[k]=(lateByResp[k]||0)+1;});
+  const worst=Object.entries(lateByResp).sort((a,b)=>b[1]-a[1])[0];
+  const prox=sorted.filter(({t})=>!t.done&&t.due&&dshDaysTo(t.due)>=0&&dshDaysTo(t.due)<=7);
+  const ins=[
+    atr?dshIns(`<span class="hl-bad">${atr} tarefa${atr>1?'s':''} atrasada${atr>1?'s':''}</span> (${dshPct(atr,tot)}% do total).`):dshIns(`<span class="hl-ok">Nenhuma tarefa atrasada</span> no recorte.`),
+    worst?dshIns(`Mais atrasos: <b>${esc(worst[0])}</b> (<span class="hl-bad">${worst[1]}</span>).`):'',
+    dshIns(`Concluídas: <b>${fin}</b> de ${tot} (<span class="hl-ok">${dshPct(fin,tot)}%</span>).`),
+    dshIns(prox.length?`<span class="hl-warn">${prox.length} tarefa${prox.length>1?'s':''}</span> vencem nos próximos 7 dias.`:`Nenhum vencimento nos próximos 7 dias.`)
+  ].join('');
+  const proxHtml=prox.slice(0,6).map(({t,d})=>{const n=dshDaysTo(t.due);return `<div class="dsh-nxt"><div class="dsh-nmain"><div class="dsh-nname">${esc(t.nome)}</div><div class="dsh-nsub">#${d.id} ${esc(d.demanda)} · ${esc(t.resp)||'—'}</div></div><div class="dsh-ndate">${t.due.split('-').reverse().slice(0,2).join('/')}<small>${n===0?'hoje':'em '+n+'d'}</small></div></div>`;}).join('')||'<div class="dsh-empty">Nada vencendo nos próximos 7 dias</div>';
+  return `
+    ${dshHero('Dashboard de Tarefas',`Eficiência Operacional · ${dshMes()} · ${tot} tarefas no recorte`,`<span class="dsh-pill">${tot} no recorte</span><span class="dsh-pill green">${dshPct(fin,tot)}% concluídas</span>`)}
+    <div class="dsh-kpis">
+      ${dshKpi({icon:'Σ',label:'Total de tarefas',value:tot,pill:'recorte',muted:`de ${state.demandas.reduce((a,d)=>a+(d.tasks||[]).length,0)} cadastradas`,view:'tas',tag:'__total__'})}
+      ${dshKpi({icon:'◷',label:'No prazo',value:ok,color:'var(--d-warn)',pill:dshPct(ok,tot)+'%',tagCls:'warn',muted:'do total',view:'tas',tag:'__ok__'})}
+      ${dshKpi({icon:'!',label:'Atrasadas',value:atr,color:'var(--d-red)',pill:dshPct(atr,tot)+'%',tagCls:'red',muted:'do total',view:'tas',tag:'__atr__'})}
+      ${dshKpi({icon:'✓',label:'Finalizadas',value:fin,color:'var(--d-g2)',pill:dshPct(fin,tot)+'%',tagCls:'green',muted:'do total',view:'tas',tag:'__fin__'})}
+      ${dshKpi({icon:'%',label:'Taxa de conclusão',value:dshPct(fin,tot)+'%',bar:dshPct(fin,tot)})}
+    </div>
+    <div class="dsh-row2">
+      <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Tarefas por responsável</div>${dshLg(false)}</div>${dshGroupBars(respItems,'tresp')}</div>
+      <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Mix por status</div><div class="dsh-pm">% do total</div></div>${dshDonut(stItems,'tcards',dshPct(fin,tot)+'%','concluídas')}</div>
+    </div>
+    <div class="dsh-row3">
+      <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Demandas com mais atrasos</div><div class="dsh-pm">tarefas atrasadas</div></div>${topLate.length?dshProws(topLate,null,true):'<div class="dsh-empty">Sem tarefas atrasadas</div>'}</div>
+      <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Próximos vencimentos</div><div class="dsh-pm">7 dias</div></div>${proxHtml}</div>
+      <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Leitura gerencial</div></div>${ins}</div>
+    </div>
+    <div class="dsh-tt">Tarefas · ${all.length}</div>
+    <div class="table-wrap" style="max-height:480px;overflow-y:auto"><table style="font-size:12px"><thead><tr><th>Tarefa</th><th>Demanda</th><th>Responsável</th><th>Prazo</th><th>Status</th><th>Conclusão</th></tr></thead><tbody>${tr||`<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">✅</div><p>Nenhuma tarefa encontrada</p></div></td></tr>`}</tbody></table></div>`;
+}
+
+function renderDashboard(){
+  const root=document.getElementById('dsh-root');if(!root)return;
+  root.innerHTML=state.dashSub==='tas'?dshRenderTas():dshRenderDem();
 }
 
 // ══════════════════════════════════════════
