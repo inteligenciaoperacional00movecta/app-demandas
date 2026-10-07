@@ -208,6 +208,8 @@
   .dsh-mf{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--d-g),var(--d-g2));}
   .dsh-row2{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:12px;margin-bottom:12px;}
   .dsh-row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:12px;}
+  .dsh-row4{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-bottom:12px;}
+  .dsh-ndate.red{color:var(--d-red);}
   .dsh-vb{display:flex;align-items:flex-end;gap:14px;padding-top:6px;}
   .dsh-vcol{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px;cursor:pointer;transition:opacity .15s;}
   .dsh-vcol.zero{cursor:default;}
@@ -606,10 +608,13 @@
           <option value="">Todos os Tipos</option>
           <option>Criação de Dashboard</option><option>Melhoria</option><option>Análise</option><option>Outros</option>
         </select>
-        <span class="filter-label">Prazo de:</span>
-        <input type="date" class="filter-date" id="filter-prazo-ini" onchange="renderDemandas()" title="Data início do filtro de prazo">
+        <select class="filter-select" id="sel-data-campo" onchange="renderDemandas()" title="Qual data será filtrada" style="min-width:120px">
+          <option value="abertura">Abertura</option><option value="prazo" selected>Prazo</option><option value="conclusao">Conclusão</option>
+        </select>
+        <span class="filter-label">de</span>
+        <input type="date" class="filter-date" id="filter-prazo-ini" onchange="renderDemandas()" title="Data inicial do filtro">
         <span class="filter-label">até</span>
-        <input type="date" class="filter-date" id="filter-prazo-fim" onchange="renderDemandas()" title="Data fim do filtro de prazo">
+        <input type="date" class="filter-date" id="filter-prazo-fim" onchange="renderDemandas()" title="Data final do filtro">
         <button class="btn-secondary" style="padding:8px 12px;font-size:12px" onclick="limparFiltros()">✕ Limpar</button>
       </div>
       <div id="d-tabela"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Área</th><th>Tipo</th><th>Demanda</th><th>Terminal</th><th>Solicitante</th><th>Responsável</th><th>Prioridade</th><th onclick="toggleSortPrazoDemandas()" style="cursor:pointer;user-select:none">Prazo <span id="prazo-sort-icon">↑</span></th><th>Status</th><th>Progresso</th><th>Anexo</th></tr></thead><tbody id="tbody-demandas"></tbody></table></div></div>
@@ -834,6 +839,13 @@
         <select id="docfi-resp" onchange="docRender()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;cursor:pointer;min-width:160px">
           <option value="">Todos os Responsáveis</option>
         </select>
+        <select id="docfi-dcampo" onchange="docRender()" title="Qual data será filtrada" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;cursor:pointer;min-width:150px">
+          <option value="criacao">Criação</option><option value="ultima">Última revisão</option><option value="proxima" selected>Próxima revisão</option>
+        </select>
+        <span style="font-size:12px;color:var(--text3)">de</span>
+        <input type="date" id="docfi-d1" onchange="docRender()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;color-scheme:dark;">
+        <span style="font-size:12px;color:var(--text3)">até</span>
+        <input type="date" id="docfi-d2" onchange="docRender()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;color-scheme:dark;">
         <button class="btn-secondary" style="padding:8px 12px;font-size:12px" onclick="docClearFilters()">✕ Limpar</button>
       </div>
       <div id="doc-content"></div>
@@ -1622,6 +1634,7 @@ function limparFiltros() {
   document.getElementById('sel-tipo-d').value='';
   document.getElementById('filter-prazo-ini').value='';
   document.getElementById('filter-prazo-fim').value='';
+  document.getElementById('sel-data-campo').value='prazo';
   state.filtroArea=[];
   state.filtroTerminal=[];
   state.filtroTipo=[];
@@ -1804,6 +1817,7 @@ function getFiltDemandas(exclude) {
   const fs=document.getElementById('sel-status-d')?.value||'';
   const pIni=document.getElementById('filter-prazo-ini')?.value||'';
   const pFim=document.getElementById('filter-prazo-fim')?.value||'';
+  const campoData=document.getElementById('sel-data-campo')?.value||'prazo';
   return state.demandas.filter(d=>{
     // filtro status especial
     if (fs==='pendente' && (d.status==='finalizada'||d.status==='cancelada')) return false;
@@ -1812,8 +1826,12 @@ function getFiltDemandas(exclude) {
     if (!skip('tipo') && state.filtroTipo.length && !state.filtroTipo.includes(d.tipo)) return false;
     if (s && !d.demanda.toLowerCase().includes(s) && !(d.solicitante||'').toLowerCase().includes(s)) return false;
     if (sr && d.responsavel!==sr) return false;
-    if (!skip('data') && pIni && d.prazo && d.prazo<pIni) return false;
-    if (!skip('data') && pFim && d.prazo && d.prazo>pFim) return false;
+    if (!skip('data') && (pIni||pFim)) {
+      const dv=campoData==='abertura'?d.inicio:campoData==='conclusao'?d.conclusao:d.prazo;
+      if (!dv) return false;
+      if (pIni && dv<pIni) return false;
+      if (pFim && dv>pFim) return false;
+    }
     if (!skip('area') && state.filtroArea.length && !state.filtroArea.includes(d.area)) return false;
     if (!skip('terminal') && state.filtroTerminal.length && !state.filtroTerminal.includes(d.terminal)) return false;
     if (!skip('resp') && state.filtroResp.length && !state.filtroResp.includes(d.responsavel)) return false;
@@ -2187,7 +2205,7 @@ async function dmAddTask(id){
   try{
     const {data,error}=await sb.from('demanda_tasks').insert({demanda_id:id,nome,resp,due,done:false}).select().single();
     if(error)throw error;
-    d.tasks.push({id:data.id,nome:data.nome,done:data.done,resp:data.resp,due:data.due,concluido_em:null});
+    d.tasks.push({id:data.id,nome:data.nome,done:data.done,resp:data.resp,due:data.due,concluido_em:null,created_at:data.created_at});
     document.getElementById(`dmnt-name-${id}`).value='';document.getElementById(`dmnt-resp-${id}`).value='';document.getElementById(`dmnt-due-${id}`).value='';
     document.getElementById(`dmtlist-${id}`).innerHTML=dmRenderTasks(d);
     dmRefreshProgress(d);
@@ -2288,6 +2306,7 @@ const dshOpen=d=>d.status!=='finalizada'&&d.status!=='cancelada';
 const dshLate=d=>prazoCls(d.prazo,d.status)==='prazo-late';
 const dshTaskTag=(t,tag)=>({__ok__:'No prazo',__atr__:'Atrasado',__fin__:'Concluída'}[tag]===taskStatusLabel(t));
 const dshToday=()=>{const d=new Date();d.setHours(0,0,0,0);return d;};
+const dshLocalIso=ts=>{if(!ts)return '';const d=new Date(ts);if(isNaN(d))return '';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const dshDaysTo=iso=>Math.round((new Date(iso+'T00:00:00')-dshToday())/86400000);
 const dshByPrazo=(a,b)=>{
   if(!a.prazo&&!b.prazo)return 0;if(!a.prazo)return 1;if(!b.prazo)return -1;
@@ -2434,14 +2453,17 @@ function dshFiltTasks(ex){
   const sr=document.getElementById('sel-responsavel-d')?.value||'';
   const pIni=document.getElementById('filter-prazo-ini')?.value||'';
   const pFim=document.getElementById('filter-prazo-fim')?.value||'';
+  const campo=document.getElementById('sel-data-campo')?.value||'prazo';
   const out=[];
   state.demandas.forEach(d=>(d.tasks||[]).forEach(t=>{
     if(s&&!(t.nome||'').toLowerCase().includes(s)&&!(d.demanda||'').toLowerCase().includes(s))return;
     if(sr&&t.resp!==sr)return;
-    const ref=t.done?(t.concluido_em||t.due):t.due;
-    if(pIni&&ref&&ref<pIni)return;
-    if(pFim&&ref&&ref>pFim)return;
-    if((pIni||pFim)&&!ref)return;
+    if(pIni||pFim){
+      const ref=campo==='abertura'?dshLocalIso(t.created_at):campo==='conclusao'?(t.concluido_em||''):(t.due||'');
+      if(!ref)return;
+      if(pIni&&ref<pIni)return;
+      if(pFim&&ref>pFim)return;
+    }
     if(!ex.includes('tresp')&&state.filtroTarefaResp.length&&!state.filtroTarefaResp.includes(t.resp))return;
     if(!ex.includes('tcards')&&state.filtroTarefaCards.length&&!state.filtroTarefaCards.some(tag=>dshTaskTag(t,tag)))return;
     out.push({t,d});
@@ -2464,6 +2486,8 @@ function dshRenderTas(){
   const lateByResp={};all.filter(x=>st(x)==='Atrasado').forEach(({t})=>{const k=t.resp||'—';lateByResp[k]=(lateByResp[k]||0)+1;});
   const worst=Object.entries(lateByResp).sort((a,b)=>b[1]-a[1])[0];
   const prox=sorted.filter(({t})=>!t.done&&t.due&&dshDaysTo(t.due)>=0&&dshDaysTo(t.due)<=7);
+  const maisAtrasadas=sorted.filter(x=>st(x)==='Atrasado').slice(0,5);
+  const atrasoHtml=maisAtrasadas.map(({t,d})=>`<div class="dsh-nxt"><div class="dsh-nmain"><div class="dsh-nname">${esc(t.nome)}</div><div class="dsh-nsub">#${d.id} ${esc(d.demanda)} · ${esc(t.resp)||'—'}</div></div><div class="dsh-ndate red">${t.due.split('-').reverse().slice(0,2).join('/')}<small>há ${-dshDaysTo(t.due)}d</small></div></div>`).join('')||'<div class="dsh-empty">Sem tarefas atrasadas</div>';
   const ins=[
     atr?dshIns(`<span class="hl-bad">${atr} tarefa${atr>1?'s':''} atrasada${atr>1?'s':''}</span> (${dshPct(atr,tot)}% do total).`):dshIns(`<span class="hl-ok">Nenhuma tarefa atrasada</span> no recorte.`),
     worst?dshIns(`Mais atrasos: <b>${esc(worst[0])}</b> (<span class="hl-bad">${worst[1]}</span>).`):'',
@@ -2484,8 +2508,9 @@ function dshRenderTas(){
       <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Tarefas por responsável</div>${dshLg(false)}</div>${dshGroupBars(respItems,'tresp')}</div>
       <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Mix por status</div><div class="dsh-pm">% do total</div></div>${dshDonut(stItems,'tcards',dshPct(fin,tot)+'%','concluídas')}</div>
     </div>
-    <div class="dsh-row3">
+    <div class="dsh-row4">
       <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Demandas com mais atrasos</div><div class="dsh-pm">tarefas atrasadas</div></div>${topLate.length?dshProws(topLate,null,true):'<div class="dsh-empty">Sem tarefas atrasadas</div>'}</div>
+      <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Tarefas com mais atraso</div><div class="dsh-pm">dias de atraso</div></div>${atrasoHtml}</div>
       <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Próximos vencimentos</div><div class="dsh-pm">7 dias</div></div>${proxHtml}</div>
       <div class="dsh-panel"><div class="dsh-ph"><div class="dsh-pt">Leitura gerencial</div></div>${ins}</div>
     </div>
@@ -4172,8 +4197,17 @@ function docGetFiltered(){
   const st=document.getElementById('docfi-status')?.value||'';
   const cr=document.getElementById('docfi-crit')?.value||'';
   const resp=document.getElementById('docfi-resp')?.value||'';
+  const dIni=document.getElementById('docfi-d1')?.value||'';
+  const dFim=document.getElementById('docfi-d2')?.value||'';
+  const dCampo=document.getElementById('docfi-dcampo')?.value||'proxima';
   return state.documentos.filter(d=>{
     if(d.tipo!==_docTipo)return false;
+    if(dIni||dFim){
+      const dv=dCampo==='criacao'?d.data_criacao:dCampo==='ultima'?d.ultima_revisao:d.proxima_revisao;
+      if(!dv)return false;
+      if(dIni&&dv<dIni)return false;
+      if(dFim&&dv>dFim)return false;
+    }
     if(titulo&&!(d.titulo||'').toLowerCase().includes(titulo)&&!(d.codigo||'').toLowerCase().includes(titulo))return false;
     if(area&&!(d.area||'').toLowerCase().includes(area))return false;
     if(st&&d.status!==st)return false;
@@ -4184,7 +4218,8 @@ function docGetFiltered(){
 }
 
 function docClearFilters(){
-  ['docfi-titulo','docfi-area','docfi-status','docfi-crit','docfi-resp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['docfi-titulo','docfi-area','docfi-status','docfi-crit','docfi-resp','docfi-d1','docfi-d2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const dc=document.getElementById('docfi-dcampo');if(dc)dc.value='proxima';
   docRender();
 }
 
@@ -4731,14 +4766,14 @@ const PJ_ACOLORS = ['#3b82f6','#a855f7','#22c55e','#f59e0b','#ef4444','#06b6d4',
 const PJ_PRIOR_ORDER = {Crítica:1,Alta:2,Média:3,Baixa:4};
 let pjCurrentInner='lista';
 let pjChartStatus=null,pjChartSave=null,pjChartSetor=null;
-let pjFilters={s:'',r:'',st:'',se:'',p:'',d1:'',d2:'',ac:''};
+let pjFilters={s:'',r:'',st:'',se:'',p:'',d1:'',d2:'',ac:'',dc:'periodo'};
 
 // Normaliza dados vindos do supabase (relations -> arrays nomeados)
 function dmPct(tasks,status){return status==='finalizada'?100:pjTPct(tasks);}
 function dmNormalize(rows){
   return (rows||[]).map(d=>({
     ...d,
-    tasks:(d.demanda_tasks||[]).map(t=>({id:t.id,nome:t.nome,done:t.done,resp:t.resp,due:t.due,concluido_em:t.concluido_em})).sort((a,b)=>a.id-b.id),
+    tasks:(d.demanda_tasks||[]).map(t=>({id:t.id,nome:t.nome,done:t.done,resp:t.resp,due:t.due,concluido_em:t.concluido_em,created_at:t.created_at})).sort((a,b)=>a.id-b.id),
     comments:(d.demanda_comments||[]).map(c=>({id:c.id,autor:c.autor,texto:c.texto,created_at:c.created_at})).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),
     attachments:(d.demanda_attachments||[]).map(a=>({id:a.id,name:a.nome,url:a.url,size:a.tamanho}))
   }));
@@ -4826,7 +4861,12 @@ function pjBuildFilters(){
       <option value="sim"${pjFilters.ac==='sim'?' selected':''}>✓ Acomp. por EO</option>
       <option value="nao"${pjFilters.ac==='nao'?' selected':''}>✗ Não acompanhado</option>
     </select>
-    <span style="font-size:12px;color:var(--text3);white-space:nowrap">Período:</span>
+    <select id="pjfi-dcampo" onchange="pjOnFilter()" title="Qual data será filtrada" style="min-width:120px">
+      <option value="periodo"${pjFilters.dc==='periodo'?' selected':''}>Período</option>
+      <option value="abertura"${pjFilters.dc==='abertura'?' selected':''}>Abertura</option>
+      <option value="prazo"${pjFilters.dc==='prazo'?' selected':''}>Prazo</option>
+    </select>
+    <span style="font-size:12px;color:var(--text3)">de</span>
     <input type="text" id="pjfi-d1" maxlength="10" placeholder="dd/mm/aaaa" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;min-width:115px;max-width:115px;" oninput="pjMaskDate(this)" onblur="pjOnFilter()" value="${pjFilters.d1||''}">
     <span style="font-size:12px;color:var(--text3)">até</span>
     <input type="text" id="pjfi-d2" maxlength="10" placeholder="dd/mm/aaaa" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;min-width:115px;max-width:115px;" oninput="pjMaskDate(this)" onblur="pjOnFilter()" value="${pjFilters.d2||''}">
@@ -4842,12 +4882,13 @@ function pjOnFilter(){
   pjFilters.ac=document.getElementById('pjfi-acomp')?.value||'';
   pjFilters.d1=document.getElementById('pjfi-d1')?.value||'';
   pjFilters.d2=document.getElementById('pjfi-d2')?.value||'';
+  pjFilters.dc=document.getElementById('pjfi-dcampo')?.value||'periodo';
   // Só aplica quando data estiver completa ou vazia
   const d1v=pjFilters.d1; const d2v=pjFilters.d2;
   if(d1v&&d1v.length<10)return; if(d2v&&d2v.length<10)return;
   pjRenderInner();
 }
-function pjClearFilters(){pjFilters={s:'',r:'',st:'',se:'',p:'',d1:'',d2:'',ac:''};pjRenderInner()}
+function pjClearFilters(){pjFilters={s:'',r:'',st:'',se:'',p:'',d1:'',d2:'',ac:'',dc:'periodo'};pjRenderInner()}
 function pjSort(list){
   const active=list.filter(p=>p.status!=='finalizado'&&p.status!=='cancelado');
   const done=list.filter(p=>p.status==='finalizado'||p.status==='cancelado');
@@ -4870,11 +4911,20 @@ function pjGetFiltered(){
     const isEO=p.acomp_eo==='Sim';
     if(pjFilters.ac==='sim'&&!isEO)return false;
     if(pjFilters.ac==='nao'&&isEO)return false;
-    // Filtro data (sobreposição com intervalo inicio-fim do projeto)
+    // Filtro data: Período = sobreposição com o intervalo início-fim; Abertura = início; Prazo = fim
     const d1iso=pjDmyToIso(pjFilters.d1);
     const d2iso=pjDmyToIso(pjFilters.d2);
-    if(d1iso&&p.fim&&p.fim<d1iso)return false;
-    if(d2iso&&p.inicio&&p.inicio>d2iso)return false;
+    if(pjFilters.dc==='abertura'||pjFilters.dc==='prazo'){
+      if(d1iso||d2iso){
+        const v=pjFilters.dc==='abertura'?p.inicio:p.fim;
+        if(!v)return false;
+        if(d1iso&&v<d1iso)return false;
+        if(d2iso&&v>d2iso)return false;
+      }
+    }else{
+      if(d1iso&&p.fim&&p.fim<d1iso)return false;
+      if(d2iso&&p.inicio&&p.inicio>d2iso)return false;
+    }
     return true;
   });
 }
