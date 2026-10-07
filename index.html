@@ -169,6 +169,11 @@
   .file-preview a:hover{text-decoration:underline;}
   .modal-footer{padding:16px 28px 24px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);}
 
+  /* CAMPOS DE DATA: ícone do calendário na cor do texto (o padrão é escuro e some no fundo escuro) */
+  input[type="date"]{cursor:pointer;}
+  input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.85;cursor:pointer;}
+  input[type="date"]::-webkit-calendar-picker-indicator:hover{opacity:1;}
+
   /* DASHBOARD (Demandas / Tarefas) */
   .dsh-sub{display:flex;gap:10px;margin-bottom:16px;}
   .dsh-sub-btn{display:flex;align-items:center;gap:9px;padding:9px 20px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s;}
@@ -843,9 +848,9 @@
           <option value="criacao">Criação</option><option value="ultima">Última revisão</option><option value="proxima" selected>Próxima revisão</option>
         </select>
         <span style="font-size:12px;color:var(--text3)">de</span>
-        <input type="date" id="docfi-d1" onchange="docRender()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;color-scheme:dark;">
+        <input type="date" id="docfi-d1" onchange="docRender()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;">
         <span style="font-size:12px;color:var(--text3)">até</span>
-        <input type="date" id="docfi-d2" onchange="docRender()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;color-scheme:dark;">
+        <input type="date" id="docfi-d2" onchange="docRender()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;">
         <button class="btn-secondary" style="padding:8px 12px;font-size:12px" onclick="docClearFilters()">✕ Limpar</button>
       </div>
       <div id="doc-content"></div>
@@ -1604,6 +1609,11 @@ function perfilBadge(p) {
   return `<span class="badge badge-${m[p]||'usuario'}">${p}</span>`;
 }
 function fmtDate(d) { if (!d) return '—'; const [y,m,dd]=d.substring(0,10).split('-'); return `${dd}/${m}/${y}`; }
+// Campos de data: clicar em qualquer parte do campo abre o seletor de datas
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t instanceof HTMLInputElement&&t.type==='date'&&typeof t.showPicker==='function'){try{t.showPicker();}catch(_){}}
+});
 function showLoading(msg='Carregando...'){document.getElementById('loading-text').textContent=msg;document.getElementById('loading-overlay').classList.add('show');}
 function hideLoading(){document.getElementById('loading-overlay').classList.remove('show');}
 function toast(msg,type='success'){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);}
@@ -4679,16 +4689,9 @@ function pjUnmaskMoney(val){
   // Remove R$, espaços e pontos de milhar; troca vírgula por ponto
   return parseFloat(val.replace(/R\$\s*/,'').replace(/\./g,'').replace(',','.'))||0;
 }
-function pjMaskDate(el){
-  let v=el.value.replace(/\D/g,'');
-  if(v.length>8)v=v.slice(0,8);
-  if(v.length>4)v=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);
-  else if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);
-  el.value=v;
-  if(v.length===10)pjOnFilter();
-}
 function pjDmyToIso(dmy){
   if(!dmy||dmy.length<10)return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(dmy))return dmy;
   const[d,m,y]=dmy.split('/');
   if(!y||y.length<4)return '';
   return `${y}-${m}-${d}`;
@@ -4867,9 +4870,9 @@ function pjBuildFilters(){
       <option value="prazo"${pjFilters.dc==='prazo'?' selected':''}>Prazo</option>
     </select>
     <span style="font-size:12px;color:var(--text3)">de</span>
-    <input type="text" id="pjfi-d1" maxlength="10" placeholder="dd/mm/aaaa" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;min-width:115px;max-width:115px;" oninput="pjMaskDate(this)" onblur="pjOnFilter()" value="${pjFilters.d1||''}">
+    <input type="date" id="pjfi-d1" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;min-width:140px;" onchange="pjOnFilter()" value="${pjFilters.d1||''}">
     <span style="font-size:12px;color:var(--text3)">até</span>
-    <input type="text" id="pjfi-d2" maxlength="10" placeholder="dd/mm/aaaa" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;min-width:115px;max-width:115px;" oninput="pjMaskDate(this)" onblur="pjOnFilter()" value="${pjFilters.d2||''}">
+    <input type="date" id="pjfi-d2" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;height:36px;min-width:140px;" onchange="pjOnFilter()" value="${pjFilters.d2||''}">
     <button class="btn-secondary" style="padding:8px 12px;font-size:12px" onclick="pjClearFilters()">✕ Limpar</button>
   </div>`;
 }
